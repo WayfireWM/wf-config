@@ -20,14 +20,14 @@ sources = [
     'src/animation.cpp'
     ]
 
-lib_wfconfig = library('wf-config',
+wfconfig = library('wf-config',
     sources,
     dependencies: [evdev, wlroots],
     install: true)
 
 pkgconfig = import('pkgconfig')
 pkgconfig.generate(
-    libraries:    lib_wfconfig,
+    libraries:    wfconfig,
     version:      meson.project_version(),
     filebase:     meson.project_name(),
     name:         meson.project_name(),
