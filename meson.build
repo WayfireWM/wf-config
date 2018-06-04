@@ -16,7 +16,8 @@ wlroots = dependency('wlroots')
 
 sources = [
     'src/config.cpp',
-    'src/parse.cpp'
+    'src/parse.cpp',
+    'src/animation.cpp'
     ]
 
 lib_wfconfig = library('wf-config',
@@ -32,4 +33,4 @@ pkgconfig.generate(
     name:         meson.project_name(),
     description: 'Dynamic file-based configuration library for Wayfire')
 
-install_headers('src/config.hpp', subdir: 'wayfire')
+install_headers(['src/config.hpp', 'src/animation.hpp'], subdir: 'wayfire')
