@@ -14,10 +14,15 @@ project(
 evdev = dependency('libevdev')
 wlroots = dependency('wlroots')
 
+sources = [
+    'src/config.cpp',
+    'src/parse.cpp'
+    ]
+
 lib_wfconfig = library('wf-config',
-                       'src/config.cpp',
-                       dependencies: [evdev, wlroots],
-                       install: true)
+    sources,
+    dependencies: [evdev, wlroots],
+    install: true)
 
 pkgconfig = import('pkgconfig')
 pkgconfig.generate(

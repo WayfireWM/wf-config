@@ -1,14 +1,6 @@
-#include "config.hpp"
-#include <cstdlib>
+#include "parse.hpp"
 #include <sstream>
 #include <fstream>
-#include <libevdev/libevdev.h>
-#include <linux/input.h>
-
-extern "C"
-{
-#include <wlr/types/wlr_keyboard.h>
-}
 
 std::ofstream out;
 
@@ -24,7 +16,7 @@ string wayfire_config_section::get_string(string name, string default_value)
 int wayfire_config_section::get_int(string name, int df)
 {
     auto it = options.find(name);
-    return (it == options.end() ? df : std::atoi(it->second.c_str()));
+    return (it == options.end() ? df : parse_int(it->second));
 }
 
 int wayfire_config_section::get_duration(string name, int df)
@@ -36,100 +28,34 @@ int wayfire_config_section::get_duration(string name, int df)
 double wayfire_config_section::get_double(string name, double df)
 {
     auto it = options.find(name);
-    return (it == options.end() ? df : std::atof(it->second.c_str()));
+    return (it == options.end() ? df : parse_double(it->second));
 }
 
-wayfire_key wayfire_config_section::get_key(string name, wayfire_key df)
+wf_key wayfire_config_section::get_key(string name, wf_key df)
 {
     auto it = options.find(name);
     if (it == options.end())
         return df;
 
-    if (it->second == "none")
-        return {0, 0};
-
-    std::stringstream ss(it->second);
-    std::vector<std::string> items;
-    std::string t;
-    while(ss >> t)
-        items.push_back(t);
-
-    wayfire_key ans;
-
-    ans.mod = 0;
-    for (size_t i = 0; i < items.size(); i++) {
-        if (items[i] == "<alt>")
-            ans.mod |= WLR_MODIFIER_ALT;
-        if (items[i] == "<ctrl>")
-            ans.mod |= WLR_MODIFIER_CTRL;
-        if (items[i] == "<shift>")
-            ans.mod |= WLR_MODIFIER_SHIFT;
-        if (items[i] == "<super>")
-            ans.mod |= WLR_MODIFIER_LOGO;
-    }
-
-    ans.keyval = libevdev_event_code_from_name(EV_KEY, items[items.size() - 1].c_str());
-    if (ans.keyval == (uint32_t)-1)
-        ans.keyval = 0;
-    return ans;
+    return parse_key(it->second);
 }
 
-wayfire_button wayfire_config_section::get_button(string name, wayfire_button df)
+wf_button wayfire_config_section::get_button(string name, wf_button df)
 {
     auto it = options.find(name);
     if (it == options.end())
         return df;
 
-    if (it->second == "none")
-        return {0, 0};
-
-    std::stringstream ss(it->second);
-    std::vector<std::string> items;
-    std::string t;
-    while(ss >> t)
-        items.push_back(t);
-
-    if (items.empty())
-        return df;
-
-    wayfire_button ans;
-    ans.mod = 0;
-
-    for (size_t i = 0; i < items.size() - 1; i++)
-    {
-        if (items[i] == "<alt>")
-            ans.mod |= WLR_MODIFIER_ALT;
-        if (items[i] == "<ctrl>")
-            ans.mod |= WLR_MODIFIER_CTRL;
-        if (items[i] == "<shift>")
-            ans.mod |= WLR_MODIFIER_SHIFT;
-        if (items[i] == "<super>")
-            ans.mod |= WLR_MODIFIER_LOGO;
-    }
-
-    auto button = items[items.size() - 1];
-    if (button == "left")
-        ans.button = BTN_LEFT;
-    else if (button == "right")
-        ans.button = BTN_RIGHT;
-    else if (button == "middle")
-        ans.button = BTN_MIDDLE;
-    else
-        ans.button = 0;
-
-    return ans;
+    return parse_button(it->second);
 }
 
-wayfire_color wayfire_config_section::get_color(string name, wayfire_color df)
+wf_color wayfire_config_section::get_color(string name, wf_color df)
 {
     auto it = options.find(name);
     if (it == options.end())
         return df;
 
-    wayfire_color ans = {0, 0, 0, 0};
-    std::stringstream ss(it->second);
-    ss >> ans.r >> ans.g >> ans.b >> ans.a;
-    return ans;
+    return parse_color(it->second);
 }
 
 static string trim(const string& x)
@@ -223,13 +149,7 @@ wayfire_config::wayfire_config(string name, int rr)
         }
 
         if (!current_section)
-        {
-
-#ifdef WAYFIRE_DEBUG_ENABLED
-            out << "config option outside of a config section!" << std::endl;
-#endif
             continue;
-        }
 
         string name, value;
         size_t i = line.find_first_of('=');
@@ -238,10 +158,6 @@ wayfire_config::wayfire_config(string name, int rr)
             name = trim(line.substr(0, i));
             value = trim(line.substr(i + 1, line.size() - i - 1));
             current_section->options[name] = value;
-
-#ifdef WAYFIRE_DEBUG_ENABLED
-            out << current_section->name << ": " << name << " = " << value << std::endl;
-#endif
         }
     }
 }
