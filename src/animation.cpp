@@ -13,7 +13,11 @@ wf_duration::wf_duration(wf_option dur, wf_animation::smooth_function smooth)
 void wf_duration::start(double x, double y)
 {
     begin = std::chrono::system_clock::now();
-    msec = duration->as_int();
+
+    if (duration)
+        msec = duration->as_int();
+    else
+        msec = 0;
 
     start_value = x;
     end_value = y;

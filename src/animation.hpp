@@ -25,7 +25,7 @@ struct wf_duration
         uint32_t msec;
 
     public:
-        wf_duration(wf_option option,
+        wf_duration(wf_option option = nullptr,
                     wf_animation::smooth_function smooth = wf_animation::circle);
 
         double start_value, end_value;

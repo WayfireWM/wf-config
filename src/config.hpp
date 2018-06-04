@@ -61,13 +61,22 @@ struct wf_option_t
     std::function<void()> updated;
 
     std::string as_string();
+    operator std::string();
 
     int    as_int();
+    operator int();
+
     double as_double();
+    operator double();
 
     wf_key    as_key();
+    operator wf_key();
+
     wf_button as_button();
+    operator wf_button();
+
     wf_color  as_color();
+    operator wf_color();
 
     /* "performance-oriented" variants of the regular as_* functions
      * These cache the result of the parsing operation, but you can't mix

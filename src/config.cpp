@@ -28,9 +28,19 @@ string wf_option_t::as_string()
         default_value : raw_value;
 }
 
+wf_option_t::operator string()
+{
+    return as_string();
+}
+
 int wf_option_t::as_int()
 {
     return parse_int(as_string());
+}
+
+wf_option_t::operator int()
+{
+    return as_int();
 }
 
 double wf_option_t::as_double()
@@ -38,9 +48,19 @@ double wf_option_t::as_double()
     return parse_double(as_string());
 }
 
+wf_option_t::operator double()
+{
+    return as_double();
+}
+
 wf_key wf_option_t::as_key()
 {
     return parse_key(as_string());
+}
+
+wf_option_t::operator wf_key()
+{
+    return as_key();
 }
 
 wf_button wf_option_t::as_button()
@@ -48,9 +68,19 @@ wf_button wf_option_t::as_button()
     return parse_button(as_string());
 }
 
+wf_option_t::operator wf_button()
+{
+    return as_button();
+}
+
 wf_color wf_option_t::as_color()
 {
     return parse_color(as_string());
+}
+
+wf_option_t::operator wf_color()
+{
+    return as_color();
 }
 
 int wf_option_t::as_cached_int()
