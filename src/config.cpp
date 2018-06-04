@@ -13,6 +13,15 @@ wf_option_t::wf_option_t(std::string name)
     this->name = name;
 }
 
+void wf_option_t::set_value(string value)
+{
+    raw_value = value;
+    is_cached = false;
+
+    if (updated)
+        updated();
+}
+
 string wf_option_t::as_string()
 {
     return (raw_value.empty() || raw_value == "default") ?
@@ -91,11 +100,7 @@ wf_color wf_option_t::as_cached_color()
 void wayfire_config_section::update_option(string name, string value)
 {
     auto option = get_option(name);
-    option->raw_value = value;
-    option->is_cached = false;
-
-    if (option->updated)
-        option->updated();
+    option->set_value(value);
 }
 
 wf_option wayfire_config_section::get_option(string name)

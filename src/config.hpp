@@ -55,6 +55,7 @@ struct wf_option_t
     public:
 
     wf_option_t(std::string name);
+    void set_value(std::string value);
 
     std::string name, raw_value, default_value;
     std::function<void()> updated;
@@ -91,7 +92,6 @@ class wayfire_config_section
 
         std::map<std::string, wf_option> options;
         void update_option(std::string name, std::string value);
-
         wf_option get_option(std::string name, std::string default_value);
 };
 

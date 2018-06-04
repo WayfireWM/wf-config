@@ -6,7 +6,6 @@
 
 int parse_int(std::string value)
 {
-    std::cout << "parse int" << std::endl;
     return std::atoi(value.c_str());
 }
 
@@ -17,7 +16,7 @@ int parse_double(std::string value)
 
 uint32_t extract_modifiers(std::vector<std::string> tokens)
 {
-    uint32_t mods;
+    uint32_t mods = 0;
     for (auto token : tokens)
     {
         if (token == "<alt>")
