@@ -10,8 +10,6 @@ extern "C"
 #include <wlr/types/wlr_keyboard.h>
 }
 
-#include <config.h>
-
 std::ofstream out;
 
 using std::string;

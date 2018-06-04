@@ -1,5 +1,28 @@
-libwfconfig = static_library('libwfconfig',
-                             'config.cpp',
-                             dependencies: [libevdev, wlroots],
-                             include_directories: [wayfire_conf_inc])
-wfconfig = declare_dependency(link_with: libwfconfig)
+project(
+	'wf-config',
+	'cpp',
+	version: '0.0',
+	license: 'MIT',
+	meson_version: '>=0.43.0',
+	default_options: [
+		'cpp_std=c++11',
+		'warning_level=2',
+		'werror=false',
+	],
+)
+
+evdev = dependency('libevdev')
+wlroots = dependency('wlroots')
+
+lib_wfconfig = library('wf-config',
+                       'src/config.cpp',
+                       dependencies: [evdev, wlroots],
+                       install: true)
+
+pkgconfig = import('pkgconfig')
+pkgconfig.generate(
+    libraries:    lib_wfconfig,
+    version:      meson.project_version(),
+    filebase:     meson.project_name(),
+    name:         meson.project_name(),
+    description: 'Dynamic file-based configuration library for Wayfire')
