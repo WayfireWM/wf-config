@@ -31,3 +31,5 @@ pkgconfig.generate(
     filebase:     meson.project_name(),
     name:         meson.project_name(),
     description: 'Dynamic file-based configuration library for Wayfire')
+
+install_headers('src/config.hpp', subdir: 'wayfire')
