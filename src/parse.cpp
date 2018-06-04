@@ -9,7 +9,7 @@ int parse_int(std::string value)
     return std::atoi(value.c_str());
 }
 
-int parse_double(std::string value)
+double parse_double(std::string value)
 {
     return std::atof(value.c_str());
 }
