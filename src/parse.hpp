@@ -1,5 +1,5 @@
 #include <string>
-#include "config.hpp"
+#include "wayfire/config.hpp"
 
 int parse_int(std::string value);
 double parse_double(std::string value);

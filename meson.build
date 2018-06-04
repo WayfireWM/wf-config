@@ -20,9 +20,12 @@ sources = [
     'src/animation.cpp'
     ]
 
+wfconfig_inc = include_directories('include')
+
 lib_wfconfig = library('wf-config',
     sources,
     dependencies: [evdev, wlroots],
+    include_directories: wfconfig_inc,
     install: true)
 
 pkgconfig = import('pkgconfig')
@@ -33,6 +36,7 @@ pkgconfig.generate(
     name:         meson.project_name(),
     description: 'Dynamic file-based configuration library for Wayfire')
 
-install_headers(['src/config.hpp', 'src/animation.hpp'], subdir: 'wayfire')
+install_headers(['include/wayfire/config.hpp', 'include/wayfire/animation.hpp'],
+    subdir: 'wayfire')
 
 wfconfig = declare_dependency(link_with: lib_wfconfig)

@@ -1,4 +1,4 @@
-#include "animation.hpp"
+#include "wayfire/animation.hpp"
 #include <cmath>
 
 namespace wf_animation
