@@ -2,9 +2,11 @@
 #include <libevdev/libevdev.h>
 #include <cstring>
 #include <sstream>
+#include <iostream>
 
 int parse_int(std::string value)
 {
+    std::cout << "parse int" << std::endl;
     return std::atoi(value.c_str());
 }
 

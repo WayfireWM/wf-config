@@ -1,3 +1,4 @@
+#include <sys/inotify.h>
 #include "parse.hpp"
 #include <sstream>
 #include <fstream>
@@ -7,57 +8,114 @@ std::ofstream out;
 using std::string;
 /* TODO: add checks to see if values are correct */
 
-string wayfire_config_section::get_string(string name, string default_value)
+wf_option_t::wf_option_t(std::string name)
 {
-    auto it = options.find(name);
-    return (it == options.end() ? default_value : it->second);
+    this->name = name;
 }
 
-int wayfire_config_section::get_int(string name, int df)
+string wf_option_t::as_string()
 {
-    auto it = options.find(name);
-    return (it == options.end() ? df : parse_int(it->second));
+    return (raw_value.empty() || raw_value == "default") ?
+        default_value : raw_value;
 }
 
-int wayfire_config_section::get_duration(string name, int df)
+int wf_option_t::as_int()
 {
-    int result = get_int(name, df * (1000 / refresh_rate));
-    return result / (1000 / refresh_rate);
+    return parse_int(as_string());
 }
 
-double wayfire_config_section::get_double(string name, double df)
+double wf_option_t::as_double()
 {
-    auto it = options.find(name);
-    return (it == options.end() ? df : parse_double(it->second));
+    return parse_double(as_string());
 }
 
-wf_key wayfire_config_section::get_key(string name, wf_key df)
+wf_key wf_option_t::as_key()
 {
-    auto it = options.find(name);
-    if (it == options.end())
-        return df;
-
-    return parse_key(it->second);
+    return parse_key(as_string());
 }
 
-wf_button wayfire_config_section::get_button(string name, wf_button df)
+wf_button wf_option_t::as_button()
 {
-    auto it = options.find(name);
-    if (it == options.end())
-        return df;
-
-    return parse_button(it->second);
+    return parse_button(as_string());
 }
 
-wf_color wayfire_config_section::get_color(string name, wf_color df)
+wf_color wf_option_t::as_color()
 {
-    auto it = options.find(name);
-    if (it == options.end())
-        return df;
-
-    return parse_color(it->second);
+    return parse_color(as_string());
 }
 
+int wf_option_t::as_cached_int()
+{
+    if (is_cached)
+        return cached.i;
+    is_cached = true;
+    return cached.i = as_int();
+}
+
+double wf_option_t::as_cached_double()
+{
+    if (is_cached)
+        return cached.d;
+    is_cached = true;
+    return cached.d = as_double();
+}
+
+wf_key wf_option_t::as_cached_key()
+{
+    if (is_cached)
+        return cached.key;
+    is_cached = true;
+    return cached.key = as_key();
+}
+
+wf_button wf_option_t::as_cached_button()
+{
+    if (is_cached)
+        return cached.button;
+
+    is_cached = true;
+    return cached.button = as_button();
+}
+
+wf_color wf_option_t::as_cached_color()
+{
+    if (is_cached)
+        return cached.color;
+
+    is_cached = true;
+    return cached.color = as_color();
+}
+
+/* wayfire_config_section implementation */
+
+void wayfire_config_section::update_option(string name, string value)
+{
+    auto option = get_option(name);
+    option->raw_value = value;
+    option->is_cached = false;
+
+    if (option->updated)
+        option->updated();
+}
+
+wf_option wayfire_config_section::get_option(string name)
+{
+    if (options.count(name))
+        return options[name];
+
+    auto ptr = options[name] = std::make_shared<wf_option_t> (name);
+    return ptr;
+}
+
+wf_option wayfire_config_section::get_option(string name, string default_value)
+{
+    auto option = get_option(name);
+    option->default_value = default_value;
+
+    return option;
+}
+
+/* wayfire_config implementation */
 static string trim(const string& x)
 {
     int i = 0, j = x.length() - 1;
@@ -114,37 +172,44 @@ static lines_t merge_lines(const lines_t& file)
     return merged;
 }
 
-wayfire_config::wayfire_config(string name, int rr)
+static lines_t read_lines(std::string file_name)
 {
-    std::ifstream file(name);
+    std::ifstream file(file_name);
+
     string line;
-
-#ifdef WAYFIRE_DEBUG_ENABLED
-    out.open("/tmp/.wayfire_config_debug");
-    out << "use config: " << name << std::endl;
-#endif
-
-    refresh_rate = rr;
-    wayfire_config_section *current_section = NULL;
-
     lines_t lines;
-    while(std::getline(file, line))
-    {
-        lines.push_back(line);
-    }
 
+    while(std::getline(file, line))
+        lines.push_back(line);
+
+    return lines;
+}
+
+wayfire_config::wayfire_config(string name)
+{
+    fname = name;
+    reload_config();
+}
+
+void wayfire_config::reload_config()
+{
+    /* reset all options to empty, meaning default values */
+    for (auto& section : sections)
+        for (auto option : section.second->options)
+            section.second->update_option(option.first, "");
+
+    auto lines = read_lines(fname);
     prune_comments(lines);
     lines = filter_empty_lines(lines);
     lines = merge_lines(lines);
 
+    wayfire_config_section *current_section = NULL;
     for (auto line : lines)
     {
         if (line[0] == '[')
         {
-            current_section = new wayfire_config_section();
-            current_section->refresh_rate = rr;
-            current_section->name = line.substr(1, line.size() - 2);
-            sections.push_back(current_section);
+            auto name = line.substr(1, line.size() - 2);
+            current_section = get_section(name);
             continue;
         }
 
@@ -157,26 +222,25 @@ wayfire_config::wayfire_config(string name, int rr)
         {
             name = trim(line.substr(0, i));
             value = trim(line.substr(i + 1, line.size() - i - 1));
-            current_section->options[name] = value;
+
+            current_section->update_option(name, value);
         }
     }
 }
 
-wayfire_config_section* wayfire_config::get_section(string name)
+wayfire_config_section* wayfire_config::get_section(const string& name)
 {
-    for (auto section : sections)
-        if (section->name == name)
-            return section;
+    if (sections.count(name))
+        return sections[name];
 
     auto nsect = new wayfire_config_section();
     nsect->name = name;
-    nsect->refresh_rate = refresh_rate;
-    sections.push_back(nsect);
+    sections[name] = nsect;
+
     return nsect;
 }
 
-void wayfire_config::set_refresh_rate(int rr)
+wayfire_config_section* wayfire_config::operator[](const string& name)
 {
-    for (auto section : sections)
-        section->refresh_rate = rr;
+    return get_section(name);
 }
