@@ -92,6 +92,8 @@ struct wf_option_t
 
 using wf_option = std::shared_ptr<wf_option_t>;
 
+wf_option new_static_option(std::string);
+
 class wayfire_config_section
 {
     wf_option get_option(std::string name);

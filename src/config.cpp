@@ -6,8 +6,19 @@
 std::ofstream out;
 
 using std::string;
-/* TODO: add checks to see if values are correct */
 
+bool wf_key::valid()
+{
+    return mod > 0 || keyval > 0;
+}
+
+bool wf_button::valid()
+{
+    return mod > 0 || button > 0;
+}
+
+
+/* TODO: add checks to see if values are correct */
 wf_option_t::wf_option_t(std::string name)
 {
     this->name = name;
@@ -123,6 +134,14 @@ wf_color wf_option_t::as_cached_color()
 
     is_cached = true;
     return cached.color = as_color();
+}
+/* convenience functions */
+wf_option new_static_option(std::string value)
+{
+    auto option = std::make_shared<wf_option_t> (value);
+    option->set_value(value);
+
+    return option;
 }
 
 /* wayfire_config_section implementation */
