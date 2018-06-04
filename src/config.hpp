@@ -38,6 +38,7 @@ struct wf_color
     float r, g, b, a;
 };
 
+using wf_option_callback = std::function<void()>;
 struct wf_option_t
 {
     friend class wayfire_config_section;
@@ -58,7 +59,7 @@ struct wf_option_t
     void set_value(std::string value);
 
     std::string name, raw_value, default_value;
-    std::function<void()> updated;
+    std::vector<wf_option_callback*> updated;
 
     std::string as_string();
     operator std::string();

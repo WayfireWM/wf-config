@@ -29,8 +29,9 @@ void wf_option_t::set_value(string value)
     raw_value = value;
     is_cached = false;
 
-    if (updated)
-        updated();
+    auto to_call = updated;
+    for (auto call : to_call)
+        (*call)();
 }
 
 string wf_option_t::as_string()
