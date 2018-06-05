@@ -1,3 +1,6 @@
+#ifndef ANIMATION_HPP
+#define ANIMATION_HPP
+
 #include "config.hpp"
 #include <chrono>
 
@@ -39,3 +42,5 @@ struct wf_duration
 
         bool running();
 };
+
+#endif /* end of include guard: ANIMATION_HPP */
