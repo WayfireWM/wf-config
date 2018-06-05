@@ -42,6 +42,7 @@ using wf_option_callback = std::function<void()>;
 struct wf_option_t
 {
     friend class wayfire_config_section;
+    friend class wayfire_config;
     private:
         union
         {
@@ -53,10 +54,11 @@ struct wf_option_t
         } cached;
 
         bool is_cached = false;
+        int64_t age;
     public:
 
     wf_option_t(std::string name);
-    void set_value(std::string value);
+    void set_value(std::string value, int64_t age = -1);
 
     std::string name, raw_value, default_value;
     std::vector<wf_option_callback*> updated;
@@ -103,7 +105,7 @@ class wayfire_config_section
         std::string name;
 
         std::map<std::string, wf_option> options;
-        void update_option(std::string name, std::string value);
+        void update_option(std::string name, std::string value, int64_t age);
         wf_option get_option(std::string name, std::string default_value);
 };
 
@@ -112,6 +114,9 @@ class wayfire_config
     std::string fname;
     std::map<std::string, wayfire_config_section*> sections;
     int watch_id;
+
+    /* number of reloads since start */
+    int64_t reload_age = 0;
 
     public:
 

@@ -17,21 +17,28 @@ bool wf_button::valid()
     return mod > 0 || button > 0;
 }
 
-
 /* TODO: add checks to see if values are correct */
 wf_option_t::wf_option_t(std::string name)
 {
     this->name = name;
 }
 
-void wf_option_t::set_value(string value)
+void wf_option_t::set_value(string value, int64_t age)
 {
-    raw_value = value;
-    is_cached = false;
+    if (age == -1)
+        age = this->age;
 
-    auto to_call = updated;
-    for (auto call : to_call)
-        (*call)();
+    this->age = age;
+
+    if (raw_value != value)
+    {
+        raw_value = value;
+        is_cached = false;
+
+        auto to_call = updated;
+        for (auto call : to_call)
+            (*call)();
+    }
 }
 
 string wf_option_t::as_string()
@@ -147,10 +154,10 @@ wf_option new_static_option(std::string value)
 
 /* wayfire_config_section implementation */
 
-void wayfire_config_section::update_option(string name, string value)
+void wayfire_config_section::update_option(string name, string value, int64_t age)
 {
     auto option = get_option(name);
-    option->set_value(value);
+    option->set_value(value, age);
 }
 
 wf_option wayfire_config_section::get_option(string name)
@@ -248,10 +255,7 @@ wayfire_config::wayfire_config(string name)
 
 void wayfire_config::reload_config()
 {
-    /* reset all options to empty, meaning default values */
-    for (auto& section : sections)
-        for (auto option : section.second->options)
-            section.second->update_option(option.first, "");
+    ++reload_age;
 
     auto lines = read_lines(fname);
     prune_comments(lines);
@@ -278,7 +282,16 @@ void wayfire_config::reload_config()
             name = trim(line.substr(0, i));
             value = trim(line.substr(i + 1, line.size() - i - 1));
 
-            current_section->update_option(name, value);
+            current_section->update_option(name, value, reload_age);
+        }
+    }
+    /* reset all options to empty, meaning default values */
+    for (auto& section : sections)
+    {
+        for (auto option : section.second->options)
+        {
+            if (option.second->age < reload_age)
+                section.second->update_option(option.first, "", reload_age);
         }
     }
 }
