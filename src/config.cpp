@@ -296,6 +296,30 @@ void wayfire_config::reload_config()
     }
 }
 
+void wayfire_config::save_config()
+{
+    save_config(fname);
+}
+
+void wayfire_config::save_config(std::string file)
+{
+    auto fout = std::ofstream(file, std::ios::trunc);
+
+    for (auto section : sections)
+    {
+        fout << "[" << section.first << "]\n";
+        for (auto opt_pair : section.second->options)
+        {
+            auto& opt = opt_pair.second;
+
+            if (opt->is_from_file || opt->raw_value != opt->default_value)
+                fout << opt->name << " = " << opt->raw_value << "\n";
+        }
+
+        fout << std::endl;
+    }
+}
+
 wayfire_config_section* wayfire_config::get_section(const string& name)
 {
     if (sections.count(name))

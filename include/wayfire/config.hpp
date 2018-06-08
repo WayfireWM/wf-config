@@ -54,6 +54,7 @@ struct wf_option_t
         } cached;
 
         bool is_cached = false;
+        bool is_from_file = false;
         int64_t age;
     public:
 
@@ -112,7 +113,6 @@ class wayfire_config_section
 class wayfire_config
 {
     std::string fname;
-    std::map<std::string, wayfire_config_section*> sections;
     int watch_id;
 
     /* number of reloads since start */
@@ -120,9 +120,12 @@ class wayfire_config
 
     public:
 
+    std::map<std::string, wayfire_config_section*> sections;
     wayfire_config(std::string file);
 
     void reload_config();
+    void save_config();
+    void save_config(std::string file);
 
     wayfire_config_section* get_section (const std::string& name);
     wayfire_config_section* operator [] (const std::string& name);
