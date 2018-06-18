@@ -162,11 +162,15 @@ void wayfire_config_section::update_option(string name, string value, int64_t ag
 
 wf_option wayfire_config_section::get_option(string name)
 {
-    if (options.count(name))
-        return options[name];
+    for (auto opt : options)
+    {
+        if (opt->name == name)
+            return opt;
+    }
 
-    auto ptr = options[name] = std::make_shared<wf_option_t> (name);
-    return ptr;
+    auto opt = std::make_shared<wf_option_t> (name);
+    options.push_back(opt);
+    return opt;
 }
 
 wf_option wayfire_config_section::get_option(string name, string default_value)
@@ -288,10 +292,10 @@ void wayfire_config::reload_config()
     /* reset all options to empty, meaning default values */
     for (auto& section : sections)
     {
-        for (auto option : section.second->options)
+        for (auto option : section->options)
         {
-            if (option.second->age < reload_age)
-                section.second->update_option(option.first, "", reload_age);
+            if (option->age < reload_age)
+                section->update_option(option->name, "", reload_age);
         }
     }
 }
@@ -307,11 +311,9 @@ void wayfire_config::save_config(std::string file)
 
     for (auto section : sections)
     {
-        fout << "[" << section.first << "]\n";
-        for (auto opt_pair : section.second->options)
+        fout << "[" << section->name << "]\n";
+        for (auto opt : section->options)
         {
-            auto& opt = opt_pair.second;
-
             /* there is no reason to save default values and empty values are
              * ignored when reading anyway */
             if (opt->is_from_file || opt->raw_value != opt->default_value
@@ -325,13 +327,16 @@ void wayfire_config::save_config(std::string file)
 
 wayfire_config_section* wayfire_config::get_section(const string& name)
 {
-    if (sections.count(name))
-        return sections[name];
+    for (auto section : sections)
+    {
+        if (section->name == name)
+            return section;
+    }
+
 
     auto nsect = new wayfire_config_section();
     nsect->name = name;
-    sections[name] = nsect;
-
+    sections.push_back(nsect);
     return nsect;
 }
 

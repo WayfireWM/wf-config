@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <string>
-#include <map>
 #include <functional>
 #include <memory>
 
@@ -105,7 +104,7 @@ class wayfire_config_section
     public:
         std::string name;
 
-        std::map<std::string, wf_option> options;
+        std::vector<wf_option> options;
         void update_option(std::string name, std::string value, int64_t age);
         wf_option get_option(std::string name, std::string default_value);
 };
@@ -120,7 +119,7 @@ class wayfire_config
 
     public:
 
-    std::map<std::string, wayfire_config_section*> sections;
+    std::vector<wayfire_config_section*> sections;
     wayfire_config(std::string file);
 
     void reload_config();
