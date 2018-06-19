@@ -41,6 +41,31 @@ void wf_option_t::set_value(string value, int64_t age)
     }
 }
 
+void wf_option_t::set_value(int value, int64_t age)
+{
+    set_value(std::to_string(value), age);
+}
+
+void wf_option_t::set_value(double value, int64_t age)
+{
+    set_value(std::to_string(value), age);
+}
+
+void wf_option_t::set_value(const wf_key& value, int64_t age)
+{
+    set_value(to_string(value), age);
+}
+
+void wf_option_t::set_value(const wf_button& value, int64_t age)
+{
+    set_value(to_string(value), age);
+}
+
+void wf_option_t::set_value(const wf_color& value, int64_t age)
+{
+    set_value(to_string(value), age);
+}
+
 string wf_option_t::as_string()
 {
     return (raw_value.empty() || raw_value == "default") ?

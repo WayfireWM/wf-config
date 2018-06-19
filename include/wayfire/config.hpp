@@ -58,7 +58,14 @@ struct wf_option_t
     public:
 
     wf_option_t(std::string name);
+
+    void set_value(int value,         int64_t age = -1);
+    void set_value(double value,      int64_t age = -1);
     void set_value(std::string value, int64_t age = -1);
+
+    void set_value(const wf_key& key,       int64_t age = -1);
+    void set_value(const wf_color& color,   int64_t age = -1);
+    void set_value(const wf_button& button, int64_t age = -1);
 
     std::string name, raw_value, default_value;
     std::vector<wf_option_callback*> updated;

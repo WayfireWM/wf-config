@@ -73,14 +73,9 @@ wf_button parse_button(std::string value)
     ans.mod = extract_modifiers(tokens);
     auto button = tokens.back();
 
-    /* TODO: support more buttons? possibly switch to evdev-based reading */
-    if (button == "left")
-        ans.button = BTN_LEFT;
-    else if (button == "right")
-        ans.button = BTN_RIGHT;
-    else if (button == "middle")
-        ans.button = BTN_MIDDLE;
-    else
+    ans.button = libevdev_event_code_from_name(EV_KEY, tokens.back().c_str());
+
+    if (ans.button == (uint32_t)-1)
         ans.button = 0;
 
     return ans;
@@ -93,4 +88,37 @@ wf_color parse_color(std::string value)
     ss >> ans.r >> ans.g >> ans.b >> ans.a;
 
     return ans;
+}
+
+std::string mods_to_string(uint32_t mods)
+{
+    std::string result;
+    if (mods & WF_MODIFIER_ALT)
+        result += "<alt> ";
+    if (mods & WF_MODIFIER_CTRL)
+        result += "<ctrl> ";
+    if (mods & WF_MODIFIER_LOGO)
+        result += "<super> ";
+    if (mods & WF_MODIFIER_SHIFT)
+        result += "<shift> ";
+
+    return result;
+}
+
+std::string to_string(const wf_key& key)
+{
+    return mods_to_string(key.mod) +
+        libevdev_event_code_get_name(EV_KEY, key.keyval);
+}
+
+std::string to_string(const wf_color& color)
+{
+    return std::to_string(color.r) + " " + std::to_string(color.g) + " "
+        + std::to_string(color.b) + " " + std::to_string(color.a);
+}
+
+std::string to_string(const wf_button& button)
+{
+    return mods_to_string(button.mod) +
+        libevdev_event_code_get_name(EV_KEY, button.button);
 }
