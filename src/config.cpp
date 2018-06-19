@@ -6,6 +6,17 @@
 std::ofstream out;
 
 using std::string;
+static string trim(const string& x)
+{
+    int i = 0, j = x.length() - 1;
+    while(i < (int)x.length() && std::iswspace(x[i])) ++i;
+    while(j >= 0 && std::iswspace(x[j])) --j;
+
+    if (i <= j)
+        return x.substr(i, j - i + 1);
+    else
+        return "";
+}
 
 bool wf_key::valid()
 {
@@ -29,6 +40,7 @@ void wf_option_t::set_value(string value, int64_t age)
         age = this->age;
 
     this->age = age;
+    value = trim(value);
 
     if (raw_value != value)
     {
@@ -207,17 +219,7 @@ wf_option wayfire_config_section::get_option(string name, string default_value)
 }
 
 /* wayfire_config implementation */
-static string trim(const string& x)
-{
-    int i = 0, j = x.length() - 1;
-    while(i < (int)x.length() && std::iswspace(x[i])) ++i;
-    while(j >= 0 && std::iswspace(x[j])) --j;
 
-    if (i <= j)
-        return x.substr(i, j - i + 1);
-    else
-        return "";
-}
 
 using lines_t = std::vector<string>;
 static void prune_comments(lines_t& file)
