@@ -343,8 +343,8 @@ void wayfire_config::save_config(std::string file)
         {
             /* there is no reason to save default values and empty values are
              * ignored when reading anyway */
-            if (opt->is_from_file || opt->raw_value != opt->default_value
-                || opt->raw_value.empty())
+            if ((opt->is_from_file || opt->raw_value != opt->default_value)
+                && !opt->raw_value.empty())
                 fout << opt->name << " = " << opt->raw_value << "\n";
         }
 
