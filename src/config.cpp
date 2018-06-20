@@ -1,4 +1,5 @@
-#include <sys/inotify.h>
+#include <sys/file.h>
+#include <unistd.h>
 #include "parse.hpp"
 #include <sstream>
 #include <fstream>
@@ -292,7 +293,18 @@ void wayfire_config::reload_config()
 {
     ++reload_age;
 
+    auto fd = open(fname.c_str(), O_RDONLY);
+
+    if (flock(fd, LOCK_SH | LOCK_NB))
+    {
+        close(fd);
+        return;
+    }
+
     auto lines = read_lines(fname);
+    flock(fd, LOCK_UN);
+    close(fd);
+
     prune_comments(lines);
     lines = filter_empty_lines(lines);
     lines = merge_lines(lines);
@@ -338,6 +350,9 @@ void wayfire_config::save_config()
 
 void wayfire_config::save_config(std::string file)
 {
+    auto fd = open(file.c_str(), O_RDONLY);
+    flock(fd, LOCK_EX);
+
     auto fout = std::ofstream(file, std::ios::trunc);
 
     for (auto section : sections)
@@ -354,6 +369,10 @@ void wayfire_config::save_config(std::string file)
 
         fout << std::endl;
     }
+
+    flock(fd, LOCK_UN);
+    close(fd);
+    fout << std::endl;
 }
 
 wayfire_config_section* wayfire_config::get_section(const string& name)
