@@ -60,7 +60,10 @@ void wf_option_t::set_value(int value, int64_t age)
 
 void wf_option_t::set_value(double value, int64_t age)
 {
-    set_value(std::to_string(value), age);
+    auto old = std::locale::global(std::locale::classic());
+    auto conv = std::to_string(value);
+    std::locale::global(old);
+    set_value(conv, age);
 }
 
 void wf_option_t::set_value(const wf_key& value, int64_t age)
