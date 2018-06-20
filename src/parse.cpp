@@ -113,7 +113,7 @@ std::string to_string(const wf_key& key)
 
 std::string to_string(const wf_color& color)
 {
-    auto old = std::locale::global(std::locale::classic());
+    auto old = std::locale::global(std::locale("C"));
 
     auto conv = std::to_string(color.r) + " " + std::to_string(color.g) + " "
               + std::to_string(color.b) + " " + std::to_string(color.a);
