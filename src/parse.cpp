@@ -11,7 +11,10 @@ int parse_int(std::string value)
 
 double parse_double(std::string value)
 {
-    return std::atof(value.c_str());
+    auto old = std::locale::global(std::locale("C"));
+    auto val = std::atof(value.c_str());
+    std::locale::global(old);
+    return val;
 }
 
 uint32_t extract_modifiers(std::vector<std::string> tokens)
@@ -85,7 +88,11 @@ wf_color parse_color(std::string value)
 {
     wf_color ans = {0, 0, 0, 0};
     std::stringstream ss(value);
+
+    auto old = std::locale::global(std::locale("C"));
     ss >> ans.r >> ans.g >> ans.b >> ans.a;
+    std::locale::global(old);
+
 
     return ans;
 }
