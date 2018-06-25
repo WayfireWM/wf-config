@@ -3,8 +3,9 @@
 
 namespace wf_animation
 {
-    smooth_function linear = [] (double x) -> double { return x; };
-    smooth_function circle = [] (double x) -> double { return std::sqrt(2 * x - x * x); };
+    smooth_function linear  = [] (double x) -> double { return x; };
+    smooth_function circle  = [] (double x) -> double { return std::sqrt(2 * x - x * x); };
+    smooth_function sigmoid = [] (double x) -> double { return 1.0 / (1 + exp(-12 * x + 6)); };
 };
 
 wf_duration::wf_duration(wf_option dur, wf_animation::smooth_function smooth)
@@ -52,5 +53,5 @@ double wf_duration::progress(const wf_transition& transition)
 
 bool wf_duration::running()
 {
-    return progress_percentage() <= 0.99;
+    return progress_percentage() <= 0.995;
 }

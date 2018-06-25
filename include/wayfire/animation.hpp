@@ -11,7 +11,7 @@ namespace wf_animation
     using smooth_function = std::function<double(double)>;
 
     /* TODO: maybe add sine, bounce and others? */
-    extern smooth_function linear, circle;
+    extern smooth_function linear, circle, sigmoid;
 }
 
 struct wf_transition
