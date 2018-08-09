@@ -68,7 +68,10 @@ struct wf_option_t
     void set_value(const wf_button& button, int64_t age = -1);
 
     std::string name, raw_value, default_value;
+
     std::vector<wf_option_callback*> updated;
+    void add_updated_handler(wf_option_callback* callback);
+    void rem_updated_handler(wf_option_callback* callback);
 
     std::string as_string();
     operator std::string();

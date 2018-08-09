@@ -3,6 +3,7 @@
 #include "parse.hpp"
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 
 std::ofstream out;
 
@@ -81,6 +82,17 @@ void wf_option_t::set_value(const wf_button& value, int64_t age)
 void wf_option_t::set_value(const wf_color& value, int64_t age)
 {
     set_value(to_string(value), age);
+}
+
+void wf_option_t::add_updated_handler(wf_option_callback *call)
+{
+    updated.push_back(call);
+}
+
+void wf_option_t::rem_updated_handler(wf_option_callback *call)
+{
+    auto it = std::remove(updated.begin(), updated.end(), call);
+    updated.erase(it, updated.end());
 }
 
 string wf_option_t::as_string()
