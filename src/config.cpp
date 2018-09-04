@@ -211,6 +211,11 @@ wf_option new_static_option(std::string value)
 void wayfire_config_section::update_option(string name, string value, int64_t age)
 {
     auto option = get_option(name);
+
+    // move to the back, this way we update the order from the config file
+    options.erase(std::find(options.begin(), options.end(), option));
+    options.push_back(option);
+
     option->set_value(value, age);
 }
 
