@@ -30,7 +30,7 @@ double wf_duration::progress_percentage()
     auto now = system_clock::now();
     auto duration = duration_cast<milliseconds> (now - begin);
 
-    double p = 1. * duration.count() / msec;
+    double p = msec > 0 ? (1. * duration.count() / msec) : 1.0;
     return smooth_function(std::min(p, 1.0));
 }
 
