@@ -32,6 +32,28 @@ struct wf_button
     bool valid();
 };
 
+enum wf_gesture_type
+{
+    GESTURE_NONE,
+    GESTURE_SWIPE,
+    GESTURE_EDGE_SWIPE,
+    GESTURE_PINCH
+};
+
+#define GESTURE_DIRECTION_LEFT (1 << 0)
+#define GESTURE_DIRECTION_RIGHT (1 << 1)
+#define GESTURE_DIRECTION_UP (1 << 2)
+#define GESTURE_DIRECTION_DOWN (1 << 3)
+#define GESTURE_DIRECTION_IN (1 << 4)
+#define GESTURE_DIRECTION_OUT (1 << 5)
+
+struct wf_touch_gesture
+{
+    wf_gesture_type type;
+    uint32_t direction;
+    int finger_count;
+};
+
 struct wf_color
 {
     float r, g, b, a;
@@ -49,6 +71,7 @@ struct wf_option_t
             double d;
             wf_key key;
             wf_button button;
+            wf_touch_gesture gesture;
             wf_color color;
         } cached;
 
@@ -66,6 +89,7 @@ struct wf_option_t
     void set_value(const wf_key& key,       int64_t age = -1);
     void set_value(const wf_color& color,   int64_t age = -1);
     void set_value(const wf_button& button, int64_t age = -1);
+    void set_value(const wf_touch_gesture& gesture, int64_t age = -1);
 
     std::string name, raw_value, default_value;
 
@@ -88,6 +112,9 @@ struct wf_option_t
     wf_button as_button();
     operator wf_button();
 
+    wf_touch_gesture as_gesture();
+    operator wf_touch_gesture();
+
     wf_color  as_color();
     operator wf_color();
 
@@ -101,6 +128,7 @@ struct wf_option_t
     wf_key    as_cached_key();
     wf_button as_cached_button();
     wf_color  as_cached_color();
+    wf_touch_gesture as_cached_gesture();
 };
 
 using wf_option = std::shared_ptr<wf_option_t>;

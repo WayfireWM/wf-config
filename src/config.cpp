@@ -84,6 +84,11 @@ void wf_option_t::set_value(const wf_color& value, int64_t age)
     set_value(to_string(value), age);
 }
 
+void wf_option_t::set_value(const wf_touch_gesture& value, int64_t age)
+{
+    set_value(to_string(value), age);
+}
+
 void wf_option_t::add_updated_handler(wf_option_callback *call)
 {
     updated.push_back(call);
@@ -141,6 +146,11 @@ wf_button wf_option_t::as_button()
     return parse_button(as_string());
 }
 
+wf_touch_gesture wf_option_t::as_gesture()
+{
+    return parse_gesture(as_string());
+}
+
 wf_option_t::operator wf_button()
 {
     return as_button();
@@ -187,6 +197,15 @@ wf_button wf_option_t::as_cached_button()
 
     is_cached = true;
     return cached.button = as_button();
+}
+
+wf_touch_gesture wf_option_t::as_cached_gesture()
+{
+    if (is_cached)
+        return cached.gesture;
+
+    is_cached = true;
+    return cached.gesture = as_gesture();
 }
 
 wf_color wf_option_t::as_cached_color()
