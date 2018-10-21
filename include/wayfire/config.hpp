@@ -16,6 +16,7 @@ enum wf_modifier
 	WF_MODIFIER_LOGO = 64,
 };
 
+/* Represents a keybinding */
 struct wf_key
 {
     uint32_t mod;
@@ -24,6 +25,7 @@ struct wf_key
     bool valid();
 };
 
+/* Represents a buttonbinding */
 struct wf_button
 {
     uint32_t mod;
@@ -47,6 +49,7 @@ enum wf_gesture_type
 #define GESTURE_DIRECTION_IN (1 << 4)
 #define GESTURE_DIRECTION_OUT (1 << 5)
 
+/* Represents a gesture binding */
 struct wf_touch_gesture
 {
     wf_gesture_type type;
@@ -74,6 +77,12 @@ struct wf_option_t
             wf_touch_gesture gesture;
             wf_color color;
         } cached;
+
+        /* Because libevdev treats buttons and keys the same, we can use
+         * the wf_key structure for buttons as well */
+        std::vector<wf_key> activator_keys;
+        std::vector<wf_touch_gesture> activator_gestures;
+        void reinitialize_activators();
 
         bool is_cached = false;
         bool is_from_file = false;
@@ -129,6 +138,12 @@ struct wf_option_t
     wf_button as_cached_button();
     wf_color  as_cached_color();
     wf_touch_gesture as_cached_gesture();
+
+    /* Activator functions. Again, as for other cached properties, use only as
+     * an activator */
+    bool matches_key(const wf_key& key);
+    bool matches_button(const wf_button& button);
+    bool matches_gesture(const wf_touch_gesture& gesture);
 };
 
 using wf_option = std::shared_ptr<wf_option_t>;

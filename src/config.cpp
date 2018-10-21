@@ -22,7 +22,7 @@ static string trim(const string& x)
 
 bool wf_key::valid()
 {
-    return mod > 0 || keyval > 0;
+    return mod > 0;
 }
 
 bool wf_button::valid()
@@ -216,6 +216,95 @@ wf_color wf_option_t::as_cached_color()
     is_cached = true;
     return cached.color = as_color();
 }
+
+static std::vector<std::string> tokenize_delim(std::string value, char delim = '|')
+{
+    std::vector<std::string> tokens;
+
+    size_t sep = 0;
+    while ((sep = value.find_first_of(delim, sep)) != std::string::npos)
+    {
+        tokens.push_back(trim(value.substr(0, sep)));
+        value.erase(0, sep + 1);
+    }
+
+    // push the last token
+    auto last = trim(value);
+    if (last.length())
+        tokens.push_back(last);
+
+    return tokens;
+}
+
+void wf_option_t::reinitialize_activators()
+{
+    auto tokens = tokenize_delim(raw_value);
+
+    for (auto& token : tokens)
+    {
+        auto gesture = parse_gesture(token);
+        if (gesture.type != GESTURE_NONE)
+        {
+            activator_gestures.push_back(gesture);
+            continue;
+        }
+
+        auto key = parse_key(token);
+        if (key.valid())
+            activator_keys.push_back(key);
+    }
+
+    is_cached = true;
+}
+
+
+bool wf_option_t::matches_key(const wf_key& key)
+{
+    if (!is_cached)
+        reinitialize_activators();
+
+    for (auto& actkey : activator_keys)
+    {
+        if (actkey.keyval == key.keyval && actkey.mod == key.mod)
+            return true;
+    }
+
+    return false;
+}
+
+bool wf_option_t::matches_button(const wf_button& button)
+{
+    if (!is_cached)
+        reinitialize_activators();
+
+    for (auto& actbutton : activator_keys)
+    {
+        if (actbutton.keyval == button.button && actbutton.mod == button.mod)
+            return true;
+    }
+
+    return false;
+}
+
+bool wf_option_t::matches_gesture(const wf_touch_gesture& gesture)
+{
+    if (!is_cached)
+        reinitialize_activators();
+
+    for (auto& activator : activator_gestures)
+    {
+        if (gesture.finger_count == activator.finger_count &&
+            (gesture.direction == activator.direction ||
+                activator.direction == 0) &&
+            gesture.type == activator.type)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /* convenience functions */
 wf_option new_static_option(std::string value)
 {
