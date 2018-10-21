@@ -101,7 +101,7 @@ uint32_t parse_single_direction(std::string direction)
             return kv.first;
     }
 
-    throw new std::domain_error("invalid swipe direction");
+    throw std::domain_error("invalid swipe direction");
 }
 
 uint32_t parse_direction(std::string direction)
@@ -128,29 +128,34 @@ wf_touch_gesture parse_gesture(std::string value)
     auto tokens = tokenize(value);
     assert(!tokens.empty());
 
-    wf_touch_gesture gesture;
-    if (tokens[0] == "pinch")
+    try {
+        wf_touch_gesture gesture;
+        if (tokens[0] == "pinch")
+        {
+            // we allow for garbage afterwards, same for other gestures
+            assert(tokens.size() >= 3);
+
+            gesture.type = GESTURE_PINCH;
+            gesture.direction = (tokens[1] == "in" ?
+                GESTURE_DIRECTION_IN : GESTURE_DIRECTION_OUT);
+            gesture.finger_count = parse_int(tokens[2]);
+
+            return gesture;
+        }
+        else if (tokens[0] == "swipe" || tokens[0] == "edge-swipe")
+        {
+            assert(tokens.size() >= 3);
+
+            gesture.type = (tokens[0] == "swipe" ?
+                GESTURE_SWIPE : GESTURE_EDGE_SWIPE);
+            gesture.direction = parse_direction(tokens[1]);
+            gesture.finger_count = parse_int(tokens[2]);
+
+            return gesture;
+        }
+    } catch (...)
     {
-        // we allow for garbage afterwards, same for other gestures
-        assert(tokens.size() >= 3);
-
-        gesture.type = GESTURE_PINCH;
-        gesture.direction = (tokens[1] == "in" ?
-            GESTURE_DIRECTION_IN : GESTURE_DIRECTION_OUT);
-        gesture.finger_count = parse_int(tokens[2]);
-
-        return gesture;
-    }
-    else if (tokens[0] == "swipe" || tokens[0] == "edge-swipe")
-    {
-        assert(tokens.size() >= 3);
-
-        gesture.type = (tokens[0] == "swipe" ?
-            GESTURE_SWIPE : GESTURE_EDGE_SWIPE);
-        gesture.direction = parse_direction(tokens[1]);
-        gesture.finger_count = parse_int(tokens[2]);
-
-        return gesture;
+        // ignore it, will return GESTURE_NONE
     }
 
     return {GESTURE_NONE, 0, 0};

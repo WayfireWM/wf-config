@@ -22,7 +22,8 @@ static string trim(const string& x)
 
 bool wf_key::valid() const
 {
-    return mod > 0;
+    // a key can be used as a modifier as well, so it is valid under all circumstances
+    return true;
 }
 
 bool wf_key::matches(const wf_key& other) const
