@@ -22,7 +22,8 @@ struct wf_key
     uint32_t mod;
     uint32_t keyval;
 
-    bool valid();
+    bool valid() const;
+    bool matches(const wf_key& other) const;
 };
 
 /* Represents a buttonbinding */
@@ -31,7 +32,8 @@ struct wf_button
     uint32_t mod;
     uint32_t button;
 
-    bool valid();
+    bool valid() const;
+    bool matches(const wf_button& other) const;
 };
 
 enum wf_gesture_type
@@ -55,6 +57,9 @@ struct wf_touch_gesture
     wf_gesture_type type;
     uint32_t direction;
     int finger_count;
+
+    bool valid() const;
+    bool matches(const wf_touch_gesture& other) const;
 };
 
 struct wf_color

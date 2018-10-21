@@ -20,14 +20,36 @@ static string trim(const string& x)
         return "";
 }
 
-bool wf_key::valid()
+bool wf_key::valid() const
 {
     return mod > 0;
 }
 
-bool wf_button::valid()
+bool wf_key::matches(const wf_key& other) const
 {
-    return mod > 0 || button > 0;
+    return keyval == other.keyval && mod == other.mod;
+}
+
+bool wf_button::valid() const
+{
+    return button > 0;
+}
+
+bool wf_button::matches(const wf_button& other) const
+{
+    return button == other.button && mod == other.mod;
+}
+
+bool wf_touch_gesture::valid() const
+{
+    return type != GESTURE_NONE;
+}
+
+bool wf_touch_gesture::matches(const wf_touch_gesture& other) const
+{
+    return type == other.type &&
+        finger_count == other.finger_count &&
+        (direction == 0 || direction == other.direction);
 }
 
 /* TODO: add checks to see if values are correct */
@@ -243,7 +265,7 @@ void wf_option_t::reinitialize_activators()
     for (auto& token : tokens)
     {
         auto gesture = parse_gesture(token);
-        if (gesture.type != GESTURE_NONE)
+        if (gesture.valid())
         {
             activator_gestures.push_back(gesture);
             continue;
@@ -265,7 +287,7 @@ bool wf_option_t::matches_key(const wf_key& key)
 
     for (auto& actkey : activator_keys)
     {
-        if (actkey.keyval == key.keyval && actkey.mod == key.mod)
+        if (actkey.matches(key))
             return true;
     }
 
@@ -279,7 +301,7 @@ bool wf_option_t::matches_button(const wf_button& button)
 
     for (auto& actbutton : activator_keys)
     {
-        if (actbutton.keyval == button.button && actbutton.mod == button.mod)
+        if (actbutton.matches({button.mod, button.button}))
             return true;
     }
 
@@ -293,13 +315,8 @@ bool wf_option_t::matches_gesture(const wf_touch_gesture& gesture)
 
     for (auto& activator : activator_gestures)
     {
-        if (gesture.finger_count == activator.finger_count &&
-            (gesture.direction == activator.direction ||
-                activator.direction == 0) &&
-            gesture.type == activator.type)
-        {
+        if (activator.matches(gesture))
             return true;
-        }
     }
 
     return false;
