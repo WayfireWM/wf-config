@@ -261,8 +261,10 @@ static std::vector<std::string> tokenize_delim(std::string value, char delim = '
 
 void wf_option_t::reinitialize_activators()
 {
-    auto tokens = tokenize_delim(raw_value);
+    activator_keys.clear();
+    activator_gestures.clear();
 
+    auto tokens = tokenize_delim(as_string());
     for (auto& token : tokens)
     {
         auto gesture = parse_gesture(token);
