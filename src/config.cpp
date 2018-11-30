@@ -477,15 +477,23 @@ void wayfire_config::reload_config()
             current_section->update_option(name, value, reload_age);
         }
     }
-    /* reset all options to empty, meaning default values */
+    /* reset all options to empty, meaning default values
+     * We first generate a list of options, because handlers might
+     * request some option which isn't in the list yet, which will modify the
+     * option list which we iterate on, causing bugs */
+    std::vector<std::pair<wayfire_config_section*, wf_option>>
+        options_to_update;
     for (auto& section : sections)
     {
         for (auto option : section->options)
         {
             if (option->age < reload_age)
-                section->update_option(option->name, "", reload_age);
+                options_to_update.push_back({section, option});
         }
     }
+
+    for (auto& p : options_to_update)
+        p.first->update_option(p.second->name, "", reload_age);
 }
 
 void wayfire_config::save_config()
