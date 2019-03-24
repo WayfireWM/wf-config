@@ -371,16 +371,29 @@ wf_option wayfire_config_section::get_option(string name, string default_value)
 
 /* wayfire_config implementation */
 
+/* Truncate lines on the first # character, which isn't escaped with a \ */
+static string fold_line(string line)
+{
+    size_t i = line.find_first_of('#');
+    if (i == string::npos)
+        return line;
+
+    if (i == 0 || line[i - 1] != '\\')
+    {
+        line = line.substr(0, i);
+    } else if (i != 0)
+    {
+        line = line.substr(0, i - 1) + "#" + fold_line(line.substr(i + 1));
+    }
+
+    return line;
+}
 
 using lines_t = std::vector<string>;
 static void prune_comments(lines_t& file)
 {
     for (auto& line : file)
-    {
-        size_t i = line.find_first_of('#');
-        if (i != string::npos)
-            line = line.substr(0, i);
-    }
+        line = fold_line(line);
 }
 
 static lines_t filter_empty_lines(const lines_t& file)
