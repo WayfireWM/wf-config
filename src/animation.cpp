@@ -25,7 +25,7 @@ void wf_duration::start(double x, double y)
     end_value = y;
 }
 
-double wf_duration::progress_percentage()
+double wf_duration::progress_percentage() const
 {
     using namespace std::chrono;
     auto now = system_clock::now();
@@ -40,19 +40,19 @@ double wf_duration::progress_percentage()
     return smoothed;
 }
 
-double wf_duration::progress()
+double wf_duration::progress() const
 {
     auto p = progress_percentage();
     return start_value * (1 - p) + end_value * p;
 }
 
-double wf_duration::progress(double x, double y)
+double wf_duration::progress(double x, double y) const
 {
     auto p = progress_percentage();
     return x * (1 - p) + y * p;
 }
 
-double wf_duration::progress(const wf_transition& transition)
+double wf_duration::progress(const wf_transition& transition) const
 {
     return progress(transition.start, transition.end);
 }

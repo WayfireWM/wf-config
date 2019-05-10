@@ -48,14 +48,14 @@ struct wf_duration
         void start(double x = 0, double y = 0);
 
         /* Returns how much of the time has elapsed */
-        double progress_percentage();
+        double progress_percentage() const;
 
         /* The function below return the interpolated values of the animation
          * start and end attributes, based on how much time has elapsed since
          * the start of the duration */
-        double progress();
-        double progress(double x, double y);
-        double progress(const wf_transition& transition);
+        double progress() const;
+        double progress(double x, double y) const;
+        double progress(const wf_transition& transition) const;
 
         /* Returns if the animation is still in progress or it has finished */
         bool running();
