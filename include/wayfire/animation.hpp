@@ -37,6 +37,12 @@ struct wf_duration
         wf_duration(wf_option option = nullptr,
                     wf_animation::smooth_function smooth = wf_animation::circle);
 
+        wf_duration(const wf_duration& other) = delete;
+        wf_duration& operator = (const wf_duration& other) = delete;
+
+        wf_duration(wf_duration&& other) = default;
+        wf_duration& operator = (wf_duration&& other) = default;
+
         double start_value, end_value;
         /* Restarts the timer for this duration */
         void start(double x = 0, double y = 0);
