@@ -76,7 +76,6 @@ wf_button parse_button(std::string value)
     wf_button ans = {0, 0};
 
     ans.mod = extract_modifiers(tokens);
-    auto button = tokens.back();
 
     ans.button = libevdev_event_code_from_name(EV_KEY, tokens.back().c_str());
 
