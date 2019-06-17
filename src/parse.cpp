@@ -6,12 +6,12 @@
 #include <iostream>
 #include <map>
 
-int parse_int(std::string value)
+int parse_int(const std::string& value)
 {
     return std::atoi(value.c_str());
 }
 
-double parse_double(std::string value)
+double parse_double(const std::string& value)
 {
     auto old = std::locale::global(std::locale::classic());
     auto val = std::atof(value.c_str());
@@ -19,7 +19,7 @@ double parse_double(std::string value)
     return val;
 }
 
-uint32_t extract_modifiers(std::vector<std::string> tokens)
+uint32_t extract_modifiers(const std::vector<std::string>& tokens)
 {
     uint32_t mods = 0;
     for (auto token : tokens)
@@ -37,7 +37,7 @@ uint32_t extract_modifiers(std::vector<std::string> tokens)
     return mods;
 }
 
-std::vector<std::string> tokenize(std::string value)
+std::vector<std::string> tokenize(const std::string& value)
 {
     std::stringstream ss(value);
 
@@ -50,7 +50,7 @@ std::vector<std::string> tokenize(std::string value)
     return tokens;
 }
 
-wf_key parse_key(std::string value)
+wf_key parse_key(const std::string& value)
 {
     if (value == "none" || value.empty())
         return {0, 0};
@@ -67,7 +67,7 @@ wf_key parse_key(std::string value)
     return ans;
 }
 
-wf_button parse_button(std::string value)
+wf_button parse_button(const std::string& value)
 {
     if (value == "none" || value.empty())
         return {0, 0};
@@ -92,7 +92,7 @@ std::map<uint32_t, std::string> direction_string_map = {
     {GESTURE_DIRECTION_RIGHT, "right"}
 };
 
-uint32_t parse_single_direction(std::string direction)
+uint32_t parse_single_direction(const std::string& direction)
 {
     for (auto& kv : direction_string_map)
     {
@@ -103,7 +103,7 @@ uint32_t parse_single_direction(std::string direction)
     throw std::domain_error("invalid swipe direction");
 }
 
-uint32_t parse_direction(std::string direction)
+uint32_t parse_direction(const std::string& direction)
 {
     size_t hyphen = direction.find("-");
     if (hyphen == std::string::npos)
@@ -119,7 +119,7 @@ uint32_t parse_direction(std::string direction)
     }
 }
 
-wf_touch_gesture parse_gesture(std::string value)
+wf_touch_gesture parse_gesture(const std::string& value)
 {
     if (value == "none" || value.empty())
         return {GESTURE_NONE, 0, 0};
@@ -160,7 +160,7 @@ wf_touch_gesture parse_gesture(std::string value)
     return {GESTURE_NONE, 0, 0};
 }
 
-wf_color parse_color(std::string value)
+wf_color parse_color(const std::string& value)
 {
     wf_color ans = {0, 0, 0, 0};
     std::stringstream ss(value);

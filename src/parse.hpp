@@ -1,13 +1,13 @@
 #include <string>
 #include "config.hpp"
 
-int parse_int(std::string value);
-double parse_double(std::string value);
+int parse_int(const std::string& value);
+double parse_double(const std::string& value);
 
-wf_key parse_key(std::string value);
-wf_button parse_button(std::string value);
-wf_touch_gesture parse_gesture(std::string value);
-wf_color parse_color(std::string value);
+wf_key parse_key(const std::string& value);
+wf_button parse_button(const std::string& value);
+wf_touch_gesture parse_gesture(const std::string& value);
+wf_color parse_color(const std::string& value);
 
 std::string to_string(const wf_key&    key);
 std::string to_string(const wf_color&  color);
