@@ -13,7 +13,7 @@ int parse_int(std::string value)
 
 double parse_double(std::string value)
 {
-    auto old = std::locale::global(std::locale("C"));
+    auto old = std::locale::global(std::locale::classic());
     auto val = std::atof(value.c_str());
     std::locale::global(old);
     return val;
@@ -166,7 +166,7 @@ wf_color parse_color(std::string value)
     wf_color ans = {0, 0, 0, 0};
     std::stringstream ss(value);
 
-    auto old = std::locale::global(std::locale("C"));
+    auto old = std::locale::global(std::locale::classic());
     ss >> ans.r >> ans.g >> ans.b >> ans.a;
     std::locale::global(old);
 
@@ -197,7 +197,7 @@ std::string to_string(const wf_key& key)
 
 std::string to_string(const wf_color& color)
 {
-    auto old = std::locale::global(std::locale("C"));
+    auto old = std::locale::global(std::locale::classic());
 
     auto conv = std::to_string(color.r) + " " + std::to_string(color.g) + " "
               + std::to_string(color.b) + " " + std::to_string(color.a);
