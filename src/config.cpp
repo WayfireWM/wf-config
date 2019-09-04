@@ -515,6 +515,22 @@ void wayfire_config::save_config()
     save_config(fname);
 }
 
+/**
+ * Format the given string by escaping special characters
+ */
+static std::string format_value(std::string value)
+{
+    std::string result;
+    for (char c : value)
+    {
+        if (c == '#' || c == '\\')
+            result += '\\';
+        result += c;
+    }
+
+    return result;
+}
+
 void wayfire_config::save_config(std::string file)
 {
     auto fd = open(file.c_str(), O_RDONLY);
@@ -531,7 +547,9 @@ void wayfire_config::save_config(std::string file)
              * ignored when reading anyway */
             if ((opt->is_from_file || opt->raw_value != opt->default_value)
                 && !opt->raw_value.empty())
-                fout << opt->name << " = " << opt->raw_value << "\n";
+            {
+                fout << opt->name << " = " << format_value(opt->raw_value) << "\n";
+            }
         }
 
         fout << std::endl;
