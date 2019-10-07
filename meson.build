@@ -12,7 +12,7 @@ project(
 )
 
 evdev = dependency('libevdev')
-wlroots = dependency('wlroots', version: '==0.8.0')
+wlroots = dependency('wlroots', version: '>=0.8.0')
 
 sources = [
     'src/config.cpp',
