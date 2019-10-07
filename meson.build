@@ -1,7 +1,7 @@
 project(
 	'wf-config',
 	'cpp',
-	version: '0.1',
+	version: '0.3',
 	license: 'MIT',
 	meson_version: '>=0.43.0',
 	default_options: [
@@ -12,7 +12,7 @@ project(
 )
 
 evdev = dependency('libevdev')
-wlroots = dependency('wlroots')
+wlroots = dependency('wlroots', version: '0.8.0')
 
 sources = [
     'src/config.cpp',
