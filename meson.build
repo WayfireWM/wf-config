@@ -15,7 +15,7 @@ glm = dependency('glm')
 evdev = dependency('libevdev')
 wlroots = dependency('wlroots', version: '>=0.8.0')
 
-sources = [ ]
+sources = [ 'src/types.cpp' ]
 wfconfig_inc = include_directories('include/wayfire')
 
 lib_wfconfig = library('wf-config',
