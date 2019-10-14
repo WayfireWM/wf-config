@@ -11,6 +11,7 @@ project(
 	],
 )
 
+glm = dependency('glm')
 evdev = dependency('libevdev')
 wlroots = dependency('wlroots', version: '>=0.8.0')
 
@@ -19,7 +20,7 @@ wfconfig_inc = include_directories('include/wayfire')
 
 lib_wfconfig = library('wf-config',
     sources,
-    dependencies: [evdev, wlroots],
+    dependencies: [evdev, wlroots, glm],
     include_directories: wfconfig_inc,
     install: true,
     version: meson.project_version())
