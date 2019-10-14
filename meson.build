@@ -37,3 +37,6 @@ install_headers([], subdir: 'wayfire/config')
 
 wfconfig = declare_dependency(link_with: lib_wfconfig,
     include_directories: wfconfig_inc)
+
+# Unit tests
+subdir('test')
