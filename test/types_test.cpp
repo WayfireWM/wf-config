@@ -2,6 +2,7 @@
 #include "doctest.h"
 
 #include <config/types.hpp>
+#include <linux/input-event-codes.h>
 
 #define WF_CONFIG_DOUBLE_EPS 0.01
 static void check_color_equals(const wf::color_t& color,
@@ -29,4 +30,65 @@ TEST_CASE("wf::color_t")
     CHECK(wf::color_t::is_valid("") == false);
     CHECK(wf::color_t::is_valid("#0C1A") == true);
     CHECK(wf::color_t::is_valid("#ZYXUIOPQ") == false);
+}
+
+TEST_CASE("wf::keybinding_t")
+{
+    /* Test simple constructor */
+    const uint32_t modifier1 =
+        wf::KEYBOARD_MODIFIER_ALT |wf::KEYBOARD_MODIFIER_LOGO;
+    wf::keybinding_t binding1{modifier1, KEY_L};
+    CHECK(binding1.get_modifiers() == modifier1);
+    CHECK(binding1.get_key() == KEY_L);
+
+    /* Test parsing */
+    wf::keybinding_t binding2{"<shift><ctrl>KEY_TAB"};
+    uint32_t modifier2 =
+        wf::KEYBOARD_MODIFIER_SHIFT | wf::KEYBOARD_MODIFIER_CTRL;
+    CHECK(binding2.get_modifiers() == modifier2);
+    CHECK(binding2.get_key() == KEY_TAB);
+
+    wf::keybinding_t binding3{"<alt><super>KEY_L"};
+    CHECK(binding3.get_modifiers() == modifier1);
+    CHECK(binding3.get_key() == KEY_L);
+
+    /* Test invalid bindings */
+    wf::keybinding_t binding4{"<invalid>KEY_L"};
+    CHECK(binding4.get_modifiers() == 0);
+    CHECK(binding4.get_key() == 0);
+
+    wf::keybinding_t binding5{"<super> KEY_nonexist"};
+    CHECK(binding5.get_modifiers() == 0);
+    CHECK(binding5.get_key() == 0);
+
+    /* Test equality */
+    CHECK(binding1 == binding3);
+    CHECK(binding4 == binding5);
+    CHECK(!(binding2 == binding1));
+}
+
+TEST_CASE("wf::buttonbinding_t")
+{
+    /* Test simple constructor */
+    wf::buttonbinding_t binding1{wf::KEYBOARD_MODIFIER_ALT, BTN_LEFT};
+    CHECK(binding1.get_modifiers() == wf::KEYBOARD_MODIFIER_ALT);
+    CHECK(binding1.get_button() == BTN_LEFT);
+
+    /* Test parsing */
+    wf::buttonbinding_t binding2{"<ctrl>BTN_EXTRA"};
+    CHECK(binding2.get_modifiers() == wf::KEYBOARD_MODIFIER_CTRL);
+    CHECK(binding2.get_button() == BTN_EXTRA);
+
+    wf::buttonbinding_t binding3{"<alt>BTN_LEFT"};
+    CHECK(binding3.get_modifiers() == wf::KEYBOARD_MODIFIER_ALT);
+    CHECK(binding3.get_button() == BTN_LEFT);
+
+    /* Test invalid bindings */
+    wf::buttonbinding_t binding4{"<super> BTN_inv"};
+    CHECK(binding4.get_modifiers() == 0);
+    CHECK(binding4.get_button() == 0);
+
+    /* Test equality */
+    CHECK(binding1 == binding3);
+    CHECK(!(binding2 == binding1));
 }
