@@ -317,7 +317,6 @@ wf::touchgesture_t parse_gesture(const std::string& value)
         return wf::touchgesture_t{type, direction, finger_count};
     } catch (std::exception& e)
     {
-        std::cout << "error " << e.what() << std::endl;
         // XXX: show error?
         // ignore it, will return GESTURE_NONE
     }

@@ -4,7 +4,6 @@
 
 namespace wf
 {
-
 /**
  * Represents a color in RGBA format.
  */
