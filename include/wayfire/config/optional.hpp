@@ -16,6 +16,11 @@ template<class Type> class optional
 
   public:
     optional() {}
+    optional(const Type& actual_value)
+    {
+        this->value = std::make_unique<Type> (actual_value);
+    }
+
     optional(Type&& actual_value)
     {
         this->value = std::make_unique<Type> (actual_value);
