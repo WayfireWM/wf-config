@@ -92,3 +92,62 @@ TEST_CASE("wf::buttonbinding_t")
     CHECK(binding1 == binding3);
     CHECK(!(binding2 == binding1));
 }
+
+TEST_CASE("wf::touchgesture_t")
+{
+    /* Test simple constructor */
+    wf::touchgesture_t binding1{wf::GESTURE_TYPE_SWIPE,
+        wf::GESTURE_DIRECTION_UP, 3};
+    CHECK(binding1.get_type() == wf::GESTURE_TYPE_SWIPE);
+    CHECK(binding1.get_finger_count() == 3);
+    CHECK(binding1.get_direction() == wf::GESTURE_DIRECTION_UP);
+
+    /* Test parsing */
+    wf::touchgesture_t binding2{"swipe up-left 4"};
+    uint32_t direction2 = wf::GESTURE_DIRECTION_UP | wf::GESTURE_DIRECTION_LEFT;
+    CHECK(binding2.get_type() == wf::GESTURE_TYPE_SWIPE);
+    CHECK(binding2.get_direction() == direction2);
+    CHECK(binding2.get_finger_count() == 4);
+
+    wf::touchgesture_t binding3{"edge-swipe down 2"};
+    CHECK(binding3.get_type() == wf::GESTURE_TYPE_EDGE_SWIPE);
+    CHECK(binding3.get_direction() == wf::GESTURE_DIRECTION_DOWN);
+    CHECK(binding3.get_finger_count() == 2);
+
+    wf::touchgesture_t binding4{"pinch in 3"};
+    CHECK(binding4.get_type() == wf::GESTURE_TYPE_PINCH);
+    CHECK(binding4.get_direction() == wf::GESTURE_DIRECTION_IN);
+    CHECK(binding4.get_finger_count() == 3);
+
+    wf::touchgesture_t binding5{"pinch out 2"};
+    CHECK(binding5.get_type() == wf::GESTURE_TYPE_PINCH);
+    CHECK(binding5.get_direction() == wf::GESTURE_DIRECTION_OUT);
+    CHECK(binding5.get_finger_count() == 2);
+
+    /* A few bad description cases */
+    wf::touchgesture_t binding6{"pinch out"}; // missing fingercount
+    CHECK(binding6.get_type() == wf::GESTURE_TYPE_NONE);
+
+    wf::touchgesture_t binding7{"wrong left 5"}; // no such type
+    CHECK(binding7.get_type() == wf::GESTURE_TYPE_NONE);
+
+    wf::touchgesture_t binding8{"edge-swipe up-down 3"}; // opposite dirs
+    CHECK(binding8.get_type() == wf::GESTURE_TYPE_NONE);
+
+    wf::touchgesture_t binding9{"swipe 3"}; // missing dir
+    CHECK(binding9.get_type() == wf::GESTURE_TYPE_NONE);
+
+    wf::touchgesture_t binding10{"pinch 3"};
+    CHECK(binding10.get_type() == wf::GESTURE_TYPE_NONE);
+
+    /* Equality */
+    CHECK(!(binding1 == wf::touchgesture_t{wf::GESTURE_TYPE_PINCH, 0, 3}));
+    CHECK(binding1 == wf::touchgesture_t{wf::GESTURE_TYPE_SWIPE, 0, 3});
+    CHECK(binding3 == wf::touchgesture_t{
+        wf::GESTURE_TYPE_EDGE_SWIPE, wf::GESTURE_DIRECTION_DOWN, 2});
+    CHECK(binding5 == wf::touchgesture_t{
+        wf::GESTURE_TYPE_PINCH, wf::GESTURE_DIRECTION_OUT, 2});
+    CHECK(binding5 == wf::touchgesture_t{wf::GESTURE_TYPE_PINCH, 0, 2});
+    CHECK(!(binding5 == wf::touchgesture_t{
+        wf::GESTURE_TYPE_PINCH, wf::GESTURE_DIRECTION_IN, 2}));
+}

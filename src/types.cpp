@@ -1,6 +1,7 @@
 #include <config/types.hpp>
 #include <vector>
 #include <map>
+#include <iostream>
 
 #include <libevdev/libevdev.h>
 
@@ -210,4 +211,147 @@ uint32_t wf::buttonbinding_t::get_modifiers() const
 uint32_t wf::buttonbinding_t::get_button() const
 {
     return this->button;
+}
+
+wf::touchgesture_t::touchgesture_t(touch_gesture_type_t type, uint32_t direction,
+        int finger_count)
+{
+    this->type = type;
+    this->direction = direction;
+    this->finger_count = finger_count;
+}
+
+static wf::touch_gesture_direction_t parse_single_direction(
+    const std::string& direction)
+{
+    static const std::map<std::string, wf::touch_gesture_direction_t>
+        direction_string_map =
+        {
+            {"up",    wf::GESTURE_DIRECTION_UP},
+            {"down",  wf::GESTURE_DIRECTION_DOWN},
+            {"left",  wf::GESTURE_DIRECTION_LEFT},
+            {"right", wf::GESTURE_DIRECTION_RIGHT}
+        };
+
+    if (direction_string_map.count(direction))
+        return direction_string_map.at(direction);
+
+    throw std::domain_error("invalid swipe direction");
+}
+
+uint32_t parse_direction(const std::string& direction)
+{
+    size_t hyphen = direction.find("-");
+    if (hyphen == std::string::npos)
+    {
+        return parse_single_direction(direction);
+    } else
+    {
+        /* we support up to 2 directions, because >= 3 will be invalid anyway */
+        auto first = direction.substr(0, hyphen);
+        auto second = direction.substr(hyphen + 1);
+
+        uint32_t mask =
+            parse_single_direction(first) | parse_single_direction(second);
+
+        const uint32_t both_horiz =
+            wf::GESTURE_DIRECTION_LEFT | wf::GESTURE_DIRECTION_RIGHT;
+        const uint32_t both_vert =
+            wf::GESTURE_DIRECTION_UP | wf::GESTURE_DIRECTION_DOWN;
+
+        if (((mask & both_horiz) == both_horiz) ||
+            ((mask & both_vert) == both_vert))
+        {
+            throw std::domain_error("Cannot have two opposing directions in the"
+                "same gesture");
+        }
+
+        return mask;
+    }
+}
+
+wf::touchgesture_t parse_gesture(const std::string& value)
+{
+    if (value == "none" || value.empty())
+        return {wf::GESTURE_TYPE_NONE, 0, 0};
+
+    auto tokens = split_at(value, " \t\v\b\n\r");
+    assert(!tokens.empty());
+
+    if (tokens.size() != 3)
+        return {wf::GESTURE_TYPE_NONE, 0, 0};
+
+    try {
+        wf::touch_gesture_type_t type;
+        uint32_t direction = 0;
+        int32_t finger_count;
+
+        if (tokens[0] == "pinch")
+        {
+            type = wf::GESTURE_TYPE_PINCH;
+            if (tokens[1] == "in") {
+                direction = wf::GESTURE_DIRECTION_IN;
+            } else if (tokens[1] == "out") {
+                direction = wf::GESTURE_DIRECTION_OUT;
+            } else {
+                throw std::domain_error("Invalid pinch direction: " + tokens[1]);
+            }
+        }
+        else if (tokens[0] == "swipe")
+        {
+            type = wf::GESTURE_TYPE_SWIPE;
+            direction = parse_direction(tokens[1]);
+        }
+        else if (tokens[0] == "edge-swipe")
+        {
+            type = wf::GESTURE_TYPE_EDGE_SWIPE;
+            direction = parse_direction(tokens[1]);
+        }
+        else
+        {
+            throw std::domain_error("Invalid gesture type:" + tokens[0]);
+        }
+
+        // TODO: instead of atoi, check properly
+        finger_count = std::atoi(tokens[2].c_str());
+        return wf::touchgesture_t{type, direction, finger_count};
+    } catch (std::exception& e)
+    {
+        std::cout << "error " << e.what() << std::endl;
+        // XXX: show error?
+        // ignore it, will return GESTURE_NONE
+    }
+
+    return wf::touchgesture_t{wf::GESTURE_TYPE_NONE, 0, 0};
+}
+
+wf::touchgesture_t::touchgesture_t(const std::string& description)
+{
+    *this = parse_gesture(description);
+}
+
+bool wf::touchgesture_t::is_valid(const std::string& description)
+{
+    return parse_gesture(description).get_type() != wf::GESTURE_TYPE_NONE;
+}
+
+wf::touch_gesture_type_t wf::touchgesture_t::get_type() const
+{
+    return this->type;
+}
+
+int wf::touchgesture_t::get_finger_count() const
+{
+    return this->finger_count;
+}
+
+uint32_t wf::touchgesture_t::get_direction() const
+{
+    return this->direction;
+}
+
+bool wf::touchgesture_t::operator == (const touchgesture_t& other) const
+{
+    return type == other.type && finger_count == other.finger_count &&
+        (direction == 0 || other.direction == 0 || direction == other.direction);
 }
