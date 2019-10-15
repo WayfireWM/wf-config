@@ -14,22 +14,28 @@ static void check_color_equals(const wf::color_t& color,
     CHECK(color.a == doctest::Approx(a).epsilon(0.01));
 }
 
+static void check_color_equals(const wf::optional<wf::color_t>& color,
+    double r, double g, double b, double a)
+{
+    check_color_equals(color.get_unchecked(), r, g, b, a);
+}
+
 /* Test that various wf::color_t constructors work */
 TEST_CASE("wf::color_t")
 {
     check_color_equals(wf::color_t{}, 0, 0, 0, 0);
     check_color_equals(wf::color_t{0.345, 0.127, 0.188, 1.0}, 0.345, 0.127, 0.188, 1.0);
     check_color_equals(wf::color_t{glm::vec4(0.7)}, 0.7, 0.7, 0.7, 0.7);
-    check_color_equals(wf::color_t{"#66CC5EF7"}, 0.4, 0.8, 0.3686274, 0.9686274);
-    check_color_equals(wf::color_t{"#0F0F"}, 0, 1, 0, 1);
-    check_color_equals(wf::color_t{"#AUIO"}, 0, 0, 0, 0); // invalid color
 
-    CHECK(wf::color_t::is_valid("#FFF") == false);
-    CHECK(wf::color_t::is_valid("#0A4B7D9F") == true);
-    CHECK(wf::color_t::is_valid("0C1A") == false);
-    CHECK(wf::color_t::is_valid("") == false);
-    CHECK(wf::color_t::is_valid("#0C1A") == true);
-    CHECK(wf::color_t::is_valid("#ZYXUIOPQ") == false);
+    check_color_equals(wf::color_t::from_string("#66CC5EF7"),
+        0.4, 0.8, 0.3686274, 0.9686274);
+    check_color_equals(wf::color_t::from_string("#0F0F"), 0, 1, 0, 1);
+
+    CHECK(!wf::color_t::from_string("#FFF"));
+    CHECK(!wf::color_t::from_string("0C1A"));
+    CHECK(!wf::color_t::from_string(""));
+    CHECK(!wf::color_t::from_string("#ZYXUIOPQ"));
+    CHECK(!wf::color_t::from_string("#AUIO")); // invalid color
 }
 
 TEST_CASE("wf::keybinding_t")
@@ -42,28 +48,25 @@ TEST_CASE("wf::keybinding_t")
     CHECK(binding1.get_key() == KEY_L);
 
     /* Test parsing */
-    wf::keybinding_t binding2{"<shift><ctrl>KEY_TAB"};
+    auto binding2 = wf::keybinding_t::from_string(
+        "<shift><ctrl>KEY_TAB").get_unchecked();
     uint32_t modifier2 =
         wf::KEYBOARD_MODIFIER_SHIFT | wf::KEYBOARD_MODIFIER_CTRL;
     CHECK(binding2.get_modifiers() == modifier2);
     CHECK(binding2.get_key() == KEY_TAB);
 
-    wf::keybinding_t binding3{"<alt><super>KEY_L"};
+    auto binding3 =
+        wf::keybinding_t::from_string("<alt><super>KEY_L").get_unchecked();
     CHECK(binding3.get_modifiers() == modifier1);
     CHECK(binding3.get_key() == KEY_L);
 
     /* Test invalid bindings */
-    wf::keybinding_t binding4{"<invalid>KEY_L"};
-    CHECK(binding4.get_modifiers() == 0);
-    CHECK(binding4.get_key() == 0);
+    CHECK(!wf::keybinding_t::from_string("<invalid>KEY_L"));
 
-    wf::keybinding_t binding5{"<super> KEY_nonexist"};
-    CHECK(binding5.get_modifiers() == 0);
-    CHECK(binding5.get_key() == 0);
+    CHECK(!wf::keybinding_t::from_string("<super> KEY_nonexist"));
 
     /* Test equality */
     CHECK(binding1 == binding3);
-    CHECK(binding4 == binding5);
     CHECK(!(binding2 == binding1));
 }
 
@@ -75,18 +78,18 @@ TEST_CASE("wf::buttonbinding_t")
     CHECK(binding1.get_button() == BTN_LEFT);
 
     /* Test parsing */
-    wf::buttonbinding_t binding2{"<ctrl>BTN_EXTRA"};
+    auto binding2 =
+        wf::buttonbinding_t::from_string("<ctrl>BTN_EXTRA").get_unchecked();
     CHECK(binding2.get_modifiers() == wf::KEYBOARD_MODIFIER_CTRL);
     CHECK(binding2.get_button() == BTN_EXTRA);
 
-    wf::buttonbinding_t binding3{"<alt>BTN_LEFT"};
+    auto binding3 =
+        wf::buttonbinding_t::from_string("<alt>BTN_LEFT").get_unchecked();
     CHECK(binding3.get_modifiers() == wf::KEYBOARD_MODIFIER_ALT);
     CHECK(binding3.get_button() == BTN_LEFT);
 
     /* Test invalid bindings */
-    wf::buttonbinding_t binding4{"<super> BTN_inv"};
-    CHECK(binding4.get_modifiers() == 0);
-    CHECK(binding4.get_button() == 0);
+    CHECK(!wf::buttonbinding_t::from_string("<super> BTN_inv"));
 
     /* Test equality */
     CHECK(binding1 == binding3);
@@ -103,42 +106,37 @@ TEST_CASE("wf::touchgesture_t")
     CHECK(binding1.get_direction() == wf::GESTURE_DIRECTION_UP);
 
     /* Test parsing */
-    wf::touchgesture_t binding2{"swipe up-left 4"};
+    auto binding2 =
+        wf::touchgesture_t::from_string("swipe up-left 4").get_unchecked();
     uint32_t direction2 = wf::GESTURE_DIRECTION_UP | wf::GESTURE_DIRECTION_LEFT;
     CHECK(binding2.get_type() == wf::GESTURE_TYPE_SWIPE);
     CHECK(binding2.get_direction() == direction2);
     CHECK(binding2.get_finger_count() == 4);
 
-    wf::touchgesture_t binding3{"edge-swipe down 2"};
+    auto binding3 =
+        wf::touchgesture_t::from_string("edge-swipe down 2").get_unchecked();
     CHECK(binding3.get_type() == wf::GESTURE_TYPE_EDGE_SWIPE);
     CHECK(binding3.get_direction() == wf::GESTURE_DIRECTION_DOWN);
     CHECK(binding3.get_finger_count() == 2);
 
-    wf::touchgesture_t binding4{"pinch in 3"};
+    auto binding4 =
+        wf::touchgesture_t::from_string("pinch in 3").get_unchecked();
     CHECK(binding4.get_type() == wf::GESTURE_TYPE_PINCH);
     CHECK(binding4.get_direction() == wf::GESTURE_DIRECTION_IN);
     CHECK(binding4.get_finger_count() == 3);
 
-    wf::touchgesture_t binding5{"pinch out 2"};
+    auto binding5 =
+        wf::touchgesture_t::from_string("pinch out 2").get_unchecked();
     CHECK(binding5.get_type() == wf::GESTURE_TYPE_PINCH);
     CHECK(binding5.get_direction() == wf::GESTURE_DIRECTION_OUT);
     CHECK(binding5.get_finger_count() == 2);
 
     /* A few bad description cases */
-    wf::touchgesture_t binding6{"pinch out"}; // missing fingercount
-    CHECK(binding6.get_type() == wf::GESTURE_TYPE_NONE);
-
-    wf::touchgesture_t binding7{"wrong left 5"}; // no such type
-    CHECK(binding7.get_type() == wf::GESTURE_TYPE_NONE);
-
-    wf::touchgesture_t binding8{"edge-swipe up-down 3"}; // opposite dirs
-    CHECK(binding8.get_type() == wf::GESTURE_TYPE_NONE);
-
-    wf::touchgesture_t binding9{"swipe 3"}; // missing dir
-    CHECK(binding9.get_type() == wf::GESTURE_TYPE_NONE);
-
-    wf::touchgesture_t binding10{"pinch 3"};
-    CHECK(binding10.get_type() == wf::GESTURE_TYPE_NONE);
+    CHECK(!wf::touchgesture_t::from_string("pinch out")); // missing fingercount
+    CHECK(!wf::touchgesture_t::from_string("wrong left 5")); // no such type
+    CHECK(!wf::touchgesture_t::from_string("edge-swipe up-down 3")); // opposite dirs
+    CHECK(!wf::touchgesture_t::from_string("swipe 3")); // missing dir
+    CHECK(!wf::touchgesture_t::from_string("pinch 3"));
 
     /* Equality */
     CHECK(!(binding1 == wf::touchgesture_t{wf::GESTURE_TYPE_PINCH, 0, 3}));

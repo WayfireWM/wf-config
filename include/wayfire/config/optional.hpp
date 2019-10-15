@@ -31,7 +31,14 @@ template<class Type> class optional
         return value != nullptr;
     }
 
-    Type get_or(Type default_value)
+    Type get_unchecked() const
+    {
+        if (!value)
+            throw std::runtime_error("Unchecked access to optional failed!");
+        return *value;
+    }
+
+    Type get_or(Type default_value) const
     {
         if (this->value) {
             return *this->value;

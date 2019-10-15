@@ -1,9 +1,51 @@
 #pragma once
+
+#include <config/optional.hpp>
 #include <glm/vec4.hpp>
 #include <string>
 
 namespace wf
 {
+/**
+ * A simple wrapper for primitive value types, needed to make such options
+ * fit better into the codebase.
+ */
+template<class Primitive>
+struct primitive_type_wrapper_t
+{
+  public:
+    /** Construct a new primitive type wrapper with the given value */
+    primitive_type_wrapper_t(Primitive value) { this->value = value; }
+
+    /** Construct a new primitive wrapper from the given string */
+    static wf::optional<primitive_type_wrapper_t<Primitive>>
+        from_string(const std::string& string);
+
+    /** Convert back to the primitive type */
+    operator Primitive() { return value; }
+
+  private:
+    Primitive value;
+};
+
+/* Forward declarations for the supported primitive conversions */
+using int_wrapper_t = primitive_type_wrapper_t<int>;
+using double_wrapper_t = primitive_type_wrapper_t<double>;
+
+/**
+ * Construct an integer wrapper from the given string, which needs to represent
+ * a valid signed 32-bit integer in decimal system.
+ */
+template<> wf::optional<int_wrapper_t> int_wrapper_t::from_string(
+    const std::string&);
+
+/**
+ * Construct an double wrapper from the given string, which needs to represent
+ * a valid signed 64-bit floating point number.
+ */
+template<> wf::optional<double_wrapper_t> double_wrapper_t::from_string(
+    const std::string&);
+
 /**
  * Represents a color in RGBA format.
  */
@@ -26,12 +68,10 @@ struct color_t
     explicit color_t(const glm::vec4& value);
 
     /**
-     * Initialize a new color value from the given hex string, format is either
+     * Create a new color value from the given hex string, format is either
      * #RRGGBBAA or #RGBA.
-     *
-     * Invalid input is considered as the default color.
      */
-    explicit color_t(const std::string& value);
+    static wf::optional<color_t> from_string(const std::string& value);
 
     /** Red channel value */
     double r;
@@ -41,9 +81,6 @@ struct color_t
     double b;
     /** Alpha channel value */
     double a;
-
-    /** Check whether the given hex string is a valid color */
-    static bool is_valid(const std::string& value);
 };
 
 /**
@@ -88,10 +125,8 @@ struct keybinding_t
      *
      * Invalid values result in mod and keyval being set to 0.
      */
-    explicit keybinding_t(const std::string& description);
-
-    /** Check the given string is a valid keyboard shortcut description */
-    static bool is_valid(const std::string& value);
+    static wf::optional<keybinding_t> from_string(
+        const std::string& description);
 
     /* Check whether two keybindings refer to the same shortcut */
     bool operator == (const keybinding_t& other) const;
@@ -127,10 +162,8 @@ struct buttonbinding_t
      *
      * Invalid descriptions result in mod = button = 0
      */
-    explicit buttonbinding_t(const std::string& description);
-
-    /** Check the given string is a valid button shortcut description */
-    static bool is_valid(const std::string& value);
+    static wf::optional<buttonbinding_t> from_string(
+        const std::string& description);
 
     /* Check whether two keybindings refer to the same shortcut */
     bool operator == (const buttonbinding_t& other) const;
@@ -205,10 +238,8 @@ struct touchgesture_t
      *
      * Invalid description results in an invalid gesture with type NONE.
      */
-    explicit touchgesture_t(const std::string& description);
-
-    /** Check the given string is a valid description of a touch gesture */
-    static bool is_valid(const std::string& description);
+    static wf::optional<touchgesture_t> from_string(
+        const std::string& description);
 
     /** @return The type of the gesture */
     touch_gesture_type_t get_type() const;

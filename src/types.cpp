@@ -4,6 +4,40 @@
 #include <iostream>
 
 #include <libevdev/libevdev.h>
+#include <sstream>
+
+/* --------------------------- Primitive types ------------------------------ */
+template<> wf::optional<wf::int_wrapper_t>
+wf::int_wrapper_t::from_string(const std::string& value)
+{
+    std::istringstream in{value};
+    int result;
+    in >> result;
+
+    if (value != std::to_string(result))
+        return wf::optional<int_wrapper_t>{};
+
+    return int_wrapper_t{result};
+}
+
+/** Attempt to parse a string as an double value */
+template<> wf::optional<wf::double_wrapper_t>
+wf::double_wrapper_t::from_string(const std::string& value)
+{
+    auto old = std::locale::global(std::locale::classic());
+    std::istringstream in{value};
+    double result;
+    in >> result;
+    std::locale::global(old);
+
+    if (!in.eof() || value.empty())
+    {
+        /* XXX: is the check above enough??? Overflow? Underflow? */
+        return wf::optional<double_wrapper_t>{};
+    }
+
+    return double_wrapper_t{result};
+}
 
 /* ----------------------------- wf::color_t -------------------------------- */
 wf::color_t::color_t()
@@ -26,44 +60,37 @@ static double hex_to_double(std::string value)
     return std::strtol(value.c_str(), &dummy, 16);
 }
 
-wf::color_t::color_t(const std::string& value)
+wf::optional<wf::color_t> wf::color_t::from_string(const std::string& value)
 {
-    if (!is_valid(value))
-    {
-        this->r = this->g = this->b = this->a = 0;
-        return;
-    }
+    /* Either #RGBA or #RRGGBBAA */
+    if (value.size() != 5 && value.size() != 9)
+        return {};
+
+    if (value[0] != '#')
+        return {};
+
+    const std::string permissible = "0123456789ABCDEF";
+    if (value.find_first_not_of(permissible, 1) != std::string::npos)
+        return {};
+
+    double r, g, b, a;
 
     /* #RRGGBBAA case */
     if (value.size() == 9)
     {
-        this->r = hex_to_double(value.substr(1, 2)) / 255.0;
-        this->g = hex_to_double(value.substr(3, 2)) / 255.0;
-        this->b = hex_to_double(value.substr(5, 2)) / 255.0;
-        this->a = hex_to_double(value.substr(7, 2)) / 255.0;
+        r = hex_to_double(value.substr(1, 2)) / 255.0;
+        g = hex_to_double(value.substr(3, 2)) / 255.0;
+        b = hex_to_double(value.substr(5, 2)) / 255.0;
+        a = hex_to_double(value.substr(7, 2)) / 255.0;
     } else {
         assert(value.size() == 5);
-        this->r = hex_to_double(value.substr(1, 1)) / 15.0;
-        this->g = hex_to_double(value.substr(2, 1)) / 15.0;
-        this->b = hex_to_double(value.substr(3, 1)) / 15.0;
-        this->a = hex_to_double(value.substr(4, 1)) / 15.0;
+        r = hex_to_double(value.substr(1, 1)) / 15.0;
+        g = hex_to_double(value.substr(2, 1)) / 15.0;
+        b = hex_to_double(value.substr(3, 1)) / 15.0;
+        a = hex_to_double(value.substr(4, 1)) / 15.0;
     }
-}
 
-bool wf::color_t::is_valid(const std::string& value)
-{
-    /* Either #RGBA or #RRGGBBAA */
-    if (value.size() != 5 && value.size() != 9)
-        return false;
-
-    if (value[0] != '#')
-        return false;
-
-    const std::string permissible = "0123456789ABCDEF";
-    if (value.find_first_not_of(permissible, 1) != std::string::npos)
-        return false;
-
-    return true;
+    return wf::color_t{r, g, b, a};
 }
 
 /* ------------------------- wf::keybinding_t ------------------------------- */
@@ -148,17 +175,14 @@ wf::keybinding_t::keybinding_t(uint32_t modifier, uint32_t keyval)
     this->keyval = keyval;
 }
 
-wf::keybinding_t::keybinding_t(const std::string& description)
+wf::optional<wf::keybinding_t>
+wf::keybinding_t::from_string(const std::string& description)
 {
     auto parsed = parse_binding(description);
-    this->mod = parsed.mods;
-    this->keyval = parsed.value;
-}
+    if (parsed.mods == 0 && parsed.value == 0)
+        return {};
 
-bool wf::keybinding_t::is_valid(const std::string& value)
-{
-    auto parsed = parse_binding(value);
-    return (parsed.mods != 0) || (parsed.value != 0);
+    return wf::keybinding_t{parsed.mods, parsed.value};
 }
 
 bool wf::keybinding_t::operator == (const keybinding_t& other) const
@@ -185,17 +209,14 @@ wf::buttonbinding_t::buttonbinding_t(uint32_t modifier, uint32_t buttonval)
     this->button = buttonval;
 }
 
-wf::buttonbinding_t::buttonbinding_t(const std::string& description)
+wf::optional<wf::buttonbinding_t>
+wf::buttonbinding_t::from_string(const std::string& description)
 {
     auto parsed = parse_binding(description);
-    this->mod = parsed.mods;
-    this->button = parsed.value;
-}
+    if (parsed.mods == 0 && parsed.value == 0)
+        return {};
 
-bool wf::buttonbinding_t::is_valid(const std::string& value)
-{
-    auto parsed = parse_binding(value);
-    return (parsed.mods != 0) || (parsed.value != 0);
+    return wf::buttonbinding_t{parsed.mods, parsed.value};
 }
 
 bool wf::buttonbinding_t::operator == (const buttonbinding_t& other) const
@@ -324,14 +345,14 @@ wf::touchgesture_t parse_gesture(const std::string& value)
     return wf::touchgesture_t{wf::GESTURE_TYPE_NONE, 0, 0};
 }
 
-wf::touchgesture_t::touchgesture_t(const std::string& description)
+wf::optional<wf::touchgesture_t>
+wf::touchgesture_t::from_string(const std::string& description)
 {
-    *this = parse_gesture(description);
-}
+    auto gesture = parse_gesture(description);
+    if (gesture.type == GESTURE_TYPE_NONE)
+        return {};
 
-bool wf::touchgesture_t::is_valid(const std::string& description)
-{
-    return parse_gesture(description).get_type() != wf::GESTURE_TYPE_NONE;
+    return gesture;
 }
 
 wf::touch_gesture_type_t wf::touchgesture_t::get_type() const
