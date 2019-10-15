@@ -3,8 +3,44 @@
 
 #include <config/types.hpp>
 #include <linux/input-event-codes.h>
+#include <limits>
 
 #define WF_CONFIG_DOUBLE_EPS 0.01
+
+TEST_CASE("wf::int_wrapper_t")
+{
+    CHECK(wf::int_wrapper_t::from_string("456").get_unchecked() == 456);
+    CHECK(wf::int_wrapper_t::from_string("-89").get_unchecked() == -89);
+
+    int32_t max = std::numeric_limits<int32_t>::max();
+    int32_t min = std::numeric_limits<int32_t>::min();
+    CHECK(wf::int_wrapper_t::from_string(std::to_string(max)).get_unchecked() == max);
+    CHECK(wf::int_wrapper_t::from_string(std::to_string(min)).get_unchecked() == min);
+
+    CHECK(!wf::int_wrapper_t::from_string("1e4"));
+    CHECK(!wf::int_wrapper_t::from_string(""));
+    CHECK(!wf::int_wrapper_t::from_string("1234567890000"));
+}
+
+TEST_CASE("wf::double_wrapper_t")
+{
+    CHECK(wf::double_wrapper_t::from_string("0.378").get_unchecked() ==
+        doctest::Approx(0.378));
+    CHECK(wf::double_wrapper_t::from_string("-89.1847").get_unchecked() ==
+        doctest::Approx(-89.1847));
+
+    double max = std::numeric_limits<double>::max();
+    double min = std::numeric_limits<double>::min();
+    CHECK(wf::double_wrapper_t::from_string(std::to_string(max)).get_unchecked()
+        == doctest::Approx(max));
+    CHECK(wf::double_wrapper_t::from_string(std::to_string(min)).get_unchecked()
+        == doctest::Approx(min));
+
+    CHECK(!wf::double_wrapper_t::from_string("1u4"));
+    CHECK(!wf::double_wrapper_t::from_string(""));
+    CHECK(!wf::double_wrapper_t::from_string("abc"));
+}
+
 static void check_color_equals(const wf::color_t& color,
     double r, double g, double b, double a)
 {

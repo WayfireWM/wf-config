@@ -11,5 +11,7 @@ TEST_CASE("wf::optional")
 
     wf::optional<double> test{1.234};
     CHECK(test.get_or(2.0) == 1.234);
+
+    CHECK_THROWS(empty.get_unchecked());
 }
 

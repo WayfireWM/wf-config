@@ -22,7 +22,7 @@ struct primitive_type_wrapper_t
         from_string(const std::string& string);
 
     /** Convert back to the primitive type */
-    operator Primitive() { return value; }
+    operator Primitive() const { return value; }
 
   private:
     Primitive value;
