@@ -39,6 +39,15 @@ wf::double_wrapper_t::from_string(const std::string& value)
     return double_wrapper_t{result};
 }
 
+template<> wf::optional<wf::string_wrapper_t> wf::string_wrapper_t::from_string(
+    const std::string& value)
+{
+    if (value.find_first_of("\n\r") != std::string::npos)
+        return {};
+
+    return string_wrapper_t{value};
+}
+
 /* ----------------------------- wf::color_t -------------------------------- */
 wf::color_t::color_t()
     : color_t(0.0, 0.0, 0.0, 0.0) {}

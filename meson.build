@@ -14,7 +14,7 @@ project(
 glm = dependency('glm')
 evdev = dependency('libevdev')
 
-sources = [ 'src/types.cpp' ]
+sources = [ 'src/types.cpp', 'src/option.cpp' ]
 wfconfig_inc = include_directories('include/wayfire')
 
 lib_wfconfig = library('wf-config',

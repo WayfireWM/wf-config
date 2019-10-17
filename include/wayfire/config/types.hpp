@@ -14,6 +14,12 @@ template<class Primitive>
 struct primitive_type_wrapper_t
 {
   public:
+    /**
+     * wrapped_type_t is used to determine whether a minimum or maximum value
+     * is supported for the wrapped type.
+     */
+    using wrapped_type_t = Primitive;
+
     /** Construct a new primitive type wrapper with the given value */
     primitive_type_wrapper_t(Primitive value) { this->value = value; }
 
@@ -31,6 +37,7 @@ struct primitive_type_wrapper_t
 /* Forward declarations for the supported primitive conversions */
 using int_wrapper_t = primitive_type_wrapper_t<int>;
 using double_wrapper_t = primitive_type_wrapper_t<double>;
+using string_wrapper_t = primitive_type_wrapper_t<std::string>;
 
 /**
  * Construct an integer wrapper from the given string, which needs to represent
@@ -46,6 +53,12 @@ template<> wf::optional<int_wrapper_t> int_wrapper_t::from_string(
 template<> wf::optional<double_wrapper_t> double_wrapper_t::from_string(
     const std::string&);
 
+/**
+ * Construct an string wrapper from the given string.
+ * The string should not contain newline characters.
+ */
+template<> wf::optional<string_wrapper_t> string_wrapper_t::from_string(
+    const std::string&);
 /**
  * Represents a color in RGBA format.
  */

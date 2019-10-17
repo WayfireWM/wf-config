@@ -13,3 +13,19 @@ types_test = executable(
     link_with: lib_wfconfig,
     install: false)
 test('Types test', types_test)
+
+option_base_test = executable(
+    'option_base_test',
+    'option_base_test.cpp',
+    include_directories: wfconfig_inc,
+    link_with: lib_wfconfig,
+    install: false)
+test('OptionBase test', option_base_test)
+
+option_test = executable(
+    'option_test',
+    'option_test.cpp',
+    include_directories: wfconfig_inc,
+    link_with: lib_wfconfig,
+    install: false)
+test('Option test', option_test)

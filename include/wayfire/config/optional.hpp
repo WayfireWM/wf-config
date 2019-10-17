@@ -26,7 +26,7 @@ template<class Type> class optional
         this->value = std::make_unique<Type> (actual_value);
     }
 
-    operator bool()
+    operator bool() const
     {
         return value != nullptr;
     }
