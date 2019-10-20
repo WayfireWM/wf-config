@@ -13,13 +13,14 @@ project(
 
 glm = dependency('glm')
 evdev = dependency('libevdev')
+libxml2 = dependency('libxml-2.0')
 
-sources = [ 'src/types.cpp', 'src/option.cpp' ]
+sources = [ 'src/types.cpp', 'src/option.cpp', 'src/section.cpp' ]
 wfconfig_inc = include_directories('include/wayfire')
 
 lib_wfconfig = library('wf-config',
     sources,
-    dependencies: [evdev, glm],
+    dependencies: [evdev, glm, libxml2],
     include_directories: wfconfig_inc,
     install: true,
     version: meson.project_version())

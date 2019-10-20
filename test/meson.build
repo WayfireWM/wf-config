@@ -29,3 +29,11 @@ option_test = executable(
     link_with: lib_wfconfig,
     install: false)
 test('Option test', option_test)
+
+section_test = executable(
+    'section_test',
+    'section_test.cpp',
+    include_directories: wfconfig_inc,
+    link_with: lib_wfconfig,
+    install: false)
+test('Section test', section_test)
