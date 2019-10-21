@@ -15,7 +15,7 @@ glm = dependency('glm')
 evdev = dependency('libevdev')
 libxml2 = dependency('libxml-2.0')
 
-sources = [ 'src/types.cpp', 'src/option.cpp', 'src/section.cpp' ]
+sources = [ 'src/types.cpp', 'src/option.cpp', 'src/section.cpp', 'src/log.cpp' ]
 wfconfig_inc = include_directories('include/wayfire')
 
 lib_wfconfig = library('wf-config',

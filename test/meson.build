@@ -37,3 +37,12 @@ section_test = executable(
     link_with: lib_wfconfig,
     install: false)
 test('Section test', section_test)
+
+# Utils
+log_test = executable(
+    'log_test',
+    'log_test.cpp',
+    include_directories: wfconfig_inc,
+    link_with: lib_wfconfig,
+    install: false)
+test('Log test', log_test)
