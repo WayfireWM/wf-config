@@ -2,7 +2,9 @@
 #include <string>
 #include <functional>
 #include <limits>
-#include <wayfire/config/optional.hpp>
+
+#include <experimental/optional>
+#include <memory>
 
 namespace wf
 {
@@ -69,18 +71,31 @@ class bounded_option_base_t
 template<class Type>
 class bounded_option_base_t<Type, true>
 {
+  public:
+    /** @return The minimal permissible value for this option, if it is set. */
+    std::experimental::optional<Type> get_minimum() const
+    {
+        return minimum;
+    }
+
+    /** @return The maximal permissible value for this option, if it is set. */
+    std::experimental::optional<Type> get_maximum() const
+    {
+        return maximum;
+    }
+
   protected:
-    wf::optional<Type> minimum;
-    wf::optional<Type> maximum;
+    std::experimental::optional<Type> minimum;
+    std::experimental::optional<Type> maximum;
 
     /**
      * @return The closest possible value
      */
     Type closest_valid_value(const Type& value) const
     {
-        auto real_minimum = minimum.get_or(
+        auto real_minimum = minimum.value_or(
             std::numeric_limits<typename Type::wrapped_type_t>::lowest());
-        auto real_maximum = maximum.get_or(
+        auto real_maximum = maximum.value_or(
             std::numeric_limits<typename Type::wrapped_type_t>::max());
 
         if (value < real_minimum)
@@ -150,7 +165,7 @@ class option_t : public option_base_t,
     void set_value(const std::string& new_value_str)
     {
         auto new_value = Type::from_string(new_value_str);
-        set_value(new_value.get_or(default_value));
+        set_value(new_value.value_or(default_value));
     }
 
     /**
@@ -187,9 +202,9 @@ class option_t : public option_base_t,
      }
 
      /**
-      * Set the minimum permissible value for arithmetic type options.
-      * An attempt to set the value to a value below the minimum will set the
-      * value of the option to the minimum.
+      * Set the maximum permissible value for arithmetic type options.
+      * An attempt to set the value to a value above the maximum will set the
+      * value of the option to the maximum.
       */
      template<class U = void>
          detail::boundable_type_only<Type, U> set_maximum(Type max)

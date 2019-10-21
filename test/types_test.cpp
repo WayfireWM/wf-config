@@ -9,13 +9,13 @@
 
 TEST_CASE("wf::int_wrapper_t")
 {
-    CHECK(wf::int_wrapper_t::from_string("456").get_unchecked() == 456);
-    CHECK(wf::int_wrapper_t::from_string("-89").get_unchecked() == -89);
+    CHECK(wf::int_wrapper_t::from_string("456").value() == 456);
+    CHECK(wf::int_wrapper_t::from_string("-89").value() == -89);
 
     int32_t max = std::numeric_limits<int32_t>::max();
     int32_t min = std::numeric_limits<int32_t>::min();
-    CHECK(wf::int_wrapper_t::from_string(std::to_string(max)).get_unchecked() == max);
-    CHECK(wf::int_wrapper_t::from_string(std::to_string(min)).get_unchecked() == min);
+    CHECK(wf::int_wrapper_t::from_string(std::to_string(max)).value() == max);
+    CHECK(wf::int_wrapper_t::from_string(std::to_string(min)).value() == min);
 
     CHECK(!wf::int_wrapper_t::from_string("1e4"));
     CHECK(!wf::int_wrapper_t::from_string(""));
@@ -24,16 +24,16 @@ TEST_CASE("wf::int_wrapper_t")
 
 TEST_CASE("wf::double_wrapper_t")
 {
-    CHECK(wf::double_wrapper_t::from_string("0.378").get_unchecked() ==
+    CHECK(wf::double_wrapper_t::from_string("0.378").value() ==
         doctest::Approx(0.378));
-    CHECK(wf::double_wrapper_t::from_string("-89.1847").get_unchecked() ==
+    CHECK(wf::double_wrapper_t::from_string("-89.1847").value() ==
         doctest::Approx(-89.1847));
 
     double max = std::numeric_limits<double>::max();
     double min = std::numeric_limits<double>::min();
-    CHECK(wf::double_wrapper_t::from_string(std::to_string(max)).get_unchecked()
+    CHECK(wf::double_wrapper_t::from_string(std::to_string(max)).value()
         == doctest::Approx(max));
-    CHECK(wf::double_wrapper_t::from_string(std::to_string(min)).get_unchecked()
+    CHECK(wf::double_wrapper_t::from_string(std::to_string(min)).value()
         == doctest::Approx(min));
 
     CHECK(!wf::double_wrapper_t::from_string("1u4"));
@@ -50,10 +50,11 @@ static void check_color_equals(const wf::color_t& color,
     CHECK(color.a == doctest::Approx(a).epsilon(0.01));
 }
 
-static void check_color_equals(const wf::optional<wf::color_t>& color,
+static void check_color_equals(
+    const std::experimental::optional<wf::color_t>& color,
     double r, double g, double b, double a)
 {
-    check_color_equals(color.get_unchecked(), r, g, b, a);
+    check_color_equals(color.value(), r, g, b, a);
 }
 
 /* Test that various wf::color_t constructors work */
@@ -85,14 +86,14 @@ TEST_CASE("wf::keybinding_t")
 
     /* Test parsing */
     auto binding2 = wf::keybinding_t::from_string(
-        "<shift><ctrl>KEY_TAB").get_unchecked();
+        "<shift><ctrl>KEY_TAB").value();
     uint32_t modifier2 =
         wf::KEYBOARD_MODIFIER_SHIFT | wf::KEYBOARD_MODIFIER_CTRL;
     CHECK(binding2.get_modifiers() == modifier2);
     CHECK(binding2.get_key() == KEY_TAB);
 
     auto binding3 =
-        wf::keybinding_t::from_string("<alt><super>KEY_L").get_unchecked();
+        wf::keybinding_t::from_string("<alt><super>KEY_L").value();
     CHECK(binding3.get_modifiers() == modifier1);
     CHECK(binding3.get_key() == KEY_L);
 
@@ -115,12 +116,12 @@ TEST_CASE("wf::buttonbinding_t")
 
     /* Test parsing */
     auto binding2 =
-        wf::buttonbinding_t::from_string("<ctrl>BTN_EXTRA").get_unchecked();
+        wf::buttonbinding_t::from_string("<ctrl>BTN_EXTRA").value();
     CHECK(binding2.get_modifiers() == wf::KEYBOARD_MODIFIER_CTRL);
     CHECK(binding2.get_button() == BTN_EXTRA);
 
     auto binding3 =
-        wf::buttonbinding_t::from_string("<alt>BTN_LEFT").get_unchecked();
+        wf::buttonbinding_t::from_string("<alt>BTN_LEFT").value();
     CHECK(binding3.get_modifiers() == wf::KEYBOARD_MODIFIER_ALT);
     CHECK(binding3.get_button() == BTN_LEFT);
 
@@ -143,26 +144,26 @@ TEST_CASE("wf::touchgesture_t")
 
     /* Test parsing */
     auto binding2 =
-        wf::touchgesture_t::from_string("swipe up-left 4").get_unchecked();
+        wf::touchgesture_t::from_string("swipe up-left 4").value();
     uint32_t direction2 = wf::GESTURE_DIRECTION_UP | wf::GESTURE_DIRECTION_LEFT;
     CHECK(binding2.get_type() == wf::GESTURE_TYPE_SWIPE);
     CHECK(binding2.get_direction() == direction2);
     CHECK(binding2.get_finger_count() == 4);
 
     auto binding3 =
-        wf::touchgesture_t::from_string("edge-swipe down 2").get_unchecked();
+        wf::touchgesture_t::from_string("edge-swipe down 2").value();
     CHECK(binding3.get_type() == wf::GESTURE_TYPE_EDGE_SWIPE);
     CHECK(binding3.get_direction() == wf::GESTURE_DIRECTION_DOWN);
     CHECK(binding3.get_finger_count() == 2);
 
     auto binding4 =
-        wf::touchgesture_t::from_string("pinch in 3").get_unchecked();
+        wf::touchgesture_t::from_string("pinch in 3").value();
     CHECK(binding4.get_type() == wf::GESTURE_TYPE_PINCH);
     CHECK(binding4.get_direction() == wf::GESTURE_DIRECTION_IN);
     CHECK(binding4.get_finger_count() == 3);
 
     auto binding5 =
-        wf::touchgesture_t::from_string("pinch out 2").get_unchecked();
+        wf::touchgesture_t::from_string("pinch out 2").value();
     CHECK(binding5.get_type() == wf::GESTURE_TYPE_PINCH);
     CHECK(binding5.get_direction() == wf::GESTURE_DIRECTION_OUT);
     CHECK(binding5.get_finger_count() == 2);

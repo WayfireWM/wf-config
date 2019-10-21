@@ -5,7 +5,7 @@ project(
 	license: 'MIT',
 	meson_version: '>=0.43.0',
 	default_options: [
-		'cpp_std=c++14',
+		'cpp_std=gnu++14',
 		'warning_level=2',
 		'werror=false',
 	],
@@ -15,7 +15,13 @@ glm = dependency('glm')
 evdev = dependency('libevdev')
 libxml2 = dependency('libxml-2.0')
 
-sources = [ 'src/types.cpp', 'src/option.cpp', 'src/section.cpp', 'src/log.cpp' ]
+sources = [
+'src/types.cpp',
+'src/option.cpp',
+'src/section.cpp',
+'src/log.cpp',
+]
+
 wfconfig_inc = include_directories('include/wayfire')
 
 lib_wfconfig = library('wf-config',

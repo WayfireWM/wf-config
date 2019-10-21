@@ -1,8 +1,8 @@
 #pragma once
 
-#include <wayfire/config/optional.hpp>
 #include <glm/vec4.hpp>
 #include <string>
+#include <experimental/optional>
 
 namespace wf
 {
@@ -24,7 +24,7 @@ struct primitive_type_wrapper_t
     primitive_type_wrapper_t(Primitive value) { this->value = value; }
 
     /** Construct a new primitive wrapper from the given string */
-    static wf::optional<primitive_type_wrapper_t<Primitive>>
+    static std::experimental::optional<primitive_type_wrapper_t<Primitive>>
         from_string(const std::string& string);
 
     /** Convert back to the primitive type */
@@ -43,22 +43,22 @@ using string_wrapper_t = primitive_type_wrapper_t<std::string>;
  * Construct an integer wrapper from the given string, which needs to represent
  * a valid signed 32-bit integer in decimal system.
  */
-template<> wf::optional<int_wrapper_t> int_wrapper_t::from_string(
-    const std::string&);
+template<> std::experimental::optional<int_wrapper_t>
+    int_wrapper_t::from_string(const std::string&);
 
 /**
  * Construct an double wrapper from the given string, which needs to represent
  * a valid signed 64-bit floating point number.
  */
-template<> wf::optional<double_wrapper_t> double_wrapper_t::from_string(
-    const std::string&);
+template<> std::experimental::optional<double_wrapper_t>
+    double_wrapper_t::from_string(const std::string&);
 
 /**
  * Construct an string wrapper from the given string.
  * The string should not contain newline characters.
  */
-template<> wf::optional<string_wrapper_t> string_wrapper_t::from_string(
-    const std::string&);
+template<> std::experimental::optional<string_wrapper_t>
+    string_wrapper_t::from_string(const std::string&);
 /**
  * Represents a color in RGBA format.
  */
@@ -84,7 +84,8 @@ struct color_t
      * Create a new color value from the given hex string, format is either
      * #RRGGBBAA or #RGBA.
      */
-    static wf::optional<color_t> from_string(const std::string& value);
+    static std::experimental::optional<color_t>
+        from_string(const std::string& value);
 
     /** Red channel value */
     double r;
@@ -138,7 +139,7 @@ struct keybinding_t
      *
      * Invalid values result in mod and keyval being set to 0.
      */
-    static wf::optional<keybinding_t> from_string(
+    static std::experimental::optional<keybinding_t> from_string(
         const std::string& description);
 
     /* Check whether two keybindings refer to the same shortcut */
@@ -175,7 +176,7 @@ struct buttonbinding_t
      *
      * Invalid descriptions result in mod = button = 0
      */
-    static wf::optional<buttonbinding_t> from_string(
+    static std::experimental::optional<buttonbinding_t> from_string(
         const std::string& description);
 
     /* Check whether two keybindings refer to the same shortcut */
@@ -251,7 +252,7 @@ struct touchgesture_t
      *
      * Invalid description results in an invalid gesture with type NONE.
      */
-    static wf::optional<touchgesture_t> from_string(
+    static std::experimental::optional<touchgesture_t> from_string(
         const std::string& description);
 
     /** @return The type of the gesture */

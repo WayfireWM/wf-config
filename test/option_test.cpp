@@ -28,13 +28,15 @@ template<class U> struct are_bounds_enabled
     template<class V>
         static constexpr bool has_bounds(
             decltype(&V::template set_maximum<>),
-            decltype(&V::template set_minimum<>)) { return true; }
+            decltype(&V::template set_minimum<>),
+            decltype(&V::get_maximum),
+            decltype(&V::get_minimum)) { return true; }
 
     template<class V>
         static constexpr bool has_bounds(...) { return false; }
   public:
     enum {
-        value = has_bounds<U> (nullptr, nullptr),
+        value = has_bounds<U> (nullptr, nullptr, nullptr, nullptr),
     };
 };
 
@@ -74,9 +76,17 @@ TEST_CASE("wf::config::option_t<boundable>")
     option_t<int_wrapper_t> iopt{"int123", 5};
     CHECK(iopt.get_name() == "int123");
     CHECK(iopt.get_value() == 5);
+    CHECK(!iopt.get_minimum());
+    CHECK(!iopt.get_maximum());
 
     iopt.set_minimum(0);
+    CHECK(!iopt.get_maximum());
+    CHECK(iopt.get_minimum().value_or(0) == 0);
+
     iopt.set_maximum(10);
+    CHECK(iopt.get_maximum().value_or(11) == 10);
+    CHECK(iopt.get_minimum().value_or(1) == 0);
+
     CHECK(iopt.get_value() == 5);
     iopt.set_value(8);
     CHECK(iopt.get_value() == 8);
@@ -85,6 +95,7 @@ TEST_CASE("wf::config::option_t<boundable>")
     iopt.set_value(-1);
     CHECK(iopt.get_value() == 0);
     iopt.set_minimum(3);
+    CHECK(iopt.get_minimum().value_or(0) == 3);
     CHECK(iopt.get_value() == 3);
 
     option_t<double_wrapper_t> dopt{"dbl123", -1.0};
@@ -93,6 +104,8 @@ TEST_CASE("wf::config::option_t<boundable>")
     dopt.set_minimum(50);
     dopt.set_maximum(50);
     CHECK(dopt.get_value() == doctest::Approx(50));
+    CHECK(dopt.get_minimum().value_or(60) == doctest::Approx(50));
+    CHECK(dopt.get_maximum().value_or(60) == doctest::Approx(50));
 
     CHECK(are_bounds_enabled<option_t<int_wrapper_t>>::value);
     CHECK(are_bounds_enabled<option_t<double_wrapper_t>>::value);

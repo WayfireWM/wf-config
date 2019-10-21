@@ -7,7 +7,7 @@
 #include <sstream>
 
 /* --------------------------- Primitive types ------------------------------ */
-template<> wf::optional<wf::int_wrapper_t>
+template<> std::experimental::optional<wf::int_wrapper_t>
 wf::int_wrapper_t::from_string(const std::string& value)
 {
     std::istringstream in{value};
@@ -15,13 +15,13 @@ wf::int_wrapper_t::from_string(const std::string& value)
     in >> result;
 
     if (value != std::to_string(result))
-        return wf::optional<int_wrapper_t>{};
+        return std::experimental::optional<int_wrapper_t>{};
 
     return int_wrapper_t{result};
 }
 
 /** Attempt to parse a string as an double value */
-template<> wf::optional<wf::double_wrapper_t>
+template<> std::experimental::optional<wf::double_wrapper_t>
 wf::double_wrapper_t::from_string(const std::string& value)
 {
     auto old = std::locale::global(std::locale::classic());
@@ -33,14 +33,14 @@ wf::double_wrapper_t::from_string(const std::string& value)
     if (!in.eof() || value.empty())
     {
         /* XXX: is the check above enough??? Overflow? Underflow? */
-        return wf::optional<double_wrapper_t>{};
+        return std::experimental::optional<double_wrapper_t>{};
     }
 
     return double_wrapper_t{result};
 }
 
-template<> wf::optional<wf::string_wrapper_t> wf::string_wrapper_t::from_string(
-    const std::string& value)
+template<> std::experimental::optional<wf::string_wrapper_t>
+    wf::string_wrapper_t::from_string(const std::string& value)
 {
     if (value.find_first_of("\n\r") != std::string::npos)
         return {};
@@ -69,7 +69,8 @@ static double hex_to_double(std::string value)
     return std::strtol(value.c_str(), &dummy, 16);
 }
 
-wf::optional<wf::color_t> wf::color_t::from_string(const std::string& value)
+std::experimental::optional<wf::color_t>
+    wf::color_t::from_string(const std::string& value)
 {
     /* Either #RGBA or #RRGGBBAA */
     if (value.size() != 5 && value.size() != 9)
@@ -184,7 +185,7 @@ wf::keybinding_t::keybinding_t(uint32_t modifier, uint32_t keyval)
     this->keyval = keyval;
 }
 
-wf::optional<wf::keybinding_t>
+std::experimental::optional<wf::keybinding_t>
 wf::keybinding_t::from_string(const std::string& description)
 {
     auto parsed = parse_binding(description);
@@ -218,7 +219,7 @@ wf::buttonbinding_t::buttonbinding_t(uint32_t modifier, uint32_t buttonval)
     this->button = buttonval;
 }
 
-wf::optional<wf::buttonbinding_t>
+std::experimental::optional<wf::buttonbinding_t>
 wf::buttonbinding_t::from_string(const std::string& description)
 {
     auto parsed = parse_binding(description);
@@ -354,7 +355,7 @@ wf::touchgesture_t parse_gesture(const std::string& value)
     return wf::touchgesture_t{wf::GESTURE_TYPE_NONE, 0, 0};
 }
 
-wf::optional<wf::touchgesture_t>
+std::experimental::optional<wf::touchgesture_t>
 wf::touchgesture_t::from_string(const std::string& description)
 {
     auto gesture = parse_gesture(description);
