@@ -1,8 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#include <config/section.hpp>
-#include <config/types.hpp>
+#include <wayfire/config/section.hpp>
+#include <wayfire/config/types.hpp>
 
 TEST_CASE("wf::config::section_t")
 {

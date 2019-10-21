@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#include <config/optional.hpp>
+#include <wayfire/config/optional.hpp>
 
 TEST_CASE("wf::optional")
 {

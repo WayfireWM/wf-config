@@ -1,8 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#include <config/option.hpp>
-#include <config/types.hpp>
+#include <wayfire/config/option.hpp>
+#include <wayfire/config/types.hpp>
 #include <linux/input-event-codes.h>
 
 TEST_CASE("wf::config::detail::is_wrapped_comparable_type")

@@ -1,7 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#include <config/types.hpp>
+#include <wayfire/config/types.hpp>
 #include <linux/input-event-codes.h>
 #include <limits>
 

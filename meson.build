@@ -34,7 +34,7 @@ pkgconfig.generate(
     name:         meson.project_name(),
     description: 'Dynamic file-based configuration library for Wayfire')
 
-install_headers([], subdir: 'wayfire/config')
+install_headers([], subdir: 'wayfire/wayfire/config')
 
 wfconfig = declare_dependency(link_with: lib_wfconfig,
     include_directories: wfconfig_inc)

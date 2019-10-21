@@ -2,7 +2,7 @@
 #include <string>
 #include <functional>
 #include <limits>
-#include <config/optional.hpp>
+#include <wayfire/config/optional.hpp>
 
 namespace wf
 {

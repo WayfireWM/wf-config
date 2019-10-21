@@ -1,4 +1,4 @@
-#include <config/option.hpp>
+#include <wayfire/config/option.hpp>
 #include <algorithm>
 #include <vector>
 

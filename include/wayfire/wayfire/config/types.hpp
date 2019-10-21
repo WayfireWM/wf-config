@@ -1,6 +1,6 @@
 #pragma once
 
-#include <config/optional.hpp>
+#include <wayfire/config/optional.hpp>
 #include <glm/vec4.hpp>
 #include <string>
 

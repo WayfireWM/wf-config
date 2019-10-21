@@ -2,7 +2,7 @@
 #include "doctest.h"
 
 #define protected public // hack for the test
-#include <config/option.hpp>
+#include <wayfire/config/option.hpp>
 
 TEST_CASE("wf::option_base_t")
 {
