@@ -27,6 +27,8 @@ struct log_global_t
     wf::log::color_mode_t color_mode = wf::log::LOG_COLOR_MODE_OFF;
     std::string strip_path = "";
 
+    std::string clear_color = "";
+
     static log_global_t& get()
     {
         static log_global_t instance;
@@ -36,7 +38,6 @@ struct log_global_t
   private:
     log_global_t() {};
 };
-
 void wf::log::initialize_logging(std::ostream& output_stream,
     log_level_t minimum_level, color_mode_t color_mode, std::string strip_path)
 {
@@ -45,11 +46,23 @@ void wf::log::initialize_logging(std::ostream& output_stream,
     state.level = minimum_level;
     state.color_mode = color_mode;
     state.strip_path = strip_path;
+
+    if (state.color_mode == LOG_COLOR_MODE_ON)
+        state.clear_color = "\033[0m";
 }
 
 /** Get the line prefix for the given log level */
 static std::string get_level_prefix(wf::log::log_level_t level)
 {
+    bool color = log_global_t::get().color_mode == wf::log::LOG_COLOR_MODE_ON;
+    static std::map<wf::log::log_level_t, std::string> color_codes =
+    {
+        {wf::log::LOG_LEVEL_DEBUG, "\033[0m"},
+        {wf::log::LOG_LEVEL_INFO,  "\033[0;34m"},
+        {wf::log::LOG_LEVEL_WARN,  "\033[0;33m"},
+        {wf::log::LOG_LEVEL_ERROR, "\033[1;31m"},
+    };
+
     static std::map<wf::log::log_level_t, std::string> line_prefix =
     {
         {wf::log::LOG_LEVEL_DEBUG, "DD"},
@@ -57,6 +70,10 @@ static std::string get_level_prefix(wf::log::log_level_t level)
         {wf::log::LOG_LEVEL_WARN,  "WW"},
         {wf::log::LOG_LEVEL_ERROR, "EE"},
     };
+
+    if (color)
+        return color_codes[level] + line_prefix[level];
+
     return line_prefix[level];
 }
 
@@ -108,6 +125,6 @@ void wf::log::log_plain(log_level_t level, const std::string& contents,
             get_level_prefix(level), " ",
             get_formatted_date_time(),
             " - [", strip_path(source), ":", line_nr, "] ", contents)
-        << std::endl;
+        << state.clear_color << std::endl;
 }
 

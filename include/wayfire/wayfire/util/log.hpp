@@ -65,7 +65,7 @@ void log_plain(log_level_t level, const std::string& contents,
  * A convenience wrapper around log_plain
  */
 #define LOG(level,...) wf::log::log_plain(level, \
-    wf::log::format_concat(__VA_ARGS__), __FILE__, __LINE__)
+    wf::log::detail::format_concat(__VA_ARGS__), __FILE__, __LINE__)
 
 /** Log a debug message */
 #define LOGD(...) LOG(wf::log::LOG_LEVEL_DEBUG, __VA_ARGS__)

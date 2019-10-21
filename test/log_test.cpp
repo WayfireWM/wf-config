@@ -1,5 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
+#include <iostream>
 
 #include <wayfire/util/log.hpp>
 
@@ -83,4 +84,35 @@ TEST_CASE("wf::log::log_plain()")
     /* Stream shouldn't have any more characters */
     char dummy; out >> dummy;
     CHECK(out.eof());
+}
+
+TEST_CASE("wf::log::log_plain(color_on)")
+{
+    using namespace wf::log;
+    std::stringstream stream;
+    initialize_logging(stream, LOG_LEVEL_DEBUG, LOG_COLOR_MODE_ON);
+
+    auto check_line = [&stream] (std::string set_color)
+    {
+        std::string line;
+        std::getline(stream, line);
+        /* Check that line begins with the proper color code and ends with
+         * color reset */
+
+        const std::string reset = "\033[0m";
+
+        REQUIRE(line.length() >= set_color.length() + reset.length());
+
+        CHECK(line.find(set_color) == 0);
+        CHECK(line.rfind(reset) == line.length() - reset.length());
+    };
+
+    LOGD("test");
+    check_line("\033[0m");
+    LOGI("test");
+    check_line("\033[0;34m");
+    LOGW("test");
+    check_line("\033[0;33m");
+    LOGE("test");
+    check_line("\033[1;31m");
 }
