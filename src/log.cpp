@@ -16,6 +16,11 @@ template<> std::string wf::log::to_string<void*> (void* arg)
     return out.str();
 }
 
+template<> std::string wf::log::to_string(bool arg)
+{
+    return arg ? "true" : "false";
+}
+
 /**
  * A singleton to hold log configuration.
  */
@@ -95,8 +100,13 @@ static std::string get_formatted_date_time()
 static std::string strip_path(const std::string& path)
 {
     auto prefix = log_global_t::get().strip_path;
-    if (path.find(prefix) == 0)
+    if (prefix.length() > 0 && path.find(prefix) == 0)
         return path.substr(prefix.length());
+
+    std::string skip_chars = "./";
+    size_t idx = path.find_first_not_of(skip_chars);
+    if (idx != std::string::npos)
+        return path.substr(idx);
 
     return path;
 }

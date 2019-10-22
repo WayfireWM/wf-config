@@ -18,10 +18,8 @@ template<class T> std::string to_string(T arg)
     return out.str();
 }
 
-template<> std::string to_string(bool arg)
-{
-    return arg ? "true" : "false";
-}
+/** Specialization for boolean arguments - print true or false. */
+template<> std::string to_string(bool arg);
 
 /* Specialization for pointers - print the address */
 template<class T> std::string to_string(T* arg)
