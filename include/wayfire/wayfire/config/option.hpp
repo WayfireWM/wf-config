@@ -33,6 +33,9 @@ class option_base_t
     /** Reset the option to its default value.  */
     virtual void reset_to_default() {};
 
+    /** Get the option value in string format */
+    virtual std::string get_value_str() const { return ""; }
+
     /**
      * A function to be executed when the option value changes.
      */
@@ -172,7 +175,7 @@ class option_t : public option_base_t,
      * The value will be auto-clamped to the defined bounds, if they exist.
      * If the value actually changes, the updated handlers will be called.
      */
-    virtual void set_value(const std::string& new_value_str)
+    virtual void set_value(const std::string& new_value_str) override
     {
         auto new_value = Type::from_string(new_value_str);
         set_value(new_value.value_or(default_value));
@@ -204,6 +207,11 @@ class option_t : public option_base_t,
      Type get_value() const
      {
          return value;
+     }
+
+     virtual std::string get_value_str() const override
+     {
+         return Type::to_string(get_value());
      }
 
   public:

@@ -65,6 +65,7 @@ TEST_CASE("wf::config::option_t<unboundable>")
     CHECK(opt.get_value() == binding2);
     opt.reset_to_default();
     CHECK(opt.get_value() == binding1);
+    CHECK(wf::keybinding_t::from_string(opt.get_value_str()).value() == binding1);
 
     CHECK(are_bounds_enabled<option_t<wf::keybinding_t>>::value == false);
     CHECK(are_bounds_enabled<option_t<wf::buttonbinding_t>>::value == false);
@@ -103,6 +104,7 @@ TEST_CASE("wf::config::option_t<boundable>")
     CHECK(iopt.get_value() == 3);
     iopt.reset_to_default();
     CHECK(iopt.get_value() == 5);
+    CHECK(int_wrapper_t::from_string(iopt.get_value_str()).value_or(0) == 5);
 
     option_t<double_wrapper_t> dopt{"dbl123", -1.0};
     dopt.set_value(-100);
@@ -112,6 +114,8 @@ TEST_CASE("wf::config::option_t<boundable>")
     CHECK(dopt.get_value() == doctest::Approx(50));
     CHECK(dopt.get_minimum().value_or(60) == doctest::Approx(50));
     CHECK(dopt.get_maximum().value_or(60) == doctest::Approx(50));
+    CHECK(double_wrapper_t::from_string(dopt.get_value_str()).value_or(0) ==
+        doctest::Approx(50));
 
     CHECK(are_bounds_enabled<option_t<int_wrapper_t>>::value);
     CHECK(are_bounds_enabled<option_t<double_wrapper_t>>::value);
