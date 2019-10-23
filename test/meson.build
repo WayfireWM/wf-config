@@ -30,6 +30,15 @@ section_test = executable(
     install: false)
 test('Section test', section_test)
 
+xml_test = executable(
+    'xml_test',
+    'xml_test.cpp',
+    include_directories: wfconfig_inc,
+    link_with: lib_wfconfig,
+    dependencies: libxml2,
+    install: false)
+test('XML test', xml_test)
+
 # Utils
 log_test = executable(
     'log_test',
