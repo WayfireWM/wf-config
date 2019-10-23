@@ -55,6 +55,7 @@ static void check_color_equals(
     double r, double g, double b, double a)
 {
     check_color_equals(color.value(), r, g, b, a);
+    CHECK(color == wf::color_t{r, g, b, a});
 }
 
 /* Test that various wf::color_t constructors work */

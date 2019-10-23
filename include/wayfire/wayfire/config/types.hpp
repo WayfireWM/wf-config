@@ -87,6 +87,12 @@ struct color_t
     static std::experimental::optional<color_t>
         from_string(const std::string& value);
 
+    /**
+     * Compare colors channel-for-channel.
+     * Comparisons use a small epsilon 1e-6.
+     */
+    bool operator == (const color_t& other) const;
+
     /** Red channel value */
     double r;
     /** Green channel value */

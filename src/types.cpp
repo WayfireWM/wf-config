@@ -1,7 +1,7 @@
 #include <wayfire/config/types.hpp>
 #include <vector>
 #include <map>
-#include <iostream>
+#include <cmath>
 
 #include <libevdev/libevdev.h>
 #include <sstream>
@@ -101,6 +101,19 @@ std::experimental::optional<wf::color_t>
     }
 
     return wf::color_t{r, g, b, a};
+}
+
+bool wf::color_t::operator== (const color_t& other) const
+{
+    constexpr double epsilon = 1e-6;
+
+    bool equal = true;
+    equal &= std::abs(this->r - other.r) < epsilon;
+    equal &= std::abs(this->g - other.g) < epsilon;
+    equal &= std::abs(this->b - other.b) < epsilon;
+    equal &= std::abs(this->a - other.a) < epsilon;
+
+    return equal;
 }
 
 /* ------------------------- wf::keybinding_t ------------------------------- */
