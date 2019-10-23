@@ -61,6 +61,10 @@ TEST_CASE("wf::config::option_t<unboundable>")
     CHECK(opt.get_value() == binding2);
     opt.set_value("garbage");
     CHECK(opt.get_value() == binding1); // default value
+    opt.set_value("<super>KEY_T");
+    CHECK(opt.get_value() == binding2);
+    opt.reset_to_default();
+    CHECK(opt.get_value() == binding1);
 
     CHECK(are_bounds_enabled<option_t<wf::keybinding_t>>::value == false);
     CHECK(are_bounds_enabled<option_t<wf::buttonbinding_t>>::value == false);
@@ -97,6 +101,8 @@ TEST_CASE("wf::config::option_t<boundable>")
     iopt.set_minimum(3);
     CHECK(iopt.get_minimum().value_or(0) == 3);
     CHECK(iopt.get_value() == 3);
+    iopt.reset_to_default();
+    CHECK(iopt.get_value() == 5);
 
     option_t<double_wrapper_t> dopt{"dbl123", -1.0};
     dopt.set_value(-100);

@@ -30,6 +30,9 @@ class option_base_t
      */
     virtual void set_value(const std::string&) {};
 
+    /** Reset the option to its default value.  */
+    virtual void reset_to_default() {};
+
     /**
      * A function to be executed when the option value changes.
      */
@@ -173,6 +176,14 @@ class option_t : public option_base_t,
     {
         auto new_value = Type::from_string(new_value_str);
         set_value(new_value.value_or(default_value));
+    }
+
+    /**
+     * Reset the option to its default value.
+     */
+    virtual void reset_to_default()
+    {
+        set_value(default_value);
     }
 
     /**
