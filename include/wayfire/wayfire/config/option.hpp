@@ -24,6 +24,13 @@ class option_base_t
     std::string get_name() const;
 
     /**
+     * Set the option value from the given string.
+     * If the value is invalid depending on option type, the value will be reset
+     * to the default value.
+     */
+    virtual void set_value(const std::string&) {};
+
+    /**
      * A function to be executed when the option value changes.
      */
     using updated_callback_t = std::function<void()>;
@@ -162,7 +169,7 @@ class option_t : public option_base_t,
      * The value will be auto-clamped to the defined bounds, if they exist.
      * If the value actually changes, the updated handlers will be called.
      */
-    void set_value(const std::string& new_value_str)
+    virtual void set_value(const std::string& new_value_str)
     {
         auto new_value = Type::from_string(new_value_str);
         set_value(new_value.value_or(default_value));
