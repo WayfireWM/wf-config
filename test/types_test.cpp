@@ -20,6 +20,10 @@ TEST_CASE("wf::int_wrapper_t")
     CHECK(!wf::int_wrapper_t::from_string("1e4"));
     CHECK(!wf::int_wrapper_t::from_string(""));
     CHECK(!wf::int_wrapper_t::from_string("1234567890000"));
+
+    using wiw = wf::int_wrapper_t;
+    CHECK(wiw::from_string(wiw::to_string(456)).value() == 456);
+    CHECK(wiw::from_string(wiw::to_string(0)).value() == 0);
 }
 
 TEST_CASE("wf::double_wrapper_t")
@@ -39,6 +43,10 @@ TEST_CASE("wf::double_wrapper_t")
     CHECK(!wf::double_wrapper_t::from_string("1u4"));
     CHECK(!wf::double_wrapper_t::from_string(""));
     CHECK(!wf::double_wrapper_t::from_string("abc"));
+
+    using wd = wf::double_wrapper_t;
+    CHECK(wd::from_string(wd::to_string(-4.56)).value() == doctest::Approx(-4.56));
+    CHECK(wd::from_string(wd::to_string(0.0)).value() == doctest::Approx(0));
 }
 
 static void check_color_equals(const wf::color_t& color,
@@ -74,6 +82,11 @@ TEST_CASE("wf::color_t")
     CHECK(!wf::color_t::from_string(""));
     CHECK(!wf::color_t::from_string("#ZYXUIOPQ"));
     CHECK(!wf::color_t::from_string("#AUIO")); // invalid color
+
+    using wc_t = wf::color_t;
+    CHECK(wc_t::to_string(wc_t{0, 0, 0, 0}) == "#00000000");
+    CHECK(wc_t::to_string(wc_t{0.4, 0.8, 0.3686274, 0.9686274}) == "#66CC5EF7");
+    CHECK(wc_t::to_string(wc_t{1, 1, 1, 1}) == "#FFFFFFFF");
 }
 
 TEST_CASE("wf::keybinding_t")
@@ -106,6 +119,10 @@ TEST_CASE("wf::keybinding_t")
     /* Test equality */
     CHECK(binding1 == binding3);
     CHECK(!(binding2 == binding1));
+
+    using wk_t = wf::keybinding_t;
+    CHECK(wk_t::from_string(wk_t::to_string(binding1)).value() == binding1);
+    CHECK(wk_t::from_string(wk_t::to_string(binding2)).value() == binding2);
 }
 
 TEST_CASE("wf::buttonbinding_t")
@@ -132,6 +149,11 @@ TEST_CASE("wf::buttonbinding_t")
     /* Test equality */
     CHECK(binding1 == binding3);
     CHECK(!(binding2 == binding1));
+
+    using wb_t = wf::buttonbinding_t;
+    CHECK(wb_t::from_string(wb_t::to_string(binding1)).value() == binding1);
+    CHECK(wb_t::from_string(wb_t::to_string(binding2)).value() == binding2);
+    CHECK(wb_t::from_string(wb_t::to_string(binding3)).value() == binding3);
 }
 
 TEST_CASE("wf::touchgesture_t")
@@ -186,4 +208,11 @@ TEST_CASE("wf::touchgesture_t")
     CHECK(binding5 == wf::touchgesture_t{wf::GESTURE_TYPE_PINCH, 0, 2});
     CHECK(!(binding5 == wf::touchgesture_t{
         wf::GESTURE_TYPE_PINCH, wf::GESTURE_DIRECTION_IN, 2}));
+
+    using wt_t = wf::touchgesture_t;
+    CHECK(wt_t::from_string(wt_t::to_string(binding1)).value() == binding1);
+    CHECK(wt_t::from_string(wt_t::to_string(binding2)).value() == binding2);
+    CHECK(wt_t::from_string(wt_t::to_string(binding3)).value() == binding3);
+    CHECK(wt_t::from_string(wt_t::to_string(binding4)).value() == binding4);
+    CHECK(wt_t::from_string(wt_t::to_string(binding5)).value() == binding5);
 }

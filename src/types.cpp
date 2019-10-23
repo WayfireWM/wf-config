@@ -48,6 +48,12 @@ template<> std::experimental::optional<wf::string_wrapper_t>
     return string_wrapper_t{value};
 }
 
+template<> std::string wf::string_wrapper_t::to_string(
+    const string_wrapper_t& value)
+{
+    return value;
+}
+
 /* ----------------------------- wf::color_t -------------------------------- */
 wf::color_t::color_t()
     : color_t(0.0, 0.0, 0.0, 0.0) {}
@@ -69,6 +75,7 @@ static double hex_to_double(std::string value)
     return std::strtol(value.c_str(), &dummy, 16);
 }
 
+static const std::string hex_digits = "0123456789ABCDEF";
 std::experimental::optional<wf::color_t>
     wf::color_t::from_string(const std::string& value)
 {
@@ -79,8 +86,7 @@ std::experimental::optional<wf::color_t>
     if (value[0] != '#')
         return {};
 
-    const std::string permissible = "0123456789ABCDEF";
-    if (value.find_first_not_of(permissible, 1) != std::string::npos)
+    if (value.find_first_not_of(hex_digits, 1) != std::string::npos)
         return {};
 
     double r, g, b, a;
@@ -101,6 +107,28 @@ std::experimental::optional<wf::color_t>
     }
 
     return wf::color_t{r, g, b, a};
+}
+
+std::string wf::color_t::to_string(const color_t& value)
+{
+    const int max_byte = 255;
+    const int min_byte = 0;
+
+    auto to_hex = [=] (double number_d)
+    {
+        int number = std::round(number_d);
+        /* Clamp */
+        number = std::min(number, max_byte);
+        number = std::max(number, min_byte);
+
+        std::string result;
+        result += hex_digits[number / 16];
+        result += hex_digits[number % 16];
+        return result;
+    };
+
+    return "#" + to_hex(value.r * max_byte) + to_hex(value.g * max_byte) +
+        to_hex(value.b * max_byte) + to_hex(value.a * max_byte);
 }
 
 bool wf::color_t::operator== (const color_t& other) const
@@ -156,6 +184,14 @@ static std::vector<std::string> split_at(std::string value, std::string at)
     return tokens;
 }
 
+static std::map<std::string, wf::keyboard_modifier_t> modifier_names =
+{
+    {"ctrl", wf::KEYBOARD_MODIFIER_CTRL},
+    {"alt", wf::KEYBOARD_MODIFIER_ALT},
+    {"shift", wf::KEYBOARD_MODIFIER_SHIFT},
+    {"super", wf::KEYBOARD_MODIFIER_LOGO},
+};
+
 static general_binding_t parse_binding(std::string binding_description)
 {
     /* Strategy: split the binding at modifier begin/end markings and spaces,
@@ -165,14 +201,6 @@ static general_binding_t parse_binding(std::string binding_description)
     auto tokens = split_at(binding_description, delims);
     if (tokens.empty())
         return {0, 0};
-
-    static std::map<std::string, wf::keyboard_modifier_t> modifier_names =
-    {
-        {"ctrl", wf::KEYBOARD_MODIFIER_CTRL},
-        {"alt", wf::KEYBOARD_MODIFIER_ALT},
-        {"shift", wf::KEYBOARD_MODIFIER_SHIFT},
-        {"super", wf::KEYBOARD_MODIFIER_LOGO},
-    };
 
     general_binding_t result = {0, 0};
     for (size_t i = 0; i < tokens.size() - 1; i++)
@@ -192,6 +220,24 @@ static general_binding_t parse_binding(std::string binding_description)
     return result;
 }
 
+static std::string binding_to_string(uint32_t modifiers, uint32_t key)
+{
+    std::string result = "";
+    for (auto& pair : modifier_names)
+    {
+        if (modifiers & pair.second)
+            result += pair.first + " ";
+    }
+
+    if (key > 0)
+    {
+        auto evdev_name = libevdev_event_code_get_name(EV_KEY, key);
+        result += evdev_name ?: "NULL";
+    }
+
+    return result;
+}
+
 wf::keybinding_t::keybinding_t(uint32_t modifier, uint32_t keyval)
 {
     this->mod = modifier;
@@ -206,6 +252,11 @@ wf::keybinding_t::from_string(const std::string& description)
         return {};
 
     return wf::keybinding_t{parsed.mods, parsed.value};
+}
+
+std::string wf::keybinding_t::to_string(const wf::keybinding_t& value)
+{
+    return binding_to_string(value.get_modifiers(), value.get_key());
 }
 
 bool wf::keybinding_t::operator == (const keybinding_t& other) const
@@ -242,6 +293,11 @@ wf::buttonbinding_t::from_string(const std::string& description)
     return wf::buttonbinding_t{parsed.mods, parsed.value};
 }
 
+std::string wf::buttonbinding_t::to_string(const wf::buttonbinding_t& value)
+{
+    return binding_to_string(value.get_modifiers(), value.get_button());
+}
+
 bool wf::buttonbinding_t::operator == (const buttonbinding_t& other) const
 {
     return this->mod == other.mod && this->button == other.button;
@@ -265,20 +321,22 @@ wf::touchgesture_t::touchgesture_t(touch_gesture_type_t type, uint32_t direction
     this->finger_count = finger_count;
 }
 
+static const std::map<std::string, wf::touch_gesture_direction_t>
+touch_gesture_direction_string_map =
+{
+    {"up",    wf::GESTURE_DIRECTION_UP},
+    {"down",  wf::GESTURE_DIRECTION_DOWN},
+    {"left",  wf::GESTURE_DIRECTION_LEFT},
+    {"right", wf::GESTURE_DIRECTION_RIGHT}
+};
+
 static wf::touch_gesture_direction_t parse_single_direction(
     const std::string& direction)
 {
-    static const std::map<std::string, wf::touch_gesture_direction_t>
-        direction_string_map =
-        {
-            {"up",    wf::GESTURE_DIRECTION_UP},
-            {"down",  wf::GESTURE_DIRECTION_DOWN},
-            {"left",  wf::GESTURE_DIRECTION_LEFT},
-            {"right", wf::GESTURE_DIRECTION_RIGHT}
-        };
 
-    if (direction_string_map.count(direction))
-        return direction_string_map.at(direction);
+
+    if (touch_gesture_direction_string_map.count(direction))
+        return touch_gesture_direction_string_map.at(direction);
 
     throw std::domain_error("invalid swipe direction");
 }
@@ -376,6 +434,53 @@ wf::touchgesture_t::from_string(const std::string& description)
         return {};
 
     return gesture;
+}
+
+static std::string direction_to_string(uint32_t direction)
+{
+    std::string result = "";
+    for (auto& pair : touch_gesture_direction_string_map)
+    {
+        if (direction & pair.second)
+            result += pair.first + "-";
+    }
+
+    if (result.size() > 0)
+    {
+        /* Remove trailing - */
+        result.pop_back();
+    }
+
+    return result;
+}
+
+std::string wf::touchgesture_t::to_string(const touchgesture_t& value)
+{
+    std::string result;
+    switch (value.type)
+    {
+        case GESTURE_TYPE_NONE:
+            return "";
+        case GESTURE_TYPE_EDGE_SWIPE:
+            result += "edge-";
+            // fallthrough
+        case GESTURE_TYPE_SWIPE:
+            result += "swipe ";
+            result += direction_to_string(value.get_direction()) + " ";
+            break;
+
+        case GESTURE_TYPE_PINCH:
+            result += "pinch ";
+
+            if (value.get_direction() == GESTURE_DIRECTION_IN)
+                result += "in ";
+            if (value.get_direction() == GESTURE_DIRECTION_OUT)
+                result += "out ";
+            break;
+    }
+
+    result += std::to_string(value.get_finger_count());
+    return result;
 }
 
 wf::touch_gesture_type_t wf::touchgesture_t::get_type() const

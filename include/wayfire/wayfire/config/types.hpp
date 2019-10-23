@@ -27,6 +27,13 @@ struct primitive_type_wrapper_t
     static std::experimental::optional<primitive_type_wrapper_t<Primitive>>
         from_string(const std::string& string);
 
+    /** Convert the wrapped type to a string */
+    static std::string to_string(
+        const primitive_type_wrapper_t<Primitive>& value)
+    {
+        return std::to_string((Primitive)value);
+    }
+
     /** Convert back to the primitive type */
     operator Primitive() const { return value; }
 
@@ -59,6 +66,13 @@ template<> std::experimental::optional<double_wrapper_t>
  */
 template<> std::experimental::optional<string_wrapper_t>
     string_wrapper_t::from_string(const std::string&);
+
+/**
+ * Implementation of the string_wrapper_t::to_string.
+ */
+template<> std::string string_wrapper_t::to_string(
+    const string_wrapper_t& value);
+
 /**
  * Represents a color in RGBA format.
  */
@@ -86,6 +100,9 @@ struct color_t
      */
     static std::experimental::optional<color_t>
         from_string(const std::string& value);
+
+    /** Convert the color to its hex string representation. */
+    static std::string to_string(const color_t& value);
 
     /**
      * Compare colors channel-for-channel.
@@ -148,6 +165,9 @@ struct keybinding_t
     static std::experimental::optional<keybinding_t> from_string(
         const std::string& description);
 
+    /** Represent the keybinding as a string. */
+    static std::string to_string(const keybinding_t& value);
+
     /* Check whether two keybindings refer to the same shortcut */
     bool operator == (const keybinding_t& other) const;
 
@@ -184,6 +204,9 @@ struct buttonbinding_t
      */
     static std::experimental::optional<buttonbinding_t> from_string(
         const std::string& description);
+
+    /** Represent the buttonbinding as a string. */
+    static std::string to_string(const buttonbinding_t& value);
 
     /* Check whether two keybindings refer to the same shortcut */
     bool operator == (const buttonbinding_t& other) const;
@@ -260,6 +283,9 @@ struct touchgesture_t
      */
     static std::experimental::optional<touchgesture_t> from_string(
         const std::string& description);
+
+    /** Represent the touch gesture as a string. */
+    static std::string to_string(const touchgesture_t& value);
 
     /** @return The type of the gesture */
     touch_gesture_type_t get_type() const;
