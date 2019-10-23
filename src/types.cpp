@@ -214,7 +214,16 @@ static general_binding_t parse_binding(std::string binding_description)
 
     int code = libevdev_event_code_from_name(EV_KEY, tokens.back().c_str());
     if (code == -1)
-        return {0, 0}; // not found
+    {
+        /* Last token might either be yet another modifier (in case of modifier
+         * bindings) or it may be KEY_*. If neither, we have invalid binding */
+        if (modifier_names.count(tokens.back())) {
+            result.mods |= modifier_names[tokens.back()];
+            code = 0;
+        } else {
+            return {0, 0}; // not found
+        }
+    }
 
     result.value = code;
     return result;
@@ -248,6 +257,10 @@ std::experimental::optional<wf::keybinding_t>
 wf::keybinding_t::from_string(const std::string& description)
 {
     auto parsed = parse_binding(description);
+    /* Disallow buttons, because evdev treats buttons and keys the same */
+    if (parsed.value > 0 && description.find("KEY") == std::string::npos)
+        return {};
+
     if (parsed.mods == 0 && parsed.value == 0)
         return {};
 
@@ -286,8 +299,12 @@ wf::buttonbinding_t::buttonbinding_t(uint32_t modifier, uint32_t buttonval)
 std::experimental::optional<wf::buttonbinding_t>
 wf::buttonbinding_t::from_string(const std::string& description)
 {
+    /* Disallow keys, because evdev treats buttons and keys the same */
+    if (description.find("BTN") == std::string::npos)
+        return {};
+
     auto parsed = parse_binding(description);
-    if (parsed.mods == 0 && parsed.value == 0)
+    if (parsed.value == 0)
         return {};
 
     return wf::buttonbinding_t{parsed.mods, parsed.value};

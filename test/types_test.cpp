@@ -111,10 +111,14 @@ TEST_CASE("wf::keybinding_t")
     CHECK(binding3.get_modifiers() == modifier1);
     CHECK(binding3.get_key() == KEY_L);
 
+    wf::keybinding_t mod_binding = {wf::KEYBOARD_MODIFIER_LOGO, 0};
+    CHECK(wf::keybinding_t::from_string("<super>").value() == mod_binding);
+
     /* Test invalid bindings */
     CHECK(!wf::keybinding_t::from_string("<invalid>KEY_L"));
-
+    CHECK(!wf::keybinding_t::from_string(""));
     CHECK(!wf::keybinding_t::from_string("<super> KEY_nonexist"));
+    CHECK(!wf::keybinding_t::from_string("<alt> BTN_LEFT"));
 
     /* Test equality */
     CHECK(binding1 == binding3);
@@ -145,6 +149,9 @@ TEST_CASE("wf::buttonbinding_t")
 
     /* Test invalid bindings */
     CHECK(!wf::buttonbinding_t::from_string("<super> BTN_inv"));
+    CHECK(!wf::buttonbinding_t::from_string("<super> KEY_E"));
+    CHECK(!wf::buttonbinding_t::from_string(""));
+    CHECK(!wf::buttonbinding_t::from_string("<super>"));
 
     /* Test equality */
     CHECK(binding1 == binding3);
