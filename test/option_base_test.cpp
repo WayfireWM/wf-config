@@ -1,12 +1,28 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-
-#define protected public // hack for the test
 #include <wayfire/config/option.hpp>
+
+class option_base_stub_t : public wf::config::option_base_t
+{
+  public:
+    option_base_stub_t(std::string name)
+        : option_base_t(name) {}
+
+    void set_value(const std::string&) override {}
+    void reset_to_default() override {}
+    std::string get_value_str() const override { return ""; }
+
+  public:
+    void notify_updated() const
+    {
+        option_base_t::notify_updated();
+    }
+};
+
 
 TEST_CASE("wf::option_base_t")
 {
-    wf::config::option_base_t option{"string"};
+    option_base_stub_t option{"string"};
     CHECK(option.get_name() == "string");
 
     int callback_called = 0;

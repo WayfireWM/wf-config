@@ -28,13 +28,13 @@ class option_base_t
      * If the value is invalid depending on option type, the value will be reset
      * to the default value.
      */
-    virtual void set_value(const std::string&) {};
+    virtual void set_value(const std::string&) = 0;
 
     /** Reset the option to its default value.  */
-    virtual void reset_to_default() {};
+    virtual void reset_to_default() = 0;
 
     /** Get the option value in string format */
-    virtual std::string get_value_str() const { return ""; }
+    virtual std::string get_value_str() const = 0;
 
     /**
      * A function to be executed when the option value changes.
