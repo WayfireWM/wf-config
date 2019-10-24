@@ -197,8 +197,23 @@ static const std::string xml_section_full = R"(
     <option name="KeyOption" type="key">
         <default>&lt;super&gt; KEY_E</default>
     </option>
-   <option name="IntOption" type="int">
+    <option name="ButtonOption" type="button">
+        <default>&lt;super&gt; BTN_LEFT</default>
+    </option>
+    <option name="TouchOption" type="gesture">
+        <default>swipe up 3</default>
+    </option>
+    <option name="ActivatorOption" type="activator">
+        <default>&lt;super&gt; KEY_E | swipe up 3</default>
+    </option>
+    <option name="IntOption" type="int">
         <default>3</default>
+    </option>
+    <option name="DoubleOption" type="double">
+        <default>5.0</default>
+    </option>
+    <option name="StringOption" type="string">
+        <default>test</default>
     </option>
     <option name="KeyOption2" type="invalid">
         <default>&lt;super&gt; KEY_T</default>
@@ -260,14 +275,14 @@ TEST_CASE("wf::config::xml::create_section")
         REQUIRE(section != nullptr);
         CHECK(section->get_name() == "TestPluginFull");
 
-        REQUIRE(section->get_registered_options().size() == 2);
         auto opts = section->get_registered_options();
-        std::set<std::string> opt_names = {
-            opts[0]->get_name(),
-            opts[1]->get_name(),
-        };
+        std::set<std::string> opt_names;
+        for (auto& opt : opts)
+            opt_names.insert(opt->get_name());
 
-        std::set<std::string> expected_names = {"KeyOption", "IntOption"};
+        std::set<std::string> expected_names = {
+            "KeyOption", "ButtonOption", "TouchOption", "ActivatorOption",
+            "IntOption", "DoubleOption", "StringOption"};
         CHECK(opt_names == expected_names);
     }
 

@@ -138,6 +138,8 @@ std::shared_ptr<wf::config::option_base_t>
         option = create_option<wf::double_wrapper_t> (name, default_value);
         bounds_error = set_bounds<wf::double_wrapper_t>(option,
             min_value_ptr, max_value_ptr);
+    } else if (type == "string") {
+        option = create_option<wf::string_wrapper_t> (name, default_value);
     } else if (type == "key") {
         option = create_option<wf::keybinding_t> (name, default_value);
     } else if (type == "button") {
@@ -146,6 +148,8 @@ std::shared_ptr<wf::config::option_base_t>
         option = create_option<wf::touchgesture_t> (name, default_value);
     } else if (type == "color") {
         option = create_option<wf::color_t> (name, default_value);
+    } else if (type == "activator") {
+        option = create_option<wf::activatorbinding_t> (name, default_value);
     } else
     {
         LOGE("Could not parse ", node->doc->name,

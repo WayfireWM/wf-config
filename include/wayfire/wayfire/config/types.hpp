@@ -35,6 +35,16 @@ struct primitive_type_wrapper_t
         return std::to_string((Primitive)value);
     }
 
+    bool operator == (const Primitive& other) const
+    {
+        return value == other;
+    }
+
+    bool operator == (const primitive_type_wrapper_t<Primitive>& other) const
+    {
+        return value == other.value;
+    }
+
     /** Convert back to the primitive type */
     operator Primitive() const { return value; }
 
