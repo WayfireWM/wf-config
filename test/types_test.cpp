@@ -119,6 +119,8 @@ TEST_CASE("wf::keybinding_t")
     CHECK(!wf::keybinding_t::from_string(""));
     CHECK(!wf::keybinding_t::from_string("<super> KEY_nonexist"));
     CHECK(!wf::keybinding_t::from_string("<alt> BTN_LEFT"));
+    CHECK(!wf::keybinding_t::from_string("<alt> super KEY_L"));
+    CHECK(!wf::keybinding_t::from_string(("<alt><alt>")));
 
     /* Test equality */
     CHECK(binding1 == binding3);
@@ -152,6 +154,7 @@ TEST_CASE("wf::buttonbinding_t")
     CHECK(!wf::buttonbinding_t::from_string("<super> KEY_E"));
     CHECK(!wf::buttonbinding_t::from_string(""));
     CHECK(!wf::buttonbinding_t::from_string("<super>"));
+    CHECK(!wf::buttonbinding_t::from_string("super BTN_LEFT"));
 
     /* Test equality */
     CHECK(binding1 == binding3);
