@@ -126,6 +126,10 @@ TEST_CASE("wf::config::option_t<boundable>")
     dopt.reset_to_default();
     CHECK(dopt.get_value() == doctest::Approx(55));
 
+    dopt.set_default_value_str("75"); // invalid wrt min/max
+    dopt.reset_to_default();
+    CHECK(dopt.get_value() == doctest::Approx(60)); // not more than max
+
     CHECK(are_bounds_enabled<option_t<int_wrapper_t>>::value);
     CHECK(are_bounds_enabled<option_t<double_wrapper_t>>::value);
 }
