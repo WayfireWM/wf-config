@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <cmath>
+#include <algorithm>
 
 #include <libevdev/libevdev.h>
 #include <sstream>
@@ -155,7 +156,8 @@ struct general_binding_t
  * Split @value at non-empty tokens when encountering any of the characters
  * in @at
  */
-static std::vector<std::string> split_at(std::string value, std::string at)
+static std::vector<std::string> split_at(std::string value, std::string at,
+    bool allow_empty = false)
 {
     /* Trick: add a delimiter at position 0 and at the end
      * to avoid special casing */
@@ -174,7 +176,7 @@ static std::vector<std::string> split_at(std::string value, std::string at)
     std::vector<std::string> tokens;
     for (size_t i = 1; i < split_positions.size(); i++)
     {
-        if (split_positions[i] == split_positions[i - 1] + 1)
+        if (split_positions[i] == split_positions[i - 1] + 1 && !allow_empty)
             continue; // skip empty tokens
 
         tokens.push_back(value.substr(split_positions[i - 1] + 1,
@@ -560,4 +562,124 @@ bool wf::touchgesture_t::operator == (const touchgesture_t& other) const
 {
     return type == other.type && finger_count == other.finger_count &&
         (direction == 0 || other.direction == 0 || direction == other.direction);
+}
+
+/* --------------------------- activatorbinding_t --------------------------- */
+struct wf::activatorbinding_t::impl
+{
+    std::vector<keybinding_t> keys;
+    std::vector<buttonbinding_t> buttons;
+    std::vector<touchgesture_t> gestures;
+};
+
+wf::activatorbinding_t::activatorbinding_t()
+{
+    this->priv = std::make_unique<impl> ();
+}
+
+wf::activatorbinding_t::~activatorbinding_t() = default;
+
+wf::activatorbinding_t::activatorbinding_t(const activatorbinding_t& other)
+{
+    this->priv = std::make_unique<impl> (*other.priv);
+}
+
+wf::activatorbinding_t& wf::activatorbinding_t::operator= (
+    const activatorbinding_t& other)
+{
+    if (&other != this)
+        this->priv = std::make_unique<impl> (*other.priv);
+
+    return *this;
+}
+
+template<class Type> bool try_add_binding(
+    std::vector<Type>& to, const std::string& value)
+{
+    auto binding = Type::from_string(value);
+    if (binding)
+    {
+        to.push_back(binding.value());
+        return true;
+    }
+
+    return false;
+}
+
+std::experimental::optional<wf::activatorbinding_t>
+    wf::activatorbinding_t::from_string(const std::string& string)
+{
+    activatorbinding_t binding;
+
+    if (filter_out(string, whitespace_chars) == "")
+        return binding; // empty binding
+
+    auto tokens = split_at(string, "|", true);
+    for (auto& token : tokens)
+    {
+        bool is_valid_binding =
+            try_add_binding(binding.priv->keys, token) ||
+            try_add_binding(binding.priv->buttons, token) ||
+            try_add_binding(binding.priv->gestures, token);
+
+        if (!is_valid_binding)
+            return {};
+    }
+
+    return binding;
+}
+
+template<class Type>
+static std::string concatenate_bindings(const std::vector<Type>& bindings)
+{
+    std::string repr = "";
+    for (auto& b : bindings)
+    {
+        repr += Type::to_string(b);
+        repr += " | ";
+    }
+
+    return repr;
+}
+
+std::string wf::activatorbinding_t::to_string(const activatorbinding_t& value)
+{
+    std::string repr =
+        concatenate_bindings(value.priv->keys) +
+        concatenate_bindings(value.priv->buttons) +
+        concatenate_bindings(value.priv->gestures);
+
+    /* Remove trailing " | " */
+    if (repr.size() >= 3)
+        repr.erase(repr.size() - 3);
+
+    return repr;
+}
+
+template<class Type> bool find_in_container(const std::vector<Type>& haystack,
+    Type needle)
+{
+    return std::find(haystack.begin(), haystack.end(), needle) != haystack.end();
+}
+
+bool wf::activatorbinding_t::has_match(const keybinding_t& key) const
+{
+    return find_in_container(priv->keys, key);
+}
+
+bool wf::activatorbinding_t::has_match(const buttonbinding_t& button) const
+{
+    return find_in_container(priv->buttons, button);
+}
+
+bool wf::activatorbinding_t::has_match(const touchgesture_t& gesture) const
+{
+    return find_in_container(priv->gestures, gesture);
+}
+
+bool wf::activatorbinding_t::operator == (const activatorbinding_t& other) const
+{
+    return priv->keys == other.priv->keys &&
+        priv->buttons == other.priv->buttons &&
+        priv->gestures == other.priv->gestures;
 }

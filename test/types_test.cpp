@@ -226,3 +226,77 @@ TEST_CASE("wf::touchgesture_t")
     CHECK(wt_t::from_string(wt_t::to_string(binding4)).value() == binding4);
     CHECK(wt_t::from_string(wt_t::to_string(binding5)).value() == binding5);
 }
+
+TEST_CASE("wf::activatorbinding_t")
+{
+    using namespace wf;
+    activatorbinding_t empty_binding{};
+
+    keybinding_t kb1{KEYBOARD_MODIFIER_ALT, KEY_T};
+    keybinding_t kb2{KEYBOARD_MODIFIER_LOGO | KEYBOARD_MODIFIER_SHIFT, KEY_TAB};
+
+    buttonbinding_t bb1{KEYBOARD_MODIFIER_CTRL, BTN_EXTRA};
+    buttonbinding_t bb2{0, BTN_SIDE};
+
+    touchgesture_t tg1{GESTURE_TYPE_SWIPE, GESTURE_DIRECTION_UP, 3};
+    touchgesture_t tg2{GESTURE_TYPE_PINCH, GESTURE_DIRECTION_IN, 4};
+
+    auto test_binding = [&] (std::string description,
+        bool match_kb1, bool match_kb2, bool match_bb1, bool match_bb2,
+        bool match_tg1, bool match_tg2)
+    {
+        auto full_binding_opt = activatorbinding_t::from_string(description);
+        REQUIRE(full_binding_opt);
+        auto actbinding = full_binding_opt.value();
+
+        CHECK(actbinding.has_match(kb1) == match_kb1);
+        CHECK(actbinding.has_match(kb2) == match_kb2);
+        CHECK(actbinding.has_match(bb1) == match_bb1);
+        CHECK(actbinding.has_match(bb2) == match_bb2);
+        CHECK(actbinding.has_match(tg1) == match_tg1);
+        CHECK(actbinding.has_match(tg2) == match_tg2);
+    };
+
+    /** Test all possible combinations */
+    for (int k1 = 0; k1 <= 1; k1++)
+    {
+        for (int k2 = 0; k2 <= 1; k2++)
+        {
+            for (int b1 = 0; b1 <= 1; b1++)
+            {
+                for (int b2 = 0; b2 <= 1; b2++)
+                {
+                    for (auto t1 = 0; t1 <= 1; t1++)
+                    {
+                        for (auto t2 = 0; t2 <= 1; t2++)
+                        {
+                            std::string descr;
+                            if (k1) descr += keybinding_t::to_string(kb1) + " | ";
+                            if (k2) descr += keybinding_t::to_string(kb2) + " | ";
+                            if (b1) descr += buttonbinding_t::to_string(bb1) + " | ";
+                            if (b2) descr += buttonbinding_t::to_string(bb2) + " | ";
+                            if (t1) descr += touchgesture_t::to_string(tg1) + " | ";
+                            if (t2) descr += touchgesture_t::to_string(tg2) + " | ";
+
+                            if (descr.length() >= 3)
+                            {
+                                // remove trailing " | "
+                                descr.erase(descr.size() - 3);
+                            }
+
+                            test_binding(descr, k1, k2, b1, b2, t1, t2);
+                            CHECK(activatorbinding_t::to_string(
+                                    activatorbinding_t::from_string(descr).value()) == descr);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    test_binding("<alt>KEY_T|<alt>KEY_T", 1, 0, 0, 0, 0, 0);
+
+    CHECK(!activatorbinding_t::from_string("<alt> KEY_K || <alt> KEY_U"));
+    CHECK(!activatorbinding_t::from_string("<alt> KEY_K | thrash"));
+    CHECK(!activatorbinding_t::from_string("<alt> KEY_K |"));
+}

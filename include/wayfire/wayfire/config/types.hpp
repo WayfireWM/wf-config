@@ -2,6 +2,7 @@
 
 #include <glm/vec4.hpp>
 #include <string>
+#include <memory>
 #include <experimental/optional>
 
 namespace wf
@@ -312,6 +313,58 @@ struct touchgesture_t
     uint32_t direction;
     /** Number of fingers of the gesture */
     int finger_count;
+};
+
+/**
+ * Represents a binding which can be activated via multiple actions -
+ * keybindings, buttonbindings and touch gestures.
+ */
+struct activatorbinding_t
+{
+  public:
+    /**
+     * Initialize an empty activator binding, i.e one which cannot be activated
+     * in any way.
+     */
+    activatorbinding_t();
+    ~activatorbinding_t();
+
+    /* Copy constructor */
+    activatorbinding_t(const activatorbinding_t& other);
+    /* Copy assignment */
+    activatorbinding_t& operator = (const activatorbinding_t& other);
+
+    /**
+     * Create an activator string from the given string description.
+     * The string consists of valid descriptions of keybindings, buttonbindings
+     * and touch gestures, separated by a single '|' sign.
+     */
+    static std::experimental::optional<activatorbinding_t> from_string(
+        const std::string& string);
+
+    /** Represent the activator binding as a string. */
+    static std::string to_string(const activatorbinding_t& value);
+
+    /** @return true if the activator is activated by the given keybinding. */
+    bool has_match(const keybinding_t& key) const;
+
+    /** @return true if the activator is activated by the given buttonbinding. */
+    bool has_match(const buttonbinding_t& button) const;
+
+    /** @return true if the activator is activated by the given gesture. */
+    bool has_match(const touchgesture_t& gesture) const;
+
+    /**
+     * Check equality of two activator bindings.
+     *
+     * @return true if the two activator bindings are activated by the exact
+     *  same bindings, false otherwise.
+     */
+    bool operator == (const activatorbinding_t& other) const;
+
+  private:
+    struct impl;
+    std::unique_ptr<impl> priv;
 };
 
 }

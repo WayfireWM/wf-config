@@ -21,6 +21,7 @@ sources = [
 'src/section.cpp',
 'src/log.cpp',
 'src/xml.cpp',
+'src/config-manager.cpp',
 ]
 
 wfconfig_inc = include_directories('include/wayfire')
