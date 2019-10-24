@@ -28,10 +28,18 @@ class option_base_t
      * If the value is invalid depending on option type, the value will be reset
      * to the default value.
      */
-    virtual void set_value(const std::string&) = 0;
+    virtual void set_value_str(const std::string& value) = 0;
 
     /** Reset the option to its default value.  */
     virtual void reset_to_default() = 0;
+
+    /**
+     * Change the default value of an option. Note that this will not change the
+     * option value, only its default value.
+     *
+     * If the new default value is invalid, the request will be ignored.
+     */
+    virtual void set_default_value_str(const std::string& default_value) = 0;
 
     /** Get the option value in string format */
     virtual std::string get_value_str() const = 0;
@@ -175,7 +183,7 @@ class option_t : public option_base_t,
      * The value will be auto-clamped to the defined bounds, if they exist.
      * If the value actually changes, the updated handlers will be called.
      */
-    virtual void set_value(const std::string& new_value_str) override
+    virtual void set_value_str(const std::string& new_value_str) override
     {
         auto new_value = Type::from_string(new_value_str);
         set_value(new_value.value_or(default_value));
@@ -184,9 +192,19 @@ class option_t : public option_base_t,
     /**
      * Reset the option to its default value.
      */
-    virtual void reset_to_default()
+    virtual void reset_to_default() override
     {
         set_value(default_value);
+    }
+
+    /**
+     * Change the default value of the function, if possible.
+     */
+    virtual void set_default_value_str(const std::string& defvalue) override
+    {
+        auto parsed = Type::from_string(defvalue);
+        if (parsed)
+            this->default_value = parsed.value();
     }
 
     /**
@@ -240,7 +258,7 @@ class option_t : public option_base_t,
      }
 
   protected:
-     const Type default_value; /* default value */
+     Type default_value; /* default value */
      Type value; /* current value */
 };
 

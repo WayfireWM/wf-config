@@ -57,15 +57,19 @@ TEST_CASE("wf::config::option_t<unboundable>")
 
     opt.set_value(binding1);
     CHECK(opt.get_value() == binding1);
-    opt.set_value("<super>KEY_T");
+    opt.set_value_str("<super>KEY_T");
     CHECK(opt.get_value() == binding2);
-    opt.set_value("garbage");
+    opt.set_value_str("garbage");
     CHECK(opt.get_value() == binding1); // default value
-    opt.set_value("<super>KEY_T");
+    opt.set_value_str("<super>KEY_T");
     CHECK(opt.get_value() == binding2);
     opt.reset_to_default();
     CHECK(opt.get_value() == binding1);
     CHECK(wf::keybinding_t::from_string(opt.get_value_str()).value() == binding1);
+
+    opt.set_default_value_str("<super>KEY_T");
+    opt.reset_to_default();
+    CHECK(opt.get_value() == binding2);
 
     CHECK(are_bounds_enabled<option_t<wf::keybinding_t>>::value == false);
     CHECK(are_bounds_enabled<option_t<wf::buttonbinding_t>>::value == false);
@@ -116,6 +120,11 @@ TEST_CASE("wf::config::option_t<boundable>")
     CHECK(dopt.get_maximum().value_or(60) == doctest::Approx(50));
     CHECK(double_wrapper_t::from_string(dopt.get_value_str()).value_or(0) ==
         doctest::Approx(50));
+
+    dopt.set_maximum(60);
+    dopt.set_default_value_str("55");
+    dopt.reset_to_default();
+    CHECK(dopt.get_value() == doctest::Approx(55));
 
     CHECK(are_bounds_enabled<option_t<int_wrapper_t>>::value);
     CHECK(are_bounds_enabled<option_t<double_wrapper_t>>::value);

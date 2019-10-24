@@ -27,7 +27,7 @@ void wf::config::config_manager_t::merge_section(
             existing_section->get_option_or(option->get_name());
 
         if (existing_option) {
-            existing_option->set_value(option->get_value_str());
+            existing_option->set_value_str(option->get_value_str());
         } else {
             existing_section->register_new_option(option);
         }

@@ -8,7 +8,8 @@ class option_base_stub_t : public wf::config::option_base_t
     option_base_stub_t(std::string name)
         : option_base_t(name) {}
 
-    void set_value(const std::string&) override {}
+    void set_default_value_str(const std::string&) override {}
+    void set_value_str(const std::string&) override {}
     void reset_to_default() override {}
     std::string get_value_str() const override { return ""; }
 
