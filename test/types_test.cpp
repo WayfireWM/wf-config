@@ -114,6 +114,10 @@ TEST_CASE("wf::keybinding_t")
     wf::keybinding_t mod_binding = {wf::KEYBOARD_MODIFIER_LOGO, 0};
     CHECK(wf::keybinding_t::from_string("<super>").value() == mod_binding);
 
+    auto empty = wf::keybinding_t{0, 0};
+    CHECK(wf::keybinding_t::from_string("none").value() == empty);
+    CHECK(wf::keybinding_t::from_string("disabled").value() == empty);
+
     /* Test invalid bindings */
     CHECK(!wf::keybinding_t::from_string("<invalid>KEY_L"));
     CHECK(!wf::keybinding_t::from_string(""));
@@ -148,6 +152,10 @@ TEST_CASE("wf::buttonbinding_t")
         wf::buttonbinding_t::from_string("<alt>BTN_LEFT").value();
     CHECK(binding3.get_modifiers() == wf::KEYBOARD_MODIFIER_ALT);
     CHECK(binding3.get_button() == BTN_LEFT);
+
+    auto empty = wf::buttonbinding_t{0, 0};
+    CHECK(wf::buttonbinding_t::from_string("none").value() == empty);
+    CHECK(wf::buttonbinding_t::from_string("disabled").value() == empty);
 
     /* Test invalid bindings */
     CHECK(!wf::buttonbinding_t::from_string("<super> BTN_inv"));
@@ -201,12 +209,17 @@ TEST_CASE("wf::touchgesture_t")
     CHECK(binding5.get_direction() == wf::GESTURE_DIRECTION_OUT);
     CHECK(binding5.get_finger_count() == 2);
 
+    auto empty = wf::touchgesture_t{wf::GESTURE_TYPE_NONE, 0, 0};
+    CHECK(wf::touchgesture_t::from_string("none").value() == empty);
+    CHECK(wf::touchgesture_t::from_string("disabled").value() == empty);
+
     /* A few bad description cases */
     CHECK(!wf::touchgesture_t::from_string("pinch out")); // missing fingercount
     CHECK(!wf::touchgesture_t::from_string("wrong left 5")); // no such type
     CHECK(!wf::touchgesture_t::from_string("edge-swipe up-down 3")); // opposite dirs
     CHECK(!wf::touchgesture_t::from_string("swipe 3")); // missing dir
     CHECK(!wf::touchgesture_t::from_string("pinch 3"));
+    CHECK(!wf::touchgesture_t::from_string(""));
 
     /* Equality */
     CHECK(!(binding1 == wf::touchgesture_t{wf::GESTURE_TYPE_PINCH, 0, 3}));
@@ -294,7 +307,9 @@ TEST_CASE("wf::activatorbinding_t")
         }
     }
 
-    test_binding("<alt>KEY_T|<alt>KEY_T", 1, 0, 0, 0, 0, 0);
+    test_binding("none", 0, 0, 0, 0, 0, 0);
+    test_binding("disabled | none", 0, 0, 0, 0, 0, 0);
+    test_binding("<alt>KEY_T|<alt>KEY_T|none", 1, 0, 0, 0, 0, 0);
 
     CHECK(!activatorbinding_t::from_string("<alt> KEY_K || <alt> KEY_U"));
     CHECK(!activatorbinding_t::from_string("<alt> KEY_K | thrash"));

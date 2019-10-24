@@ -161,7 +161,8 @@ struct keybinding_t
      * For example, "<super> <alt> KEY_E" represents pressing the Logo, Alt and
      * E keys together.
      *
-     * Invalid values result in mod and keyval being set to 0.
+     * Special cases are "none" and "disabled", which result in modifiers and
+     * key 0.
      */
     static std::experimental::optional<keybinding_t> from_string(
         const std::string& description);
@@ -201,7 +202,8 @@ struct buttonbinding_t
      * The format is the same as a keybinding, however instead of KEY_* values,
      * the buttons are prefixed with BTN_*
      *
-     * Invalid descriptions result in mod = button = 0
+     * Special case are descriptions "none" and "disable", which result in
+     * mod = button = 0
      */
     static std::experimental::optional<buttonbinding_t> from_string(
         const std::string& description);
@@ -279,8 +281,7 @@ struct touchgesture_t
      * 1. pinch [in|out] <fingercount>
      * 2. [edge-]swipe up|down|left|right <fingercount>
      * 3. [edge-]swipe up-left|right-down|... <fingercount>
-     *
-     * Invalid description results in an invalid gesture with type NONE.
+     * 4. disable | none
      */
     static std::experimental::optional<touchgesture_t> from_string(
         const std::string& description);

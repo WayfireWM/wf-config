@@ -148,6 +148,7 @@ bool wf::color_t::operator== (const color_t& other) const
 /* ------------------------- wf::keybinding_t ------------------------------- */
 struct general_binding_t
 {
+    bool enabled;
     uint32_t mods;
     uint32_t value;
 };
@@ -232,23 +233,33 @@ static std::string filter_out(std::string value, std::string filter)
 
 static const std::string whitespace_chars = " \t\n\r\v\b";
 
-static general_binding_t parse_binding(std::string binding_description)
+static std::experimental::optional<general_binding_t>
+    parse_binding(std::string binding_description)
 {
+    /* Handle disabled bindings */
+    auto binding_descr_no_whitespace =
+        filter_out(binding_description, whitespace_chars);
+    if (binding_descr_no_whitespace == "none" ||
+        binding_descr_no_whitespace == "disabled")
+    {
+        return general_binding_t{false, 0, 0};
+    }
+
     /* Strategy: split the binding at modifier begin/end markings and spaces,
      * and then drop empty tokens. The tokens that are left should be either a
      * binding or something recognizable by evdev. */
     static const std::string delims = "<>" + whitespace_chars;
     auto tokens = split_at(binding_description, delims);
     if (tokens.empty())
-        return {0, 0};
+        return {};
 
-    general_binding_t result = {0, 0};
+    general_binding_t result = {true, 0, 0};
     for (size_t i = 0; i < tokens.size() - 1; i++)
     {
         if (modifier_names.count(tokens[i])) {
             result.mods |= modifier_names[tokens[i]];
         } else {
-            return {0, 0}; // invalid modifier
+            return {}; // invalid modifier
         }
     }
 
@@ -261,7 +272,7 @@ static general_binding_t parse_binding(std::string binding_description)
             result.mods |= modifier_names[tokens.back()];
             code = 0;
         } else {
-            return {0, 0}; // not found
+            return {}; // not found
         }
     }
 
@@ -299,12 +310,20 @@ wf::keybinding_t::keybinding_t(uint32_t modifier, uint32_t keyval)
 std::experimental::optional<wf::keybinding_t>
 wf::keybinding_t::from_string(const std::string& description)
 {
-    auto parsed = parse_binding(description);
-    /* Disallow buttons, because evdev treats buttons and keys the same */
-    if (parsed.value > 0 && description.find("KEY") == std::string::npos)
+    auto parsed_opt = parse_binding(description);
+    if (!parsed_opt)
         return {};
 
-    if (parsed.mods == 0 && parsed.value == 0)
+    auto parsed = parsed_opt.value();
+
+    /* Disallow buttons, because evdev treats buttons and keys the same */
+    if (parsed.enabled && parsed.value > 0 &&
+        description.find("KEY") == std::string::npos)
+    {
+        return {};
+    }
+
+    if (parsed.enabled && parsed.mods == 0 && parsed.value == 0)
         return {};
 
     return wf::keybinding_t{parsed.mods, parsed.value};
@@ -312,7 +331,10 @@ wf::keybinding_t::from_string(const std::string& description)
 
 std::string wf::keybinding_t::to_string(const wf::keybinding_t& value)
 {
-    return binding_to_string({value.get_modifiers(), value.get_key()});
+    if (value.get_modifiers() == 0 && value.get_key() == 0)
+        return "none";
+
+    return binding_to_string({true, value.get_modifiers(), value.get_key()});
 }
 
 bool wf::keybinding_t::operator == (const keybinding_t& other) const
@@ -342,11 +364,18 @@ wf::buttonbinding_t::buttonbinding_t(uint32_t modifier, uint32_t buttonval)
 std::experimental::optional<wf::buttonbinding_t>
 wf::buttonbinding_t::from_string(const std::string& description)
 {
+    auto parsed_opt = parse_binding(description);
+    if (!parsed_opt)
+        return {};
+
+    auto parsed = parsed_opt.value();
+    if (!parsed.enabled)
+        return wf::buttonbinding_t{0, 0};
+
     /* Disallow keys, because evdev treats buttons and keys the same */
     if (description.find("BTN") == std::string::npos)
         return {};
 
-    auto parsed = parse_binding(description);
     if (parsed.value == 0)
         return {};
 
@@ -355,7 +384,10 @@ wf::buttonbinding_t::from_string(const std::string& description)
 
 std::string wf::buttonbinding_t::to_string(const wf::buttonbinding_t& value)
 {
-    return binding_to_string({value.get_modifiers(), value.get_button()});
+    if (value.get_modifiers() == 0 && value.get_button() == 0)
+        return "none";
+
+    return binding_to_string({true, value.get_modifiers(), value.get_button()});
 }
 
 bool wf::buttonbinding_t::operator == (const buttonbinding_t& other) const
@@ -393,8 +425,6 @@ touch_gesture_direction_string_map =
 static wf::touch_gesture_direction_t parse_single_direction(
     const std::string& direction)
 {
-
-
     if (touch_gesture_direction_string_map.count(direction))
         return touch_gesture_direction_string_map.at(direction);
 
@@ -434,7 +464,7 @@ uint32_t parse_direction(const std::string& direction)
 
 wf::touchgesture_t parse_gesture(const std::string& value)
 {
-    if (value == "none" || value.empty())
+    if (value.empty())
         return {wf::GESTURE_TYPE_NONE, 0, 0};
 
     auto tokens = split_at(value, " \t\v\b\n\r");
@@ -489,6 +519,10 @@ wf::touchgesture_t parse_gesture(const std::string& value)
 std::experimental::optional<wf::touchgesture_t>
 wf::touchgesture_t::from_string(const std::string& description)
 {
+    auto as_binding = parse_binding(description);
+    if (as_binding && !as_binding.value().enabled)
+        return touchgesture_t{GESTURE_TYPE_NONE, 0, 0};
+
     auto gesture = parse_gesture(description);
     if (gesture.type == GESTURE_TYPE_NONE)
         return {};
