@@ -1,6 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
+#include <algorithm>
 #include <wayfire/config/config-manager.hpp>
 #include <wayfire/config/types.hpp>
 
@@ -10,6 +11,19 @@ TEST_CASE("wf::config::config_manager_t")
     using namespace wf::config;
 
     config_manager_t config{};
+    auto expect_sections = [&] (std::set<std::string> names)
+    {
+        auto all = config.get_all_sections();
+        CHECK(all.size() == names.size());
+
+        std::set<std::string> present;
+        std::transform(all.begin(), all.end(),
+            std::inserter(present, present.end()),
+            [] (const auto& section) { return section->get_name(); });
+        CHECK(present == names);
+    };
+
+    expect_sections({});
 
     CHECK(config.get_option("no_such_option") == nullptr);
     CHECK(config.get_option("section/nonexistent") == nullptr);
@@ -17,6 +31,7 @@ TEST_CASE("wf::config::config_manager_t")
 
     CHECK(config.get_section("FirstSection") == nullptr);
     config.merge_section(std::make_shared<section_t> ("FirstSection"));
+    expect_sections({"FirstSection"});
 
     auto section = config.get_section("FirstSection");
     REQUIRE(section != nullptr);
@@ -48,6 +63,7 @@ TEST_CASE("wf::config::config_manager_t")
 
     config.merge_section(section_overwrite);
     CHECK(config.get_section("FirstSection") == section); // do not overwrite
+    expect_sections({"FirstSection"});
 
     auto stored_color_opt =
         config.get_option<color_t>("FirstSection/ColorOption");
@@ -60,6 +76,8 @@ TEST_CASE("wf::config::config_manager_t")
     CHECK(stored_int_opt->get_value_str() == "5");
 
     config.merge_section(section2);
+    expect_sections({"FirstSection", "SecondSection"});
+
     stored_int_opt = config.get_option<int_wrapper_t>("FirstSection/IntOption");
     REQUIRE(stored_int_opt);
     CHECK(stored_int_opt->get_value_str() == "5"); // remains same

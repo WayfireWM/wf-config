@@ -43,6 +43,16 @@ std::shared_ptr<wf::config::section_t>
     return nullptr;
 }
 
+std::vector<std::shared_ptr<wf::config::section_t>>
+    wf::config::config_manager_t::get_all_sections() const
+{
+    std::vector<std::shared_ptr<wf::config::section_t>> list;
+    for (auto& section : this->priv->sections)
+        list.push_back(section.second);
+
+    return list;
+}
+
 std::shared_ptr<wf::config::option_base_t>
     wf::config::config_manager_t::get_option(const std::string& name) const
 {

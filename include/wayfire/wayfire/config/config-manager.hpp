@@ -29,6 +29,11 @@ class config_manager_t
     std::shared_ptr<section_t> get_section(const std::string& name) const;
 
     /**
+     * @return A list of all sections currently in the config manager.
+     */
+    std::vector<std::shared_ptr<section_t>> get_all_sections() const;
+
+    /**
      * Get the option with the given name.
      * The name consists of the name of the option section, followed by a '/',
      * then followed by the actual name of the option in the option section,
