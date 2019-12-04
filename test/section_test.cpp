@@ -33,4 +33,3 @@ TEST_CASE("wf::config::section_t")
     REQUIRE(reg_opts.size() == 1);
     CHECK(reg_opts.back() == intopt2);
 }
-

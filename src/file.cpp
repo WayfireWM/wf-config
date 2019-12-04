@@ -2,7 +2,11 @@
 #include <wayfire/config/types.hpp>
 #include <wayfire/util/log.hpp>
 #include <sstream>
+#include <fstream>
 #include <cassert>
+
+#include <sys/file.h>
+#include <unistd.h>
 
 class line_t : public std::string
 {
@@ -318,3 +322,26 @@ std::string wf::config::save_configuration_options_to_string(
     return result;
 }
 
+
+bool wf::config::load_configuration_options_from_file(config_manager_t& manager,
+	const std::string& file)
+{
+	auto fd = open(file.c_str(), O_RDONLY);
+	if (flock(fd, LOCK_SH | LOCK_NB))
+	{
+		close(fd);
+		return false;
+    }
+
+    /* Read file contents */
+    std::ifstream infile(file);
+    std::string file_contents((std::istreambuf_iterator<char>(infile)),
+        std::istreambuf_iterator<char>());
+
+    /* Release lock */
+    flock(fd, LOCK_UN);
+	close(fd);
+
+    load_configuration_options_from_string(manager, file_contents, file);
+    return true;
+}

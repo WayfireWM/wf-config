@@ -55,8 +55,11 @@ std::string save_configuration_options_to_string(
  *
  * @param manager The config manager to update.
  * @param file The config file to use.
+ *
+ * @return True if the config file was reloaded, false if file could not be
+ * opened or a lock could not be acquired.
  */
-void load_configuration_options_from_file(config_manager_t& manager,
+bool load_configuration_options_from_file(config_manager_t& manager,
     const std::string& file);
 
 /**

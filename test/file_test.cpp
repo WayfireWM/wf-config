@@ -1,6 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <iostream>
 #include "doctest.h"
+#include <unistd.h>
+#include <sys/file.h>
 
 #include <wayfire/config/file.hpp>
 #include <wayfire/util/log.hpp>
@@ -100,5 +102,69 @@ option2 = 45 \# 46 \\
 option1 = 4.250000
 
 )");
+}
 
+
+TEST_CASE("wf::config::load_configuration_options_from_file - no such file")
+{
+    std::string test_config = std::string("FileDoesNotExist");
+    wf::config::config_manager_t manager;
+    CHECK(!load_configuration_options_from_file(manager, test_config));
+}
+
+TEST_CASE("wf::config::load_configuration_options_from_file - locking fails")
+{
+    std::string test_config = get_current_dir_name() +
+        std::string("/../test/config_lock.ini");
+
+    const int delay = 100e3; /** 100ms */
+
+    int pid = fork();
+    if (pid == 0)
+    {
+        /* Lock config file before parent tries to lock it */
+        int fd = open(test_config.c_str(), O_RDWR);
+        flock(fd, LOCK_EX);
+
+        /* Obtained a lock. Now wait until parent tries to lock */
+        usleep(2 * delay);
+
+        /* By now, parent should have failed. */
+        flock(fd, LOCK_UN);
+        close(fd);
+    }
+
+    /* Wait for other process to lock the file */
+    usleep(delay);
+
+    wf::config::config_manager_t manager;
+    CHECK(!load_configuration_options_from_file(manager, test_config));
+}
+
+TEST_CASE("wf::config::load_configuration_options_from_file - success")
+{
+    std::string test_config = get_current_dir_name() +
+        std::string("/../test/config.ini");
+
+    /* Init with one section */
+    wf::config::config_manager_t manager;
+    auto s = std::make_shared<wf::config::section_t> ("section1");
+    s->register_new_option(
+        std::make_shared<wf::config::option_t<int>> ("option1", 1));
+    manager.merge_section(s);
+
+    CHECK(load_configuration_options_from_file(manager, test_config));
+
+    auto s1 = manager.get_section("section1");
+    auto s2 = manager.get_section("section2");
+    REQUIRE(s1 == s);
+    REQUIRE(s2 != nullptr);
+
+    auto o1 = manager.get_option("section1/option1");
+    auto o2 = manager.get_option("section2/option2");
+
+    REQUIRE(o1);
+    REQUIRE(o2);
+    CHECK(o1->get_value_str() == "12");
+    CHECK(o2->get_value_str() == "opt2");
 }
