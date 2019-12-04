@@ -57,10 +57,10 @@ TEST_CASE("wf::config::option_t<unboundable>")
 
     opt.set_value(binding1);
     CHECK(opt.get_value() == binding1);
-    opt.set_value_str("<super>KEY_T");
+    CHECK(opt.set_value_str("<super>KEY_T"));
     CHECK(opt.get_value() == binding2);
-    opt.set_value_str("garbage");
-    CHECK(opt.get_value() == binding1); // default value
+    CHECK(!opt.set_value_str("garbage"));
+    CHECK(opt.get_value() == binding2);
     opt.set_value_str("<super>KEY_T");
     CHECK(opt.get_value() == binding2);
     opt.reset_to_default();

@@ -25,10 +25,11 @@ class option_base_t
 
     /**
      * Set the option value from the given string.
-     * If the value is invalid depending on option type, the value will be reset
-     * to the default value.
+     * Invalid values are ignored.
+     *
+     * @return true if the option value was updated.
      */
-    virtual void set_value_str(const std::string& value) = 0;
+    virtual bool set_value_str(const std::string& value) = 0;
 
     /** Reset the option to its default value.  */
     virtual void reset_to_default() = 0;
@@ -183,10 +184,16 @@ class option_t : public option_base_t,
      * The value will be auto-clamped to the defined bounds, if they exist.
      * If the value actually changes, the updated handlers will be called.
      */
-    virtual void set_value_str(const std::string& new_value_str) override
+    virtual bool set_value_str(const std::string& new_value_str) override
     {
         auto new_value = Type::from_string(new_value_str);
-        set_value(new_value.value_or(default_value));
+        if (new_value)
+        {
+            set_value(new_value.value());
+            return true;
+        }
+
+        return false;
     }
 
     /**
