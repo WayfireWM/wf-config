@@ -3,6 +3,8 @@
 #include "doctest.h"
 #include <unistd.h>
 #include <sys/file.h>
+#include <iostream>
+#include <fstream>
 
 #include <wayfire/config/file.hpp>
 #include <wayfire/util/log.hpp>
@@ -77,7 +79,7 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     EXPECT_LINE(log, "Error in file test:20");
 }
 
-TEST_CASE("wf::config::save_configuration_options_to_string")
+wf::config::config_manager_t build_simple_config()
 {
     using namespace wf;
     using namespace wf::config;
@@ -92,8 +94,10 @@ TEST_CASE("wf::config::save_configuration_options_to_string")
     config.merge_section(section1);
     config.merge_section(section2);
 
-    auto stringified = save_configuration_options_to_string(config);
-    CHECK(stringified ==
+    return config;
+}
+
+std::string simple_config_source =
 R"([section1]
 option1 = 4
 option2 = 45 \# 46 \\
@@ -101,9 +105,15 @@ option2 = 45 \# 46 \\
 [section2]
 option1 = 4.250000
 
-)");
-}
+)";
 
+
+TEST_CASE("wf::config::save_configuration_options_to_string")
+{
+    auto config = build_simple_config();
+    auto stringified = save_configuration_options_to_string(config);
+    CHECK(stringified == simple_config_source);
+}
 
 TEST_CASE("wf::config::load_configuration_options_from_file - no such file")
 {
@@ -167,4 +177,30 @@ TEST_CASE("wf::config::load_configuration_options_from_file - success")
     REQUIRE(o2);
     CHECK(o1->get_value_str() == "12");
     CHECK(o2->get_value_str() == "opt2");
+}
+
+TEST_CASE("wf::config::save_configuration_to_file - success")
+{
+    std::string test_config = get_current_dir_name() +
+        std::string("/../test/dummy.ini");
+
+    {
+        std::ofstream clr(test_config, std::ios::trunc | std::ios::ate);
+        clr << "Dummy";
+    }
+
+    wf::config::save_configuration_to_file(build_simple_config(), test_config);
+
+    /* Read file contents */
+    std::ifstream infile(test_config);
+    std::string file_contents((std::istreambuf_iterator<char>(infile)),
+        std::istreambuf_iterator<char>());
+
+    CHECK(file_contents == simple_config_source);
+
+    /* Check lock is released */
+    int fd = open(test_config.c_str(), O_RDWR);
+    CHECK(flock(fd, LOCK_EX | LOCK_NB) == 0);
+    flock(fd, LOCK_UN);
+    close(fd);
 }

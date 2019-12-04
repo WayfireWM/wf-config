@@ -345,3 +345,23 @@ bool wf::config::load_configuration_options_from_file(config_manager_t& manager,
     load_configuration_options_from_string(manager, file_contents, file);
     return true;
 }
+
+void wf::config::save_configuration_to_file(
+    const wf::config::config_manager_t& manager, const std::string& file)
+{
+    auto contents = save_configuration_options_to_string(manager);
+    contents.pop_back(); // remove last newline
+
+    auto fd = open(file.c_str(), O_RDONLY);
+    flock(fd, LOCK_EX);
+
+    auto fout = std::ofstream(file, std::ios::trunc);
+    fout << contents;
+
+    flock(fd, LOCK_UN);
+    close(fd);
+
+    /* Modify the file one last time. Now programs waiting for updates can
+     * acquire a shared lock. */
+    fout << std::endl;
+}
