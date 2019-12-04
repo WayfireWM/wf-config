@@ -49,6 +49,9 @@ class config_manager_t
     }
 
     config_manager_t();
+    config_manager_t(config_manager_t&& other);
+    config_manager_t& operator = (config_manager_t&& other);
+
     virtual ~config_manager_t();
 
   private:

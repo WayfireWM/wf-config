@@ -67,4 +67,10 @@ wf::config::config_manager_t::config_manager_t()
     this->priv = std::make_unique<impl>();
 }
 
+/** Default move operations */
+wf::config::config_manager_t::config_manager_t(
+    config_manager_t&& other) = default;
+wf::config::config_manager_t& wf::config::config_manager_t::operator = (
+    config_manager_t&& other) = default;
+
 wf::config::config_manager_t::~config_manager_t() = default;
