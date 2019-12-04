@@ -43,11 +43,11 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     /* Create the first section and add an option there */
     auto section = std::make_shared<section_t> ("section1");
     section->register_new_option(
-        std::make_shared<option_t<int_wrapper_t>> ("option1", 10));
+        std::make_shared<option_t<int>> ("option1", 10));
     section->register_new_option(
-        std::make_shared<option_t<int_wrapper_t>> ("option2", 5));
+        std::make_shared<option_t<int>> ("option2", 5));
     section->register_new_option(
-        std::make_shared<option_t<string_wrapper_t>> ("option4", std::string("option4")));
+        std::make_shared<option_t<std::string>> ("option4", std::string("option4")));
 
     config.merge_section(section);
     load_configuration_options_from_string(config, contents, "test");
@@ -82,9 +82,9 @@ TEST_CASE("wf::config::save_configuration_options_to_string")
     auto section1 = std::make_shared<section_t> ("section1");
     auto section2 = std::make_shared<section_t> ("section2");
 
-    section1->register_new_option(std::make_shared<option_t<int_wrapper_t>> ("option1", 4));
-    section1->register_new_option(std::make_shared<option_t<string_wrapper_t>> ("option2", std::string("45 # 46 \\")));
-    section2->register_new_option(std::make_shared<option_t<double_wrapper_t>> ("option1", 4.25));
+    section1->register_new_option(std::make_shared<option_t<int>> ("option1", 4));
+    section1->register_new_option(std::make_shared<option_t<std::string>> ("option2", std::string("45 # 46 \\")));
+    section2->register_new_option(std::make_shared<option_t<double>> ("option1", 4.25));
 
     config_manager_t config;
     config.merge_section(section1);

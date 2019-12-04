@@ -9,6 +9,7 @@ TEST_CASE("wf::config::config_manager_t")
 {
     using namespace wf;
     using namespace wf::config;
+    using namespace option_type;
 
     config_manager_t config{};
     auto expect_sections = [&] (std::set<std::string> names)
@@ -27,7 +28,7 @@ TEST_CASE("wf::config::config_manager_t")
 
     CHECK(config.get_option("no_such_option") == nullptr);
     CHECK(config.get_option("section/nonexistent") == nullptr);
-    CHECK(config.get_option<int_wrapper_t>("section/nonexist/ent") == nullptr);
+    CHECK(config.get_option<int>("section/nonexist/ent") == nullptr);
 
     CHECK(config.get_section("FirstSection") == nullptr);
     config.merge_section(std::make_shared<section_t> ("FirstSection"));
@@ -40,7 +41,7 @@ TEST_CASE("wf::config::config_manager_t")
 
     CHECK(config.get_option("FirstSection/FirstOption") == nullptr);
 
-    auto color = color_t::from_string("#FFFF").value();
+    auto color = option_type::from_string<color_t>("#FFFF").value();
     auto option = std::make_shared<option_t<color_t>> ("ColorOption", color);
     section->register_new_option(option);
 
@@ -53,13 +54,13 @@ TEST_CASE("wf::config::config_manager_t")
     auto section_overwrite = std::make_shared<section_t> ("FirstSection");
     section_overwrite->register_new_option(
         std::make_shared<option_t<color_t>>(
-            "ColorOption", color_t::from_string("#CCCC").value()));
+            "ColorOption", from_string<color_t>("#CCCC").value()));
     section_overwrite->register_new_option(
-        std::make_shared<option_t<int_wrapper_t>> ("IntOption", 5));
+        std::make_shared<option_t<int>> ("IntOption", 5));
 
     section2 = std::make_shared<section_t> ("SecondSection");
     section2->register_new_option(
-        std::make_shared<option_t<int_wrapper_t>> ("IntOption", 6));
+        std::make_shared<option_t<int>> ("IntOption", 6));
 
     config.merge_section(section_overwrite);
     CHECK(config.get_section("FirstSection") == section); // do not overwrite
@@ -71,18 +72,18 @@ TEST_CASE("wf::config::config_manager_t")
     CHECK(stored_color_opt->get_value_str() == "#CCCCCCCC");
 
     auto stored_int_opt =
-        config.get_option<int_wrapper_t>("FirstSection/IntOption");
+        config.get_option<int>("FirstSection/IntOption");
     REQUIRE(stored_int_opt);
     CHECK(stored_int_opt->get_value_str() == "5");
 
     config.merge_section(section2);
     expect_sections({"FirstSection", "SecondSection"});
 
-    stored_int_opt = config.get_option<int_wrapper_t>("FirstSection/IntOption");
+    stored_int_opt = config.get_option<int>("FirstSection/IntOption");
     REQUIRE(stored_int_opt);
     CHECK(stored_int_opt->get_value_str() == "5"); // remains same
 
-    stored_int_opt = config.get_option<int_wrapper_t>("SecondSection/IntOption");
+    stored_int_opt = config.get_option<int>("SecondSection/IntOption");
     REQUIRE(stored_int_opt);
     CHECK(stored_int_opt->get_value_str() == "6");
 }

@@ -98,7 +98,7 @@ TEST_CASE("wf::config::xml::create_option")
         CHECK(option->get_name() == "IntOption");
 
         auto as_int =
-            std::dynamic_pointer_cast<wc::option_t<wf::int_wrapper_t>> (option);
+            std::dynamic_pointer_cast<wc::option_t<int>> (option);
         REQUIRE(as_int);
         REQUIRE(as_int->get_minimum());
         REQUIRE(as_int->get_maximum());

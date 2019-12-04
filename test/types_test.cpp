@@ -7,46 +7,43 @@
 
 #define WF_CONFIG_DOUBLE_EPS 0.01
 
+using namespace wf;
+using namespace wf::option_type;
+
 TEST_CASE("wf::int_wrapper_t")
 {
-    CHECK(wf::int_wrapper_t::from_string("456").value() == 456);
-    CHECK(wf::int_wrapper_t::from_string("-89").value() == -89);
+    CHECK(from_string<int>("456").value() == 456);
+    CHECK(from_string<int>("-89").value() == -89);
 
     int32_t max = std::numeric_limits<int32_t>::max();
     int32_t min = std::numeric_limits<int32_t>::min();
-    CHECK(wf::int_wrapper_t::from_string(std::to_string(max)).value() == max);
-    CHECK(wf::int_wrapper_t::from_string(std::to_string(min)).value() == min);
+    CHECK(from_string<int>(std::to_string(max)).value() == max);
+    CHECK(from_string<int>(std::to_string(min)).value() == min);
 
-    CHECK(!wf::int_wrapper_t::from_string("1e4"));
-    CHECK(!wf::int_wrapper_t::from_string(""));
-    CHECK(!wf::int_wrapper_t::from_string("1234567890000"));
+    CHECK(!from_string<int>("1e4"));
+    CHECK(!from_string<int>(""));
+    CHECK(!from_string<int>("1234567890000"));
 
-    using wiw = wf::int_wrapper_t;
-    CHECK(wiw::from_string(wiw::to_string(456)).value() == 456);
-    CHECK(wiw::from_string(wiw::to_string(0)).value() == 0);
+    CHECK(from_string<int>(to_string<int>(456)).value() == 456);
+    CHECK(from_string<int>(to_string<int>(0)).value() == 0);
 }
 
 TEST_CASE("wf::double_wrapper_t")
 {
-    CHECK(wf::double_wrapper_t::from_string("0.378").value() ==
-        doctest::Approx(0.378));
-    CHECK(wf::double_wrapper_t::from_string("-89.1847").value() ==
-        doctest::Approx(-89.1847));
+    CHECK(from_string<double>("0.378").value() == doctest::Approx(0.378));
+    CHECK(from_string<double>("-89.1847").value() == doctest::Approx(-89.1847));
 
     double max = std::numeric_limits<double>::max();
     double min = std::numeric_limits<double>::min();
-    CHECK(wf::double_wrapper_t::from_string(std::to_string(max)).value()
-        == doctest::Approx(max));
-    CHECK(wf::double_wrapper_t::from_string(std::to_string(min)).value()
-        == doctest::Approx(min));
+    CHECK(from_string<double>(std::to_string(max)).value() == doctest::Approx(max));
+    CHECK(from_string<double>(std::to_string(min)).value() == doctest::Approx(min));
 
-    CHECK(!wf::double_wrapper_t::from_string("1u4"));
-    CHECK(!wf::double_wrapper_t::from_string(""));
-    CHECK(!wf::double_wrapper_t::from_string("abc"));
+    CHECK(!from_string<double>("1u4"));
+    CHECK(!from_string<double>(""));
+    CHECK(!from_string<double>("abc"));
 
-    using wd = wf::double_wrapper_t;
-    CHECK(wd::from_string(wd::to_string(-4.56)).value() == doctest::Approx(-4.56));
-    CHECK(wd::from_string(wd::to_string(0.0)).value() == doctest::Approx(0));
+    CHECK(from_string<double>(to_string<double>(-4.56)).value() == doctest::Approx(-4.56));
+    CHECK(from_string<double>(to_string<double>(0.0)).value() == doctest::Approx(0));
 }
 
 static void check_color_equals(const wf::color_t& color,
@@ -69,24 +66,26 @@ static void check_color_equals(
 /* Test that various wf::color_t constructors work */
 TEST_CASE("wf::color_t")
 {
-    check_color_equals(wf::color_t{}, 0, 0, 0, 0);
-    check_color_equals(wf::color_t{0.345, 0.127, 0.188, 1.0}, 0.345, 0.127, 0.188, 1.0);
-    check_color_equals(wf::color_t{glm::vec4(0.7)}, 0.7, 0.7, 0.7, 0.7);
+    using namespace wf;
+    using namespace option_type;
 
-    check_color_equals(wf::color_t::from_string("#66CC5EF7"),
+    check_color_equals(color_t{}, 0, 0, 0, 0);
+    check_color_equals(color_t{0.345, 0.127, 0.188, 1.0}, 0.345, 0.127, 0.188, 1.0);
+    check_color_equals(color_t{glm::vec4(0.7)}, 0.7, 0.7, 0.7, 0.7);
+
+    check_color_equals(from_string<color_t>("#66CC5EF7"),
         0.4, 0.8, 0.3686274, 0.9686274);
-    check_color_equals(wf::color_t::from_string("#0F0F"), 0, 1, 0, 1);
+    check_color_equals(from_string<color_t>("#0F0F"), 0, 1, 0, 1);
 
-    CHECK(!wf::color_t::from_string("#FFF"));
-    CHECK(!wf::color_t::from_string("0C1A"));
-    CHECK(!wf::color_t::from_string(""));
-    CHECK(!wf::color_t::from_string("#ZYXUIOPQ"));
-    CHECK(!wf::color_t::from_string("#AUIO")); // invalid color
+    CHECK(!from_string<color_t>("#FFF"));
+    CHECK(!from_string<color_t>("0C1A"));
+    CHECK(!from_string<color_t>(""));
+    CHECK(!from_string<color_t>("#ZYXUIOPQ"));
+    CHECK(!from_string<color_t>("#AUIO")); // invalid color
 
-    using wc_t = wf::color_t;
-    CHECK(wc_t::to_string(wc_t{0, 0, 0, 0}) == "#00000000");
-    CHECK(wc_t::to_string(wc_t{0.4, 0.8, 0.3686274, 0.9686274}) == "#66CC5EF7");
-    CHECK(wc_t::to_string(wc_t{1, 1, 1, 1}) == "#FFFFFFFF");
+    CHECK(to_string<color_t>(color_t{0, 0, 0, 0}) == "#00000000");
+    CHECK(to_string<color_t>(color_t{0.4, 0.8, 0.3686274, 0.9686274}) == "#66CC5EF7");
+    CHECK(to_string<color_t>(color_t{1, 1, 1, 1}) == "#FFFFFFFF");
 }
 
 TEST_CASE("wf::keybinding_t")
@@ -99,7 +98,7 @@ TEST_CASE("wf::keybinding_t")
     CHECK(binding1.get_key() == KEY_L);
 
     /* Test parsing */
-    auto binding2 = wf::keybinding_t::from_string(
+    auto binding2 = from_string<keybinding_t>(
         "<shift><ctrl>KEY_TAB").value();
     uint32_t modifier2 =
         wf::KEYBOARD_MODIFIER_SHIFT | wf::KEYBOARD_MODIFIER_CTRL;
@@ -107,32 +106,32 @@ TEST_CASE("wf::keybinding_t")
     CHECK(binding2.get_key() == KEY_TAB);
 
     auto binding3 =
-        wf::keybinding_t::from_string("<alt><super>KEY_L").value();
+        from_string<keybinding_t>("<alt><super>KEY_L").value();
     CHECK(binding3.get_modifiers() == modifier1);
     CHECK(binding3.get_key() == KEY_L);
 
     wf::keybinding_t mod_binding = {wf::KEYBOARD_MODIFIER_LOGO, 0};
-    CHECK(wf::keybinding_t::from_string("<super>").value() == mod_binding);
+    CHECK(from_string<keybinding_t>("<super>").value() == mod_binding);
 
     auto empty = wf::keybinding_t{0, 0};
-    CHECK(wf::keybinding_t::from_string("none").value() == empty);
-    CHECK(wf::keybinding_t::from_string("disabled").value() == empty);
+    CHECK(from_string<keybinding_t>("none").value() == empty);
+    CHECK(from_string<keybinding_t>("disabled").value() == empty);
 
     /* Test invalid bindings */
-    CHECK(!wf::keybinding_t::from_string("<invalid>KEY_L"));
-    CHECK(!wf::keybinding_t::from_string(""));
-    CHECK(!wf::keybinding_t::from_string("<super> KEY_nonexist"));
-    CHECK(!wf::keybinding_t::from_string("<alt> BTN_LEFT"));
-    CHECK(!wf::keybinding_t::from_string("<alt> super KEY_L"));
-    CHECK(!wf::keybinding_t::from_string(("<alt><alt>")));
+    CHECK(!from_string<keybinding_t>("<invalid>KEY_L"));
+    CHECK(!from_string<keybinding_t>(""));
+    CHECK(!from_string<keybinding_t>("<super> KEY_nonexist"));
+    CHECK(!from_string<keybinding_t>("<alt> BTN_LEFT"));
+    CHECK(!from_string<keybinding_t>("<alt> super KEY_L"));
+    CHECK(!from_string<keybinding_t>(("<alt><alt>")));
 
     /* Test equality */
     CHECK(binding1 == binding3);
     CHECK(!(binding2 == binding1));
 
     using wk_t = wf::keybinding_t;
-    CHECK(wk_t::from_string(wk_t::to_string(binding1)).value() == binding1);
-    CHECK(wk_t::from_string(wk_t::to_string(binding2)).value() == binding2);
+    CHECK(from_string<wk_t>(to_string<wk_t>(binding1)).value() == binding1);
+    CHECK(from_string<wk_t>(to_string<wk_t>(binding2)).value() == binding2);
 }
 
 TEST_CASE("wf::buttonbinding_t")
@@ -144,34 +143,34 @@ TEST_CASE("wf::buttonbinding_t")
 
     /* Test parsing */
     auto binding2 =
-        wf::buttonbinding_t::from_string("<ctrl>BTN_EXTRA").value();
+        from_string<buttonbinding_t>("<ctrl>BTN_EXTRA").value();
     CHECK(binding2.get_modifiers() == wf::KEYBOARD_MODIFIER_CTRL);
     CHECK(binding2.get_button() == BTN_EXTRA);
 
     auto binding3 =
-        wf::buttonbinding_t::from_string("<alt>BTN_LEFT").value();
+        from_string<buttonbinding_t>("<alt>BTN_LEFT").value();
     CHECK(binding3.get_modifiers() == wf::KEYBOARD_MODIFIER_ALT);
     CHECK(binding3.get_button() == BTN_LEFT);
 
     auto empty = wf::buttonbinding_t{0, 0};
-    CHECK(wf::buttonbinding_t::from_string("none").value() == empty);
-    CHECK(wf::buttonbinding_t::from_string("disabled").value() == empty);
+    CHECK(from_string<buttonbinding_t>("none").value() == empty);
+    CHECK(from_string<buttonbinding_t>("disabled").value() == empty);
 
     /* Test invalid bindings */
-    CHECK(!wf::buttonbinding_t::from_string("<super> BTN_inv"));
-    CHECK(!wf::buttonbinding_t::from_string("<super> KEY_E"));
-    CHECK(!wf::buttonbinding_t::from_string(""));
-    CHECK(!wf::buttonbinding_t::from_string("<super>"));
-    CHECK(!wf::buttonbinding_t::from_string("super BTN_LEFT"));
+    CHECK(!from_string<buttonbinding_t>("<super> BTN_inv"));
+    CHECK(!from_string<buttonbinding_t>("<super> KEY_E"));
+    CHECK(!from_string<buttonbinding_t>(""));
+    CHECK(!from_string<buttonbinding_t>("<super>"));
+    CHECK(!from_string<buttonbinding_t>("super BTN_LEFT"));
 
     /* Test equality */
     CHECK(binding1 == binding3);
     CHECK(!(binding2 == binding1));
 
     using wb_t = wf::buttonbinding_t;
-    CHECK(wb_t::from_string(wb_t::to_string(binding1)).value() == binding1);
-    CHECK(wb_t::from_string(wb_t::to_string(binding2)).value() == binding2);
-    CHECK(wb_t::from_string(wb_t::to_string(binding3)).value() == binding3);
+    CHECK(from_string<wb_t>(to_string<wb_t>(binding1)).value() == binding1);
+    CHECK(from_string<wb_t>(to_string<wb_t>(binding2)).value() == binding2);
+    CHECK(from_string<wb_t>(to_string<wb_t>(binding3)).value() == binding3);
 }
 
 TEST_CASE("wf::touchgesture_t")
@@ -185,41 +184,41 @@ TEST_CASE("wf::touchgesture_t")
 
     /* Test parsing */
     auto binding2 =
-        wf::touchgesture_t::from_string("swipe up-left 4").value();
+        from_string<touchgesture_t>("swipe up-left 4").value();
     uint32_t direction2 = wf::GESTURE_DIRECTION_UP | wf::GESTURE_DIRECTION_LEFT;
     CHECK(binding2.get_type() == wf::GESTURE_TYPE_SWIPE);
     CHECK(binding2.get_direction() == direction2);
     CHECK(binding2.get_finger_count() == 4);
 
     auto binding3 =
-        wf::touchgesture_t::from_string("edge-swipe down 2").value();
+        from_string<touchgesture_t>("edge-swipe down 2").value();
     CHECK(binding3.get_type() == wf::GESTURE_TYPE_EDGE_SWIPE);
     CHECK(binding3.get_direction() == wf::GESTURE_DIRECTION_DOWN);
     CHECK(binding3.get_finger_count() == 2);
 
     auto binding4 =
-        wf::touchgesture_t::from_string("pinch in 3").value();
+        from_string<touchgesture_t>("pinch in 3").value();
     CHECK(binding4.get_type() == wf::GESTURE_TYPE_PINCH);
     CHECK(binding4.get_direction() == wf::GESTURE_DIRECTION_IN);
     CHECK(binding4.get_finger_count() == 3);
 
     auto binding5 =
-        wf::touchgesture_t::from_string("pinch out 2").value();
+        from_string<touchgesture_t>("pinch out 2").value();
     CHECK(binding5.get_type() == wf::GESTURE_TYPE_PINCH);
     CHECK(binding5.get_direction() == wf::GESTURE_DIRECTION_OUT);
     CHECK(binding5.get_finger_count() == 2);
 
     auto empty = wf::touchgesture_t{wf::GESTURE_TYPE_NONE, 0, 0};
-    CHECK(wf::touchgesture_t::from_string("none").value() == empty);
-    CHECK(wf::touchgesture_t::from_string("disabled").value() == empty);
+    CHECK(from_string<touchgesture_t>("none").value() == empty);
+    CHECK(from_string<touchgesture_t>("disabled").value() == empty);
 
     /* A few bad description cases */
-    CHECK(!wf::touchgesture_t::from_string("pinch out")); // missing fingercount
-    CHECK(!wf::touchgesture_t::from_string("wrong left 5")); // no such type
-    CHECK(!wf::touchgesture_t::from_string("edge-swipe up-down 3")); // opposite dirs
-    CHECK(!wf::touchgesture_t::from_string("swipe 3")); // missing dir
-    CHECK(!wf::touchgesture_t::from_string("pinch 3"));
-    CHECK(!wf::touchgesture_t::from_string(""));
+    CHECK(!from_string<touchgesture_t>("pinch out")); // missing fingercount
+    CHECK(!from_string<touchgesture_t>("wrong left 5")); // no such type
+    CHECK(!from_string<touchgesture_t>("edge-swipe up-down 3")); // opposite dirs
+    CHECK(!from_string<touchgesture_t>("swipe 3")); // missing dir
+    CHECK(!from_string<touchgesture_t>("pinch 3"));
+    CHECK(!from_string<touchgesture_t>(""));
 
     /* Equality */
     CHECK(!(binding1 == wf::touchgesture_t{wf::GESTURE_TYPE_PINCH, 0, 3}));
@@ -233,11 +232,11 @@ TEST_CASE("wf::touchgesture_t")
         wf::GESTURE_TYPE_PINCH, wf::GESTURE_DIRECTION_IN, 2}));
 
     using wt_t = wf::touchgesture_t;
-    CHECK(wt_t::from_string(wt_t::to_string(binding1)).value() == binding1);
-    CHECK(wt_t::from_string(wt_t::to_string(binding2)).value() == binding2);
-    CHECK(wt_t::from_string(wt_t::to_string(binding3)).value() == binding3);
-    CHECK(wt_t::from_string(wt_t::to_string(binding4)).value() == binding4);
-    CHECK(wt_t::from_string(wt_t::to_string(binding5)).value() == binding5);
+    CHECK(from_string<wt_t>(to_string<wt_t>(binding1)).value() == binding1);
+    CHECK(from_string<wt_t>(to_string<wt_t>(binding2)).value() == binding2);
+    CHECK(from_string<wt_t>(to_string<wt_t>(binding3)).value() == binding3);
+    CHECK(from_string<wt_t>(to_string<wt_t>(binding4)).value() == binding4);
+    CHECK(from_string<wt_t>(to_string<wt_t>(binding5)).value() == binding5);
 }
 
 TEST_CASE("wf::activatorbinding_t")
@@ -258,7 +257,7 @@ TEST_CASE("wf::activatorbinding_t")
         bool match_kb1, bool match_kb2, bool match_bb1, bool match_bb2,
         bool match_tg1, bool match_tg2)
     {
-        auto full_binding_opt = activatorbinding_t::from_string(description);
+        auto full_binding_opt = from_string<activatorbinding_t>(description);
         REQUIRE(full_binding_opt);
         auto actbinding = full_binding_opt.value();
 
@@ -284,12 +283,12 @@ TEST_CASE("wf::activatorbinding_t")
                         for (auto t2 = 0; t2 <= 1; t2++)
                         {
                             std::string descr;
-                            if (k1) descr += keybinding_t::to_string(kb1) + " | ";
-                            if (k2) descr += keybinding_t::to_string(kb2) + " | ";
-                            if (b1) descr += buttonbinding_t::to_string(bb1) + " | ";
-                            if (b2) descr += buttonbinding_t::to_string(bb2) + " | ";
-                            if (t1) descr += touchgesture_t::to_string(tg1) + " | ";
-                            if (t2) descr += touchgesture_t::to_string(tg2) + " | ";
+                            if (k1) descr += to_string<keybinding_t>(kb1) + " | ";
+                            if (k2) descr += to_string<keybinding_t>(kb2) + " | ";
+                            if (b1) descr += to_string<buttonbinding_t>(bb1) + " | ";
+                            if (b2) descr += to_string<buttonbinding_t>(bb2) + " | ";
+                            if (t1) descr += to_string<touchgesture_t>(tg1) + " | ";
+                            if (t2) descr += to_string<touchgesture_t>(tg2) + " | ";
 
                             if (descr.length() >= 3)
                             {
@@ -298,8 +297,8 @@ TEST_CASE("wf::activatorbinding_t")
                             }
 
                             test_binding(descr, k1, k2, b1, b2, t1, t2);
-                            CHECK(activatorbinding_t::to_string(
-                                    activatorbinding_t::from_string(descr).value()) == descr);
+                            CHECK(to_string<activatorbinding_t>(
+                                    from_string<activatorbinding_t>(descr).value()) == descr);
                         }
                     }
                 }
@@ -311,7 +310,7 @@ TEST_CASE("wf::activatorbinding_t")
     test_binding("disabled | none", 0, 0, 0, 0, 0, 0);
     test_binding("<alt>KEY_T|<alt>KEY_T|none", 1, 0, 0, 0, 0, 0);
 
-    CHECK(!activatorbinding_t::from_string("<alt> KEY_K || <alt> KEY_U"));
-    CHECK(!activatorbinding_t::from_string("<alt> KEY_K | thrash"));
-    CHECK(!activatorbinding_t::from_string("<alt> KEY_K |"));
+    CHECK(!from_string<activatorbinding_t>("<alt> KEY_K || <alt> KEY_U"));
+    CHECK(!from_string<activatorbinding_t>("<alt> KEY_K | thrash"));
+    CHECK(!from_string<activatorbinding_t>("<alt> KEY_K |"));
 }

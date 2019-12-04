@@ -1,88 +1,70 @@
 #pragma once
 
+#include <wayfire/config/option-types.hpp>
 #include <glm/vec4.hpp>
-#include <string>
 #include <memory>
-#include <experimental/optional>
 
 namespace wf
 {
-/**
- * A simple wrapper for primitive value types, needed to make such options
- * fit better into the codebase.
- */
-template<class Primitive>
-struct primitive_type_wrapper_t
+namespace option_type
 {
-  public:
-    /**
-     * wrapped_type_t is used to determine whether a minimum or maximum value
-     * is supported for the wrapped type.
-     */
-    using wrapped_type_t = Primitive;
+/**
+ * To create an option of a given type, from_string must be specialized for
+ * parsing the type.
+ *
+ * @param string The string representation of the value.
+ * @return The parsed value, if the string was valid.
+ */
+template<class Type> std::experimental::optional<Type> from_string(
+    const std::string& string);
 
-    /** Construct a new primitive type wrapper with the given value */
-    primitive_type_wrapper_t(Primitive value) { this->value = value; }
-
-    /** Construct a new primitive wrapper from the given string */
-    static std::experimental::optional<primitive_type_wrapper_t<Primitive>>
-        from_string(const std::string& string);
-
-    /** Convert the wrapped type to a string */
-    static std::string to_string(
-        const primitive_type_wrapper_t<Primitive>& value)
-    {
-        return std::to_string((Primitive)value);
-    }
-
-    bool operator == (const Primitive& other) const
-    {
-        return value == other;
-    }
-
-    bool operator == (const primitive_type_wrapper_t<Primitive>& other) const
-    {
-        return value == other.value;
-    }
-
-    /** Convert back to the primitive type */
-    operator Primitive() const { return value; }
-
-  private:
-    Primitive value;
-};
-
-/* Forward declarations for the supported primitive conversions */
-using int_wrapper_t = primitive_type_wrapper_t<int>;
-using double_wrapper_t = primitive_type_wrapper_t<double>;
-using string_wrapper_t = primitive_type_wrapper_t<std::string>;
+/**
+ * To create an option of a given type, to_string must be specialized for
+ * converting the type to string.
+ * @return The string representation of a value.
+ *   It is expected that from_string(to_string(value)) == value.
+ */
+template<class Type> std::string to_string(const Type& value);
 
 /**
  * Construct an integer wrapper from the given string, which needs to represent
  * a valid signed 32-bit integer in decimal system.
  */
-template<> std::experimental::optional<int_wrapper_t>
-    int_wrapper_t::from_string(const std::string&);
+template<> std::experimental::optional<int>
+    from_string<int>(const std::string&);
 
 /**
  * Construct an double wrapper from the given string, which needs to represent
  * a valid signed 64-bit floating point number.
  */
-template<> std::experimental::optional<double_wrapper_t>
-    double_wrapper_t::from_string(const std::string&);
+template<> std::experimental::optional<double>
+    from_string<double>(const std::string&);
 
 /**
  * Construct an string wrapper from the given string.
  * The string should not contain newline characters.
  */
-template<> std::experimental::optional<string_wrapper_t>
-    string_wrapper_t::from_string(const std::string&);
+template<> std::experimental::optional<std::string>
+    from_string<std::string>(const std::string&);
 
 /**
- * Implementation of the string_wrapper_t::to_string.
+ * Convert the given integer to a string.
  */
-template<> std::string string_wrapper_t::to_string(
-    const string_wrapper_t& value);
+template<> std::string
+    to_string<int>(const int& value);
+
+/**
+ * Convert the given double to a string.
+ */
+template<> std::string
+    to_string<double>(const double& value);
+
+/**
+ * Convert the given string to a string.
+ */
+template<> std::string
+    to_string<std::string>(const std::string& value);
+}
 
 /**
  * Represents a color in RGBA format.
@@ -106,16 +88,6 @@ struct color_t
     explicit color_t(const glm::vec4& value);
 
     /**
-     * Create a new color value from the given hex string, format is either
-     * #RRGGBBAA or #RGBA.
-     */
-    static std::experimental::optional<color_t>
-        from_string(const std::string& value);
-
-    /** Convert the color to its hex string representation. */
-    static std::string to_string(const color_t& value);
-
-    /**
      * Compare colors channel-for-channel.
      * Comparisons use a small epsilon 1e-6.
      */
@@ -130,6 +102,19 @@ struct color_t
     /** Alpha channel value */
     double a;
 };
+
+namespace option_type
+{
+/**
+ * Create a new color value from the given hex string, format is either
+ * #RRGGBBAA or #RGBA.
+ */
+template<> std::experimental::optional<color_t>
+    from_string(const std::string& value);
+
+/** Convert the color to its hex string representation. */
+template<> std::string to_string(const color_t& value);
+}
 
 /**
  * A list of valid modifiers.
@@ -158,28 +143,6 @@ struct keybinding_t
      */
     keybinding_t(uint32_t modifier, uint32_t keyval);
 
-    /**
-     * Construct a new keybinding from the given string description.
-     * Format is <modifier1> .. <modifierN> KEY_<keyname>, where whitespace
-     * characters between the different modifiers and KEY_* are ignored.
-     *
-     * For a list of available modifieres, see @keyboard_modifier_t.
-     *
-     * The KEY_<keyname> is derived from evdev, and possible names are
-     * enumerated in linux/input-event-codes.h
-     *
-     * For example, "<super> <alt> KEY_E" represents pressing the Logo, Alt and
-     * E keys together.
-     *
-     * Special cases are "none" and "disabled", which result in modifiers and
-     * key 0.
-     */
-    static std::experimental::optional<keybinding_t> from_string(
-        const std::string& description);
-
-    /** Represent the keybinding as a string. */
-    static std::string to_string(const keybinding_t& value);
-
     /* Check whether two keybindings refer to the same shortcut */
     bool operator == (const keybinding_t& other) const;
 
@@ -195,6 +158,31 @@ struct keybinding_t
     uint32_t keyval;
 };
 
+namespace option_type
+{
+/**
+ * Construct a new keybinding from the given string description.
+ * Format is <modifier1> .. <modifierN> KEY_<keyname>, where whitespace
+ * characters between the different modifiers and KEY_* are ignored.
+ *
+ * For a list of available modifieres, see @keyboard_modifier_t.
+ *
+ * The KEY_<keyname> is derived from evdev, and possible names are
+ * enumerated in linux/input-event-codes.h
+ *
+ * For example, "<super> <alt> KEY_E" represents pressing the Logo, Alt and
+ * E keys together.
+ *
+ * Special cases are "none" and "disabled", which result in modifiers and
+ * key 0.
+ */
+template<> std::experimental::optional<keybinding_t> from_string(
+    const std::string& description);
+
+/** Represent the keybinding as a string. */
+template<> std::string to_string(const keybinding_t& value);
+}
+
 /**
  * Represents a single button shortcut (pressing a mouse button while holding
  * modifiers).
@@ -206,20 +194,6 @@ struct buttonbinding_t
      * Construct a new buttonbinding with the given modifier and button.
      */
     buttonbinding_t(uint32_t modifier, uint32_t button);
-
-    /**
-     * Construct a new buttonbinding from the given description.
-     * The format is the same as a keybinding, however instead of KEY_* values,
-     * the buttons are prefixed with BTN_*
-     *
-     * Special case are descriptions "none" and "disable", which result in
-     * mod = button = 0
-     */
-    static std::experimental::optional<buttonbinding_t> from_string(
-        const std::string& description);
-
-    /** Represent the buttonbinding as a string. */
-    static std::string to_string(const buttonbinding_t& value);
 
     /* Check whether two keybindings refer to the same shortcut */
     bool operator == (const buttonbinding_t& other) const;
@@ -235,6 +209,23 @@ struct buttonbinding_t
     /** The key of this keybinding */
     uint32_t button;
 };
+
+namespace option_type
+{
+/**
+ * Construct a new buttonbinding from the given description.
+ * The format is the same as a keybinding, however instead of KEY_* values,
+ * the buttons are prefixed with BTN_*
+ *
+ * Special case are descriptions "none" and "disable", which result in
+ * mod = button = 0
+ */
+template<> std::experimental::optional<buttonbinding_t> from_string(
+    const std::string& description);
+
+/** Represent the buttonbinding as a string. */
+template<> std::string to_string(const buttonbinding_t& value);
+}
 
 /**
  * The different types of available gestures.
@@ -283,22 +274,6 @@ struct touchgesture_t
     touchgesture_t(touch_gesture_type_t type, uint32_t direction,
         int finger_count);
 
-    /**
-     * Construct a new touchgesture_t with the type, direction and finger count
-     * indicated in the description.
-     *
-     * Format:
-     * 1. pinch [in|out] <fingercount>
-     * 2. [edge-]swipe up|down|left|right <fingercount>
-     * 3. [edge-]swipe up-left|right-down|... <fingercount>
-     * 4. disable | none
-     */
-    static std::experimental::optional<touchgesture_t> from_string(
-        const std::string& description);
-
-    /** Represent the touch gesture as a string. */
-    static std::string to_string(const touchgesture_t& value);
-
     /** @return The type of the gesture */
     touch_gesture_type_t get_type() const;
 
@@ -326,6 +301,25 @@ struct touchgesture_t
     int finger_count;
 };
 
+namespace option_type
+{
+/**
+ * Construct a new touchgesture_t with the type, direction and finger count
+ * indicated in the description.
+ *
+ * Format:
+ * 1. pinch [in|out] <fingercount>
+ * 2. [edge-]swipe up|down|left|right <fingercount>
+ * 3. [edge-]swipe up-left|right-down|... <fingercount>
+ * 4. disable | none
+ */
+template<> std::experimental::optional<touchgesture_t> from_string(
+    const std::string& description);
+
+/** Represent the touch gesture as a string. */
+template<> std::string to_string(const touchgesture_t& value);
+}
+
 /**
  * Represents a binding which can be activated via multiple actions -
  * keybindings, buttonbindings and touch gestures.
@@ -345,17 +339,6 @@ struct activatorbinding_t
     /* Copy assignment */
     activatorbinding_t& operator = (const activatorbinding_t& other);
 
-    /**
-     * Create an activator string from the given string description.
-     * The string consists of valid descriptions of keybindings, buttonbindings
-     * and touch gestures, separated by a single '|' sign.
-     */
-    static std::experimental::optional<activatorbinding_t> from_string(
-        const std::string& string);
-
-    /** Represent the activator binding as a string. */
-    static std::string to_string(const activatorbinding_t& value);
-
     /** @return true if the activator is activated by the given keybinding. */
     bool has_match(const keybinding_t& key) const;
 
@@ -373,9 +356,23 @@ struct activatorbinding_t
      */
     bool operator == (const activatorbinding_t& other) const;
 
-  private:
+  public:
     struct impl;
     std::unique_ptr<impl> priv;
 };
+
+namespace option_type
+{
+/**
+ * Create an activator string from the given string description.
+ * The string consists of valid descriptions of keybindings, buttonbindings
+ * and touch gestures, separated by a single '|' sign.
+ */
+template<> std::experimental::optional<activatorbinding_t> from_string(
+    const std::string& string);
+
+/** Represent the activator binding as a string. */
+template<> std::string to_string(const activatorbinding_t& value);
+}
 
 }

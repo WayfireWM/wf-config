@@ -198,8 +198,7 @@ static option_parsing_result parse_option_line(
     if (!option)
     {
         using namespace wf;
-        option = std::make_shared<
-            config::option_t<string_wrapper_t>> (name, value);
+        option = std::make_shared<config::option_t<std::string>> (name, value);
         current_section.register_new_option(option);
     }
 

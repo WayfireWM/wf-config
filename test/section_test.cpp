@@ -14,7 +14,7 @@ TEST_CASE("wf::config::section_t")
     CHECK(section.get_registered_options().empty());
     CHECK(section.get_option_or("non_existing") == nullptr);
 
-    auto intopt = std::make_shared<option_t<int_wrapper_t>>("IntOption", 123);
+    auto intopt = std::make_shared<option_t<int>>("IntOption", 123);
     section.register_new_option(intopt);
 
     CHECK(section.get_option("IntOption") == intopt);
@@ -25,7 +25,7 @@ TEST_CASE("wf::config::section_t")
     REQUIRE(reg_opts.size() == 1);
     CHECK(reg_opts.back() == intopt);
 
-    auto intopt2 = std::make_shared<option_t<int_wrapper_t>>("IntOption", 125);
+    auto intopt2 = std::make_shared<option_t<int>>("IntOption", 125);
     section.register_new_option(intopt2); // overwrite
     CHECK(section.get_option_or("IntOption") == intopt2);
 

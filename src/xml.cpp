@@ -34,7 +34,7 @@ static std::experimental::optional<const xmlChar*>
 template<class T> std::shared_ptr<wf::config::option_t<T>>
     create_option(std::string name, std::string default_value)
 {
-    auto value = T::from_string(default_value);
+    auto value = wf::option_type::from_string<T>(default_value);
     if (!value)
         return {};
 
@@ -62,8 +62,8 @@ template<class T> bounds_error_t set_bounds(
 
     if (min_ptr)
     {
-        std::experimental::optional<T> value =
-            T::from_string((const char*)min_ptr.value());
+        auto value = wf::option_type::from_string<T>(
+            (const char*)min_ptr.value());
         if (value) {
             typed_option->set_minimum(value.value());
         } else {
@@ -73,8 +73,8 @@ template<class T> bounds_error_t set_bounds(
 
     if (max_ptr)
     {
-        std::experimental::optional<T> value =
-            T::from_string((const char*)max_ptr.value());
+        std::experimental::optional<T> value = wf::option_type::from_string<T>(
+            (const char*)max_ptr.value());
         if (value) {
             typed_option->set_maximum(value.value());
         } else {
@@ -131,15 +131,15 @@ std::shared_ptr<wf::config::option_base_t>
     bounds_error_t bounds_error = BOUNDS_OK;
 
     if (type == "int") {
-        option = create_option<wf::int_wrapper_t> (name, default_value);
-        bounds_error = set_bounds<wf::int_wrapper_t>(option,
+        option = create_option<int> (name, default_value);
+        bounds_error = set_bounds<int>(option,
             min_value_ptr, max_value_ptr);
     } else if (type == "double") {
-        option = create_option<wf::double_wrapper_t> (name, default_value);
-        bounds_error = set_bounds<wf::double_wrapper_t>(option,
+        option = create_option<double> (name, default_value);
+        bounds_error = set_bounds<double>(option,
             min_value_ptr, max_value_ptr);
     } else if (type == "string") {
-        option = create_option<wf::string_wrapper_t> (name, default_value);
+        option = create_option<std::string> (name, default_value);
     } else if (type == "key") {
         option = create_option<wf::keybinding_t> (name, default_value);
     } else if (type == "button") {

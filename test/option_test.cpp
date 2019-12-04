@@ -5,19 +5,6 @@
 #include <wayfire/config/types.hpp>
 #include <linux/input-event-codes.h>
 
-TEST_CASE("wf::config::detail::is_wrapped_comparable_type")
-{
-    using namespace wf;
-    using namespace wf::config::detail;
-
-    CHECK(is_wrapped_comparable_type<int_wrapper_t>::value);
-    CHECK(is_wrapped_comparable_type<double_wrapper_t>::value);
-
-    CHECK(!is_wrapped_comparable_type<int>::value);
-    CHECK(!is_wrapped_comparable_type<string_wrapper_t>::value);
-    CHECK(!is_wrapped_comparable_type<keybinding_t>::value);
-}
-
 /**
  * A struct to check whether the maximum and minimum methods are enabled on the
  * template parameter class.
@@ -65,7 +52,8 @@ TEST_CASE("wf::config::option_t<unboundable>")
     CHECK(opt.get_value() == binding2);
     opt.reset_to_default();
     CHECK(opt.get_value() == binding1);
-    CHECK(wf::keybinding_t::from_string(opt.get_value_str()).value() == binding1);
+
+    CHECK(wf::option_type::from_string<wf::keybinding_t>(opt.get_value_str()).value() == binding1);
 
     opt.set_default_value_str("<super>KEY_T");
     opt.reset_to_default();
@@ -74,7 +62,7 @@ TEST_CASE("wf::config::option_t<unboundable>")
     CHECK(are_bounds_enabled<option_t<wf::keybinding_t>>::value == false);
     CHECK(are_bounds_enabled<option_t<wf::buttonbinding_t>>::value == false);
     CHECK(are_bounds_enabled<option_t<wf::touchgesture_t>>::value == false);
-    CHECK(are_bounds_enabled<option_t<wf::string_wrapper_t>>::value == false);
+    CHECK(are_bounds_enabled<option_t<std::string>>::value == false);
 }
 
 TEST_CASE("wf::config::option_t<boundable>")
@@ -82,7 +70,7 @@ TEST_CASE("wf::config::option_t<boundable>")
     using namespace wf;
     using namespace wf::config;
 
-    option_t<int_wrapper_t> iopt{"int123", 5};
+    option_t<int> iopt{"int123", 5};
     CHECK(iopt.get_name() == "int123");
     CHECK(iopt.get_value() == 5);
     CHECK(!iopt.get_minimum());
@@ -108,9 +96,9 @@ TEST_CASE("wf::config::option_t<boundable>")
     CHECK(iopt.get_value() == 3);
     iopt.reset_to_default();
     CHECK(iopt.get_value() == 5);
-    CHECK(int_wrapper_t::from_string(iopt.get_value_str()).value_or(0) == 5);
+    CHECK(wf::option_type::from_string<int>(iopt.get_value_str()).value_or(0) == 5);
 
-    option_t<double_wrapper_t> dopt{"dbl123", -1.0};
+    option_t<double> dopt{"dbl123", -1.0};
     dopt.set_value(-100);
     CHECK(dopt.get_value() == doctest::Approx(-100.0));
     dopt.set_minimum(50);
@@ -118,7 +106,7 @@ TEST_CASE("wf::config::option_t<boundable>")
     CHECK(dopt.get_value() == doctest::Approx(50));
     CHECK(dopt.get_minimum().value_or(60) == doctest::Approx(50));
     CHECK(dopt.get_maximum().value_or(60) == doctest::Approx(50));
-    CHECK(double_wrapper_t::from_string(dopt.get_value_str()).value_or(0) ==
+    CHECK(wf::option_type::from_string<double>(dopt.get_value_str()).value_or(0) ==
         doctest::Approx(50));
 
     dopt.set_maximum(60);
@@ -130,6 +118,6 @@ TEST_CASE("wf::config::option_t<boundable>")
     dopt.reset_to_default();
     CHECK(dopt.get_value() == doctest::Approx(60)); // not more than max
 
-    CHECK(are_bounds_enabled<option_t<int_wrapper_t>>::value);
-    CHECK(are_bounds_enabled<option_t<double_wrapper_t>>::value);
+    CHECK(are_bounds_enabled<option_t<int>>::value);
+    CHECK(are_bounds_enabled<option_t<double>>::value);
 }

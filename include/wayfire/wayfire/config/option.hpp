@@ -1,9 +1,9 @@
 #pragma once
-#include <string>
+
+#include <wayfire/config/option-types.hpp>
 #include <functional>
 #include <limits>
 
-#include <experimental/optional>
 #include <memory>
 
 namespace wf
@@ -115,10 +115,10 @@ class bounded_option_base_t<Type, true>
      */
     Type closest_valid_value(const Type& value) const
     {
-        auto real_minimum = minimum.value_or(
-            std::numeric_limits<typename Type::wrapped_type_t>::lowest());
-        auto real_maximum = maximum.value_or(
-            std::numeric_limits<typename Type::wrapped_type_t>::max());
+        auto real_minimum =
+            minimum.value_or(std::numeric_limits<Type>::lowest());
+        auto real_maximum =
+            maximum.value_or(std::numeric_limits<Type>::max());
 
         if (value < real_minimum)
             return real_minimum;
@@ -132,35 +132,8 @@ class bounded_option_base_t<Type, true>
 
 namespace detail
 {
-/**
- * Helper class to decide whether the option type supports bounds checking
- */
-template<class T, class T2 = void> struct is_wrapped_comparable_type :
-    std::false_type {};
-
-template<class T>
-struct is_wrapped_comparable_type<T, std::enable_if_t<std::is_class<T>::value>>
-{
-  private:
-    struct fallback_primitive_wrapper { using wrapped_type_t = void; };
-    struct primitive_wrapper_tester :
-        public T, public fallback_primitive_wrapper {};
-
-    /* This compiles only if T doesn't have wrapped_type_t, otherwise
-     * wrapped_type_t becomes ambiguous */
-    template<class U> static constexpr bool is_wrapped_comparable(
-        typename U::wrapped_type_t *) { return false; }
-    /* Otherwise, we have a single wrapped_type_t, just check whether it is
-     * arithmetic */
-    template<class U> static constexpr bool is_wrapped_comparable(U*)
-    { return std::is_arithmetic<typename T::wrapped_type_t>::value; }
-
-  public:
-    enum { value = is_wrapped_comparable<primitive_wrapper_tester>(nullptr) };
-};
-
 template<class Type, class Result> using boundable_type_only =
-std::enable_if_t<is_wrapped_comparable_type<Type>::value, Result>;
+    std::enable_if_t<std::is_arithmetic<Type>::value, Result>;
 }
 
 /**
@@ -168,8 +141,7 @@ std::enable_if_t<is_wrapped_comparable_type<Type>::value, Result>;
  */
 template<class Type>
 class option_t : public option_base_t,
-    public bounded_option_base_t<Type,
-        detail::is_wrapped_comparable_type<Type>::value>
+    public bounded_option_base_t<Type, std::is_arithmetic<Type>::value>
 {
   public:
     /**
@@ -186,7 +158,7 @@ class option_t : public option_base_t,
      */
     virtual bool set_value_str(const std::string& new_value_str) override
     {
-        auto new_value = Type::from_string(new_value_str);
+        auto new_value = option_type::from_string<Type>(new_value_str);
         if (new_value)
         {
             set_value(new_value.value());
@@ -209,7 +181,7 @@ class option_t : public option_base_t,
      */
     virtual void set_default_value_str(const std::string& defvalue) override
     {
-        auto parsed = Type::from_string(defvalue);
+        auto parsed = option_type::from_string<Type>(defvalue);
         if (parsed)
             this->default_value = parsed.value();
     }
@@ -236,7 +208,7 @@ class option_t : public option_base_t,
 
      virtual std::string get_value_str() const override
      {
-         return Type::to_string(get_value());
+         return option_type::to_string<Type>(get_value());
      }
 
   public:

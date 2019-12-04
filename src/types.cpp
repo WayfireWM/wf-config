@@ -8,22 +8,22 @@
 #include <sstream>
 
 /* --------------------------- Primitive types ------------------------------ */
-template<> std::experimental::optional<wf::int_wrapper_t>
-wf::int_wrapper_t::from_string(const std::string& value)
+template<> std::experimental::optional<int>
+    wf::option_type::from_string(const std::string& value)
 {
     std::istringstream in{value};
     int result;
     in >> result;
 
     if (value != std::to_string(result))
-        return std::experimental::optional<int_wrapper_t>{};
+        return {};
 
-    return int_wrapper_t{result};
+    return result;
 }
 
 /** Attempt to parse a string as an double value */
-template<> std::experimental::optional<wf::double_wrapper_t>
-wf::double_wrapper_t::from_string(const std::string& value)
+template<> std::experimental::optional<double>
+    wf::option_type::from_string(const std::string& value)
 {
     auto old = std::locale::global(std::locale::classic());
     std::istringstream in{value};
@@ -34,23 +34,35 @@ wf::double_wrapper_t::from_string(const std::string& value)
     if (!in.eof() || value.empty())
     {
         /* XXX: is the check above enough??? Overflow? Underflow? */
-        return std::experimental::optional<double_wrapper_t>{};
+        return {};
     }
 
-    return double_wrapper_t{result};
+    return result;
 }
 
-template<> std::experimental::optional<wf::string_wrapper_t>
-    wf::string_wrapper_t::from_string(const std::string& value)
+template<> std::experimental::optional<std::string>
+    wf::option_type::from_string(const std::string& value)
 {
     if (value.find_first_of("\n\r") != std::string::npos)
         return {};
 
-    return string_wrapper_t{value};
+    return value;
 }
 
-template<> std::string wf::string_wrapper_t::to_string(
-    const string_wrapper_t& value)
+template<> std::string wf::option_type::to_string(
+    const int& value)
+{
+    return std::to_string(value);
+}
+
+template<> std::string wf::option_type::to_string(
+    const double& value)
+{
+    return std::to_string(value);
+}
+
+template<> std::string wf::option_type::to_string(
+    const std::string& value)
 {
     return value;
 }
@@ -77,8 +89,8 @@ static double hex_to_double(std::string value)
 }
 
 static const std::string hex_digits = "0123456789ABCDEF";
-std::experimental::optional<wf::color_t>
-    wf::color_t::from_string(const std::string& value)
+template<> std::experimental::optional<wf::color_t>
+    wf::option_type::from_string(const std::string& value)
 {
     /* Either #RGBA or #RRGGBBAA */
     if (value.size() != 5 && value.size() != 9)
@@ -110,7 +122,7 @@ std::experimental::optional<wf::color_t>
     return wf::color_t{r, g, b, a};
 }
 
-std::string wf::color_t::to_string(const color_t& value)
+template<> std::string wf::option_type::to_string(const color_t& value)
 {
     const int max_byte = 255;
     const int min_byte = 0;
@@ -307,8 +319,8 @@ wf::keybinding_t::keybinding_t(uint32_t modifier, uint32_t keyval)
     this->keyval = keyval;
 }
 
-std::experimental::optional<wf::keybinding_t>
-wf::keybinding_t::from_string(const std::string& description)
+template<> std::experimental::optional<wf::keybinding_t>
+    wf::option_type::from_string(const std::string& description)
 {
     auto parsed_opt = parse_binding(description);
     if (!parsed_opt)
@@ -329,7 +341,7 @@ wf::keybinding_t::from_string(const std::string& description)
     return wf::keybinding_t{parsed.mods, parsed.value};
 }
 
-std::string wf::keybinding_t::to_string(const wf::keybinding_t& value)
+template<> std::string wf::option_type::to_string(const wf::keybinding_t& value)
 {
     if (value.get_modifiers() == 0 && value.get_key() == 0)
         return "none";
@@ -361,8 +373,8 @@ wf::buttonbinding_t::buttonbinding_t(uint32_t modifier, uint32_t buttonval)
     this->button = buttonval;
 }
 
-std::experimental::optional<wf::buttonbinding_t>
-wf::buttonbinding_t::from_string(const std::string& description)
+template<> std::experimental::optional<wf::buttonbinding_t>
+    wf::option_type::from_string(const std::string& description)
 {
     auto parsed_opt = parse_binding(description);
     if (!parsed_opt)
@@ -382,7 +394,8 @@ wf::buttonbinding_t::from_string(const std::string& description)
     return wf::buttonbinding_t{parsed.mods, parsed.value};
 }
 
-std::string wf::buttonbinding_t::to_string(const wf::buttonbinding_t& value)
+template<> std::string wf::option_type::to_string(
+    const wf::buttonbinding_t& value)
 {
     if (value.get_modifiers() == 0 && value.get_button() == 0)
         return "none";
@@ -516,15 +529,15 @@ wf::touchgesture_t parse_gesture(const std::string& value)
     return wf::touchgesture_t{wf::GESTURE_TYPE_NONE, 0, 0};
 }
 
-std::experimental::optional<wf::touchgesture_t>
-wf::touchgesture_t::from_string(const std::string& description)
+template<> std::experimental::optional<wf::touchgesture_t>
+    wf::option_type::from_string(const std::string& description)
 {
     auto as_binding = parse_binding(description);
     if (as_binding && !as_binding.value().enabled)
         return touchgesture_t{GESTURE_TYPE_NONE, 0, 0};
 
     auto gesture = parse_gesture(description);
-    if (gesture.type == GESTURE_TYPE_NONE)
+    if (gesture.get_type() == GESTURE_TYPE_NONE)
         return {};
 
     return gesture;
@@ -548,10 +561,10 @@ static std::string direction_to_string(uint32_t direction)
     return result;
 }
 
-std::string wf::touchgesture_t::to_string(const touchgesture_t& value)
+template<> std::string wf::option_type::to_string(const touchgesture_t& value)
 {
     std::string result;
-    switch (value.type)
+    switch (value.get_type())
     {
         case GESTURE_TYPE_NONE:
             return "";
@@ -630,7 +643,7 @@ wf::activatorbinding_t& wf::activatorbinding_t::operator= (
 template<class Type> bool try_add_binding(
     std::vector<Type>& to, const std::string& value)
 {
-    auto binding = Type::from_string(value);
+    auto binding = wf::option_type::from_string<Type>(value);
     if (binding)
     {
         to.push_back(binding.value());
@@ -640,8 +653,8 @@ template<class Type> bool try_add_binding(
     return false;
 }
 
-std::experimental::optional<wf::activatorbinding_t>
-    wf::activatorbinding_t::from_string(const std::string& string)
+template<> std::experimental::optional<wf::activatorbinding_t>
+    wf::option_type::from_string(const std::string& string)
 {
     activatorbinding_t binding;
 
@@ -669,14 +682,15 @@ static std::string concatenate_bindings(const std::vector<Type>& bindings)
     std::string repr = "";
     for (auto& b : bindings)
     {
-        repr += Type::to_string(b);
+        repr += wf::option_type::to_string<Type>(b);
         repr += " | ";
     }
 
     return repr;
 }
 
-std::string wf::activatorbinding_t::to_string(const activatorbinding_t& value)
+template<> std::string wf::option_type::to_string(
+    const activatorbinding_t& value)
 {
     std::string repr =
         concatenate_bindings(value.priv->keys) +
