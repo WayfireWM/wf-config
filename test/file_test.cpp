@@ -1,4 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <iostream>
 #include "doctest.h"
 
 #include <wayfire/config/file.hpp>
@@ -72,4 +73,32 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     EXPECT_LINE(log, "Error in file test:5");
     EXPECT_LINE(log, "Error in file test:19");
     EXPECT_LINE(log, "Error in file test:20");
+}
+
+TEST_CASE("wf::config::save_configuration_options_to_string")
+{
+    using namespace wf;
+    using namespace wf::config;
+    auto section1 = std::make_shared<section_t> ("section1");
+    auto section2 = std::make_shared<section_t> ("section2");
+
+    section1->register_new_option(std::make_shared<option_t<int_wrapper_t>> ("option1", 4));
+    section1->register_new_option(std::make_shared<option_t<string_wrapper_t>> ("option2", std::string("45 # 46 \\")));
+    section2->register_new_option(std::make_shared<option_t<double_wrapper_t>> ("option1", 4.25));
+
+    config_manager_t config;
+    config.merge_section(section1);
+    config.merge_section(section2);
+
+    auto stringified = save_configuration_options_to_string(config);
+    CHECK(stringified ==
+R"([section1]
+option1 = 4
+option2 = 45 \# 46 \\
+
+[section2]
+option1 = 4.250000
+
+)");
+
 }

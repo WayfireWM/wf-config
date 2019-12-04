@@ -280,3 +280,42 @@ void wf::config::load_configuration_options_from_string(
         }
     }
 }
+
+std::string wf::config::save_configuration_options_to_string(
+    const config_manager_t& config)
+{
+    std::vector<std::string> lines;
+
+    for (auto& section : config.get_all_sections())
+    {
+        lines.push_back("[" + section->get_name() + "]");
+        for (auto& option : section->get_registered_options())
+        {
+            lines.push_back(
+                option->get_name() + " = " + option->get_value_str());
+        }
+
+        lines.push_back("");
+    }
+
+    /* Check which characters need escaping */
+    for (auto& line : lines)
+    {
+        size_t sharp = line.find_first_of("#");
+        while (sharp != line.npos)
+        {
+            line.insert(line.begin() + sharp, '\\');
+            sharp = line.find_first_of("#", sharp + 2);
+        }
+
+        if (!line.empty() && line.back() == '\\')
+            line += '\\';
+    }
+
+    std::string result;
+    for (const auto& line : lines)
+        result += line + "\n";
+
+    return result;
+}
+

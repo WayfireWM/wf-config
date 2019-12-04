@@ -42,7 +42,8 @@ void load_configuration_options_from_string(config_manager_t& manager,
  *
  * @return The string representation of the config manager.
  */
-std::string serialize_configuration_manager(const config_manager_t& manager);
+std::string save_configuration_options_to_string(
+    const config_manager_t& manager);
 
 /**
  * Load the options from the given config file.
