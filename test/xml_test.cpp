@@ -72,28 +72,7 @@ static const std::string xml_option_missing_default_value = R"(
 </option>
 )";
 
-auto EXPECT_LINE = [] (std::istream& log, std::string expect)
-{
-    auto tolower = [] (std::string s)
-    {
-        for (auto& c : s)
-            c = std::tolower(c);
-        return s;
-    };
-
-    bool found = false;
-
-    std::string line;
-    while (std::getline(log, line))
-    {
-        /* Case-insensitive matching */
-        line = tolower(line);
-        expect = tolower(expect);
-        found |= (line.find(expect) != std::string::npos);
-    }
-
-    CHECK(found);
-};
+#include "expect_line.hpp"
 
 TEST_CASE("wf::config::xml::create_option")
 {

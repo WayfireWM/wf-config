@@ -47,6 +47,14 @@ config_manager_test = executable(
     install: false)
 test('ConfigManager test', config_manager_test)
 
+file_parse_test = executable(
+    'file_test',
+    'file_test.cpp',
+    include_directories: wfconfig_inc,
+    link_with: lib_wfconfig,
+    install: false)
+test('File parsing test', file_parse_test)
+
 # Utils
 log_test = executable(
     'log_test',
