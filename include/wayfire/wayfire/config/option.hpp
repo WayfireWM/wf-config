@@ -39,8 +39,9 @@ class option_base_t
      * option value, only its default value.
      *
      * If the new default value is invalid, the request will be ignored.
+     * @return true if the default value was updated.
      */
-    virtual void set_default_value_str(const std::string& default_value) = 0;
+    virtual bool set_default_value_str(const std::string& default_value) = 0;
 
     /** Get the option value in string format */
     virtual std::string get_value_str() const = 0;
@@ -179,11 +180,16 @@ class option_t : public option_base_t,
     /**
      * Change the default value of the function, if possible.
      */
-    virtual void set_default_value_str(const std::string& defvalue) override
+    virtual bool set_default_value_str(const std::string& defvalue) override
     {
         auto parsed = option_type::from_string<Type>(defvalue);
         if (parsed)
+        {
             this->default_value = parsed.value();
+            return true;
+        }
+
+        return false;
     }
 
     /**
