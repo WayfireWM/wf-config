@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<wayfire>
+  <plugin name="section2">
+    <category>General</category>
+    <option name="option2" type="string">
+      <default>XMLDefault</default>
+    </option>
+    <option name="option4" type="string">
+      <default>DoesNotExistInConfig</default>
+    </option>
+  </plugin>
+</wayfire>

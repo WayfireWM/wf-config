@@ -71,5 +71,19 @@ bool load_configuration_options_from_file(config_manager_t& manager,
 void save_configuration_to_file(const config_manager_t& manager,
     const std::string& file);
 
+/**
+ * Build a configuration for the given program from the files on the filesystem.
+ *
+ * The following steps are performed:
+ * 1. Each of the XML files in the @xmldir directory are read, and options there
+ *   are used to build a configuration.
+ * 2. The @sysconf file is used to overwrite default values from XML files.
+ * 3. The @userconf file is used to determine the actual values of options.
+ *
+ * If any of the steps results in an error, the error will be reported to the
+ * command line and the process will continue.
+ */
+config_manager_t build_configuration(const std::string& xmldir,
+    const std::string& sysconf, const std::string& userconf);
 }
 }

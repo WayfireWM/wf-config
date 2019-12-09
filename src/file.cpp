@@ -1,5 +1,6 @@
 #include <wayfire/config/file.hpp>
 #include <wayfire/config/types.hpp>
+#include <wayfire/config/xml.hpp>
 #include <wayfire/util/log.hpp>
 #include <sstream>
 #include <fstream>
@@ -7,6 +8,7 @@
 
 #include <sys/file.h>
 #include <unistd.h>
+#include <dirent.h>
 
 class line_t : public std::string
 {
@@ -202,7 +204,8 @@ static option_parsing_result parse_option_line(
     if (!option)
     {
         using namespace wf;
-        option = std::make_shared<config::option_t<std::string>> (name, value);
+        option = std::make_shared<config::option_t<std::string>> (name, "");
+        option->set_value_str(value);
         current_section.register_new_option(option);
     }
 
@@ -322,10 +325,19 @@ std::string wf::config::save_configuration_options_to_string(
     return result;
 }
 
+static std::string load_file_contents(const std::string& file)
+{
+    std::ifstream infile(file);
+    std::string file_contents((std::istreambuf_iterator<char>(infile)),
+        std::istreambuf_iterator<char>());
+
+    return file_contents;
+}
 
 bool wf::config::load_configuration_options_from_file(config_manager_t& manager,
 	const std::string& file)
 {
+    /* Try to lock the file */
 	auto fd = open(file.c_str(), O_RDONLY);
 	if (flock(fd, LOCK_SH | LOCK_NB))
 	{
@@ -333,10 +345,7 @@ bool wf::config::load_configuration_options_from_file(config_manager_t& manager,
 		return false;
     }
 
-    /* Read file contents */
-    std::ifstream infile(file);
-    std::string file_contents((std::istreambuf_iterator<char>(infile)),
-        std::istreambuf_iterator<char>());
+    auto file_contents = load_file_contents(file);
 
     /* Release lock */
     flock(fd, LOCK_UN);
@@ -364,4 +373,115 @@ void wf::config::save_configuration_to_file(
     /* Modify the file one last time. Now programs waiting for updates can
      * acquire a shared lock. */
     fout << std::endl;
+}
+
+/**
+ * Parse the XML file and return the node which corresponds to the section.
+ */
+static xmlNodePtr find_section_start_node(const std::string& file)
+{
+    auto doc = xmlParseFile(file.c_str());
+    if (!doc)
+    {
+        LOGE("Failed to parse XML file ", file);
+        return nullptr;
+    }
+
+    auto root = xmlDocGetRootElement(doc);
+    if (!root || (const char*)root->name != std::string("wayfire"))
+    {
+        LOGE(file, ": missing <wayfire> root element.");
+        xmlFreeDoc(doc);
+        return nullptr;
+    }
+
+    /* Seek the plugin section */
+    auto section = root->children;
+    while (section != nullptr)
+    {
+        if (section->type == XML_ELEMENT_NODE &&
+            (const char*)section->name == (std::string)"plugin")
+        {
+            break;
+        }
+
+        section = section->next;
+    }
+
+    return section;
+}
+
+static wf::config::config_manager_t load_xml_files(const std::string& xmldir)
+{
+    auto xmld = opendir(xmldir.c_str());
+    if (NULL == xmld)
+    {
+        LOGE("Failed to open XML directory ", xmldir);
+        return {};
+    }
+
+    LOGI("Reading XML configuration options from directory ", xmldir);
+    wf::config::config_manager_t manager;
+    struct dirent *entry;
+    while ((entry = readdir(xmld)) != NULL)
+    {
+        if (entry->d_type != DT_LNK && entry->d_type != DT_REG)
+            continue;
+
+        std::string filename = xmldir + '/' + entry->d_name;
+        if (filename.length() > 4 &&
+            filename.rfind(".xml") == filename.length() - 4)
+        {
+            LOGI("Reading XML configuration options from file ", filename);
+            auto node = find_section_start_node(filename);
+            if (node)
+            {
+                manager.merge_section(
+                    wf::config::xml::create_section_from_xml_node(node));
+            }
+        }
+    }
+
+    closedir(xmld);
+    return manager;
+}
+
+void override_defaults(wf::config::config_manager_t& manager,
+    const std::string& sysconf)
+{
+    auto sysconf_str = load_file_contents(sysconf);
+
+    wf::config::config_manager_t overrides;
+    load_configuration_options_from_string(overrides, sysconf_str, sysconf);
+    for (auto& section : overrides.get_all_sections())
+    {
+        for (auto& option : section->get_registered_options())
+        {
+            auto full_name = section->get_name() + '/' + option->get_name();
+            auto real_option = manager.get_option(full_name);
+            if (real_option)
+            {
+                if (!real_option->set_default_value_str(
+                        real_option->get_value_str()))
+                {
+                    LOGW("Invalid value for ", full_name, " in ", sysconf);
+                }
+            } else
+            {
+                LOGW("Unused default value for " ,full_name, " in ", sysconf);
+            }
+        }
+    }
+}
+
+#include <iostream>
+
+wf::config::config_manager_t wf::config::build_configuration(
+    const std::string& xmldir, const std::string& sysconf,
+    const std::string& userconf)
+{
+    auto manager = load_xml_files(xmldir);
+    override_defaults(manager, sysconf);
+    load_configuration_options_from_file(manager, userconf);
+    return manager;
 }

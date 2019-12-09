@@ -151,10 +151,30 @@ TEST_CASE("wf::config::load_configuration_options_from_file - locking fails")
     CHECK(!load_configuration_options_from_file(manager, test_config));
 }
 
+void check_int_test_config(const wf::config::config_manager_t& manager,
+    std::string value_opt1 = "12")
+{
+    auto s1 = manager.get_section("section1");
+    auto s2 = manager.get_section("section2");
+    REQUIRE(s1 != nullptr);
+    REQUIRE(s2 != nullptr);
+
+    auto o1 = manager.get_option("section1/option1");
+    auto o2 = manager.get_option("section2/option2");
+    auto o3 = manager.get_option("section2/option3");
+
+    REQUIRE(o1);
+    REQUIRE(o2);
+    REQUIRE(o3);
+    CHECK(o1->get_value_str() == value_opt1);
+    CHECK(o2->get_value_str() == "opt2");
+    CHECK(o3->get_value_str() == "DoesNotExistInXML # \\");
+}
+
 TEST_CASE("wf::config::load_configuration_options_from_file - success")
 {
     std::string test_config = get_current_dir_name() +
-        std::string("/../test/config.ini");
+        std::string("/../test/int_test/config.ini");
 
     /* Init with one section */
     wf::config::config_manager_t manager;
@@ -164,19 +184,8 @@ TEST_CASE("wf::config::load_configuration_options_from_file - success")
     manager.merge_section(s);
 
     CHECK(load_configuration_options_from_file(manager, test_config));
-
-    auto s1 = manager.get_section("section1");
-    auto s2 = manager.get_section("section2");
-    REQUIRE(s1 == s);
-    REQUIRE(s2 != nullptr);
-
-    auto o1 = manager.get_option("section1/option1");
-    auto o2 = manager.get_option("section2/option2");
-
-    REQUIRE(o1);
-    REQUIRE(o2);
-    CHECK(o1->get_value_str() == "12");
-    CHECK(o2->get_value_str() == "opt2");
+    REQUIRE(manager.get_section("section1") == s);
+    check_int_test_config(manager);
 }
 
 TEST_CASE("wf::config::save_configuration_to_file - success")
@@ -203,4 +212,43 @@ TEST_CASE("wf::config::save_configuration_to_file - success")
     CHECK(flock(fd, LOCK_EX | LOCK_NB) == 0);
     flock(fd, LOCK_UN);
     close(fd);
+}
+
+TEST_CASE("wf::config::build_configuration")
+{
+    wf::log::initialize_logging(std::cout, wf::log::LOG_LEVEL_DEBUG, wf::log::LOG_COLOR_MODE_ON);
+    std::string xmldir =
+        get_current_dir_name() + std::string("/../test/int_test/xml");
+    std::string sysconf =
+        get_current_dir_name() + std::string("/../test/int_test/sys.ini");
+    std::string userconf =
+        get_current_dir_name() + std::string("/../test/int_test/config.ini");
+
+    auto config = wf::config::build_configuration(xmldir, sysconf, userconf);
+    check_int_test_config(config, "10");
+
+    auto o1 = config.get_option("section1/option1");
+
+    auto o2 = config.get_option("section2/option2");
+    auto o3 = config.get_option("section2/option3");
+    auto o4 = config.get_option("section2/option4");
+
+    using namespace wf;
+    using namespace wf::config;
+    CHECK(std::dynamic_pointer_cast<option_t<int>> (o1) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o2) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o3) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o4) != nullptr);
+
+    CHECK(o4->get_value_str() == "DoesNotExistInConfig");
+
+    o1->reset_to_default();
+    o2->reset_to_default();
+    o3->reset_to_default();
+    o4->reset_to_default();
+
+    CHECK(o1->get_value_str() == "4");
+    CHECK(o2->get_value_str() == "XMLDefault");
+    CHECK(o3->get_value_str() == "");
+    CHECK(o4->get_value_str() == "DoesNotExistInConfig");
 }
