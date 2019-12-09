@@ -82,13 +82,21 @@ TEST_CASE("wf::config::xml::create_option")
 
     namespace wxml = wf::config::xml;
     namespace wc = wf::config;
+    xmlNodePtr option_node;
 
-    auto initialize_option = [] (std::string source)
+    auto initialize_option = [&] (std::string source)
     {
         auto node = xmlParseDoc((const xmlChar*)source.c_str());
         REQUIRE(node != nullptr);
-        return wxml::create_option_from_xml_node(xmlDocGetRootElement(node));
+        option_node = xmlDocGetRootElement(node);
+        return wxml::create_option_from_xml_node(option_node);
     };
+
+    SUBCASE("Not an XML option")
+    {
+        auto opt = std::make_shared<wf::config::option_t<int>> ("Test", 1);
+        CHECK(wxml::get_option_xml_node(opt) == nullptr);
+    }
 
     SUBCASE("IntOption")
     {
@@ -106,6 +114,7 @@ TEST_CASE("wf::config::xml::create_option")
         CHECK(as_int->get_value() == 3);
         CHECK(as_int->get_minimum().value() == 0);
         CHECK(as_int->get_maximum().value() == 10);
+        CHECK(wxml::get_option_xml_node(as_int) == option_node);
     }
 
     SUBCASE("KeyOption")
@@ -121,6 +130,7 @@ TEST_CASE("wf::config::xml::create_option")
 
         CHECK(as_key->get_value() ==
             wf::keybinding_t{wf::KEYBOARD_MODIFIER_LOGO, KEY_E});
+        CHECK(wxml::get_option_xml_node(option) == option_node);
     }
 
     /* Generate a subcase where the given xml source can't be parsed to an
@@ -225,12 +235,20 @@ TEST_CASE("wf::config::xml::create_section")
     namespace wxml = wf::config::xml;
     namespace wc = wf::config;
 
-    auto initialize_section = [] (std::string xml_source)
+    xmlNodePtr section_root;
+    auto initialize_section = [&] (std::string xml_source)
     {
         auto node = xmlParseDoc((const xmlChar*)xml_source.c_str());
         REQUIRE(node != nullptr);
-        return wxml::create_section_from_xml_node(xmlDocGetRootElement(node));
+        section_root = xmlDocGetRootElement(node);
+        return wxml::create_section_from_xml_node(section_root);
     };
+
+    SUBCASE("Section without XML")
+    {
+        auto section = std::make_shared<wc::section_t>("TestSection");
+        CHECK(wxml::get_section_xml_node(section) == nullptr);
+    }
 
     SUBCASE("Empty section")
     {
@@ -238,6 +256,7 @@ TEST_CASE("wf::config::xml::create_section")
         REQUIRE(section != nullptr);
         CHECK(section->get_name() == "TestPluginEmpty");
         CHECK(section->get_registered_options().empty());
+        CHECK(wxml::get_section_xml_node(section) == section_root);
     }
 
     SUBCASE("Empty section - unnecessary data")
@@ -246,6 +265,7 @@ TEST_CASE("wf::config::xml::create_section")
         REQUIRE(section != nullptr);
         CHECK(section->get_name() == "TestPluginNoPlugins");
         CHECK(section->get_registered_options().empty());
+        CHECK(wxml::get_section_xml_node(section) == section_root);
     }
 
     SUBCASE("Section with options")
@@ -263,6 +283,7 @@ TEST_CASE("wf::config::xml::create_section")
             "KeyOption", "ButtonOption", "TouchOption", "ActivatorOption",
             "IntOption", "DoubleOption", "StringOption"};
         CHECK(opt_names == expected_names);
+        CHECK(wxml::get_section_xml_node(section) == section_root);
     }
 
     SUBCASE("Missing section name")

@@ -76,7 +76,8 @@ void save_configuration_to_file(const config_manager_t& manager,
  *
  * The following steps are performed:
  * 1. Each of the XML files in the @xmldir directory are read, and options there
- *   are used to build a configuration.
+ *   are used to build a configuration. Note that the XML nodes which are
+ *   allocated will not be freed.
  * 2. The @sysconf file is used to overwrite default values from XML files.
  * 3. The @userconf file is used to determine the actual values of options.
  *

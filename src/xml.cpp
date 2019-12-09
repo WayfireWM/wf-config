@@ -2,6 +2,33 @@
 #include <wayfire/config/types.hpp>
 #include <wayfire/util/log.hpp>
 
+class xml_derived_element_t
+{
+  public:
+    xmlNodePtr xml_node;
+};
+
+/**
+ * A XML option is the same as a normal option, however it also has access to
+ * the XML node which was used to initially create the option.
+ */
+template<class T> class xml_option_t :
+  public wf::config::option_t<T>, public xml_derived_element_t
+{
+  public:
+    using wf::config::option_t<T>::option_t;
+};
+
+/**
+ * A XML section is the same as a normal section, however it also has access to
+ * the XML node which was used to initially create the section.
+ */
+class xml_section_t : public wf::config::section_t, public xml_derived_element_t
+{
+  public:
+    using wf::config::section_t::section_t;
+};
+
 static std::experimental::optional<const xmlChar*>
     extract_value(xmlNodePtr node, std::string value_name)
 {
@@ -31,14 +58,14 @@ static std::experimental::optional<const xmlChar*>
  * Create a new option of type T with the given name and default value.
  * @return The new option, or nullptr if the default value is invaild.
  */
-template<class T> std::shared_ptr<wf::config::option_t<T>>
+template<class T> std::shared_ptr<xml_option_t<T>>
     create_option(std::string name, std::string default_value)
 {
     auto value = wf::option_type::from_string<T>(default_value);
     if (!value)
         return {};
 
-    return std::make_shared<wf::config::option_t<T>> (name, value.value());
+    return std::make_shared<xml_option_t<T>> (name, value.value());
 }
 
 enum bounds_error_t
@@ -189,6 +216,7 @@ std::shared_ptr<wf::config::option_base_t>
             break;
     }
 
+    std::dynamic_pointer_cast<xml_derived_element_t> (option)->xml_node = node;
     return option;
 }
 
@@ -211,8 +239,8 @@ std::shared_ptr<wf::config::section_t>
         return nullptr;
     }
 
-    auto section =
-        std::make_shared<wf::config::section_t> ((const char*)name_ptr);
+    auto section = std::make_shared<xml_section_t> ((const char*)name_ptr);
+    section->xml_node = node;
 
     auto child_ptr = node->children;
     while (child_ptr != nullptr)
@@ -229,4 +257,18 @@ std::shared_ptr<wf::config::section_t>
     }
 
     return section;
+}
+
+xmlNodePtr wf::config::xml::get_option_xml_node(
+    std::shared_ptr<wf::config::option_base_t> option)
+{
+    auto xml_opt = std::dynamic_pointer_cast<xml_derived_element_t> (option);
+    return xml_opt ? xml_opt->xml_node : nullptr;
+}
+
+xmlNodePtr wf::config::xml::get_section_xml_node(
+    std::shared_ptr<wf::config::section_t> section)
+{
+    auto xml_section = std::dynamic_pointer_cast<xml_derived_element_t> (section);
+    return xml_section ? xml_section->xml_node : nullptr;
 }

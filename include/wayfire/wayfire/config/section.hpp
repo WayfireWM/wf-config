@@ -22,7 +22,7 @@ class section_t
      * file there are additional restrictions.
      */
     section_t(const std::string& name);
-    ~section_t();
+    virtual ~section_t();
 
     /** @return The name of the config section. */
     std::string get_name() const;
