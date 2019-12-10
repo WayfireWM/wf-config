@@ -10,7 +10,8 @@ headers_config = [
 
 headers_util = [
 'wayfire/wayfire/util/log.hpp',
-'wayfire/wayfire/util/stringify.hpp'
+'wayfire/wayfire/util/stringify.hpp',
+'wayfire/wayfire/util/duration.hpp'
 ]
 
 install_headers(headers_config, subdir: 'wayfire/wayfire/config')
