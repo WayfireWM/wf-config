@@ -43,4 +43,20 @@ TEST_CASE("wf::animation::duration_t")
 
 TEST_CASE("wf::animation::timed_transition_t")
 {
+    auto length = std::make_shared<option_t<int>>("length", 100);
+    duration_t duration{length, smoothing::linear};
+    timed_transition_t transition{duration};
+    transition.set(1, 2);
+    CHECK(transition.start == doctest::Approx(1.0));
+    CHECK(transition.end == doctest::Approx(2.0));
+
+    duration.start();
+    CHECK((double)transition == doctest::Approx(1.0));
+    usleep(50000);
+    CHECK((double)transition == doctest::Approx(1.5));
+    transition.restart_with_end(3);
+    CHECK(transition.start == doctest::Approx(1.5));
+    CHECK(transition.end == doctest::Approx(3));
+    usleep(60000);
+    CHECK((double)transition == doctest::Approx(3.0));
 }

@@ -97,7 +97,8 @@ struct timed_transition_t : public transition_t
      * @start The start state.
      * @end The end state.
      */
-    timed_transition_t(duration_t& duration, double start = 0, double end = 0);
+    timed_transition_t(const duration_t& duration,
+        double start = 0, double end = 0);
 
     /**
      * Set the transition start to the current state and the end to the given
@@ -118,7 +119,7 @@ struct timed_transition_t : public transition_t
     operator double();
 
   private:
-    duration_t& duration;
+    const duration_t& duration;
 };
 }
 }

@@ -94,3 +94,27 @@ bool wf::animation::duration_t::running()
 
     return true;
 }
+
+wf::animation::timed_transition_t::timed_transition_t(
+    const duration_t& dur, double start, double end) : duration(dur)
+{
+    this->set(start, end);
+}
+
+void wf::animation::timed_transition_t::restart_with_end(double new_end)
+{
+    this->start = (double)*this;
+    this->end = new_end;
+}
+
+void wf::animation::timed_transition_t::set(double start, double end)
+{
+    this->start = start;
+    this->end = end;
+}
+
+wf::animation::timed_transition_t::operator double()
+{
+    double alpha = this->duration.progress();
+    return (1 - alpha) * start + alpha * end;
+}
