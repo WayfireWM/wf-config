@@ -63,3 +63,11 @@ log_test = executable(
     link_with: lib_wfconfig,
     install: false)
 test('Log test', log_test)
+
+duration_test = executable(
+    'duration_test',
+    'duration_test.cpp',
+    include_directories: wfconfig_inc,
+    link_with: lib_wfconfig,
+    install: false)
+test('Duration test', duration_test)
