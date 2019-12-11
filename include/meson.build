@@ -1,18 +1,18 @@
 headers_config = [
-'wayfire/wayfire/config/xml.hpp',
-'wayfire/wayfire/config/config-manager.hpp',
-'wayfire/wayfire/config/section.hpp',
-'wayfire/wayfire/config/option-types.hpp',
-'wayfire/wayfire/config/types.hpp',
-'wayfire/wayfire/config/file.hpp',
-'wayfire/wayfire/config/option.hpp'
+'wayfire/config/xml.hpp',
+'wayfire/config/config-manager.hpp',
+'wayfire/config/section.hpp',
+'wayfire/config/option-types.hpp',
+'wayfire/config/types.hpp',
+'wayfire/config/file.hpp',
+'wayfire/config/option.hpp'
 ]
 
 headers_util = [
-'wayfire/wayfire/util/log.hpp',
-'wayfire/wayfire/util/stringify.hpp',
-'wayfire/wayfire/util/duration.hpp'
+'wayfire/util/log.hpp',
+'wayfire/util/stringify.hpp',
+'wayfire/util/duration.hpp'
 ]
 
-install_headers(headers_config, subdir: 'wayfire/wayfire/config')
-install_headers(headers_util, subdir: 'wayfire/wayfire/util')
+install_headers(headers_config, subdir: 'wayfire/config')
+install_headers(headers_util, subdir: 'wayfire/util')
