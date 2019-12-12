@@ -16,6 +16,12 @@ static const std::string xml_option_int = R"(
 </option>
 )";
 
+static const std::string xml_option_string = R"(
+<option name="StringOption" type="string">
+<default></default>
+</option>
+)";
+
 static const std::string xml_option_key = R"(
 <option name="KeyOption" type="key">
 <default>&lt;super&gt; KEY_E</default>
@@ -115,6 +121,19 @@ TEST_CASE("wf::config::xml::create_option")
         CHECK(as_int->get_minimum().value() == 0);
         CHECK(as_int->get_maximum().value() == 10);
         CHECK(wxml::get_option_xml_node(as_int) == option_node);
+    }
+
+    SUBCASE("StringOption")
+    {
+        auto option = initialize_option(xml_option_string);
+        REQUIRE(option != nullptr);
+
+        CHECK(option->get_name() == "StringOption");
+
+        auto as_string =
+            std::dynamic_pointer_cast<wc::option_t<std::string>> (option);
+        REQUIRE(as_string);
+        CHECK(as_string->get_value() == "");
     }
 
     SUBCASE("KeyOption")

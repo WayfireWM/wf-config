@@ -41,7 +41,9 @@ static std::experimental::optional<const xmlChar*>
             std::string((const char*)child_ptr->name) == value_name)
         {
             auto child_child_ptr = child_ptr->children;
-            if (child_child_ptr->next == nullptr &&
+            if (child_child_ptr == nullptr) {
+                value_ptr = (const xmlChar*)"";
+            } else if (child_child_ptr->next == nullptr &&
                 child_child_ptr->type == XML_TEXT_NODE)
             {
                 value_ptr = child_child_ptr->content;
