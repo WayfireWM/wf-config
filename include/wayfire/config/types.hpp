@@ -27,25 +27,37 @@ template<class Type> std::experimental::optional<Type> from_string(
 template<class Type> std::string to_string(const Type& value);
 
 /**
- * Construct an integer wrapper from the given string, which needs to represent
- * a valid signed 32-bit integer in decimal system.
+ * Parse the given string as a signed 32-bit integer in decimal system.
  */
 template<> std::experimental::optional<int>
     from_string<int>(const std::string&);
 
 /**
- * Construct an double wrapper from the given string, which needs to represent
- * a valid signed 64-bit floating point number.
+ * Parse the given string as a boolean value.
+ * Truthy values are "True" (any capitalization) and 1.
+ * False values are "False" (any capitalization) and 0.
+ */
+template<> std::experimental::optional<bool>
+    from_string<bool>(const std::string&);
+
+/**
+ * Parse the given string as a signed 64-bit floating point number.
  */
 template<> std::experimental::optional<double>
     from_string<double>(const std::string&);
 
 /**
- * Construct an string wrapper from the given string.
+ * Parse the string as a string.
  * The string should not contain newline characters.
  */
 template<> std::experimental::optional<std::string>
     from_string<std::string>(const std::string&);
+
+/**
+ * Convert the given bool to a string.
+ */
+template<> std::string
+    to_string<bool>(const bool& value);
 
 /**
  * Convert the given integer to a string.

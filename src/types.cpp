@@ -8,6 +8,22 @@
 #include <sstream>
 
 /* --------------------------- Primitive types ------------------------------ */
+template<> std::experimental::optional<bool>
+    wf::option_type::from_string(const std::string& value)
+{
+    std::string lowercase = value;
+    for (auto& c : lowercase)
+        c = std::tolower(c);
+
+    if (lowercase == "true" || lowercase == "1")
+        return true;
+
+    if (lowercase == "false" || lowercase == "0")
+        return false;
+
+    return {};
+}
+
 template<> std::experimental::optional<int>
     wf::option_type::from_string(const std::string& value)
 {
@@ -47,6 +63,12 @@ template<> std::experimental::optional<std::string>
         return {};
 
     return value;
+}
+
+template<> std::string wf::option_type::to_string(
+    const bool& value)
+{
+    return value ? "true" : "false";
 }
 
 template<> std::string wf::option_type::to_string(

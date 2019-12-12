@@ -10,6 +10,30 @@
 using namespace wf;
 using namespace wf::option_type;
 
+TEST_CASE("wf::bool_wrapper_t")
+{
+    CHECK(from_string<bool> ("True").value());
+    CHECK(from_string<bool> ("true").value());
+    CHECK(from_string<bool> ("TRUE").value());
+    CHECK(from_string<bool> ("TrUe").value());
+    CHECK(from_string<bool> ("1").value());
+
+    CHECK(from_string<bool> ("False").value() == false);
+    CHECK(from_string<bool> ("false").value() == false);
+    CHECK(from_string<bool> ("FALSE").value() == false);
+    CHECK(from_string<bool> ("FaLSe").value() == false);
+    CHECK(from_string<bool> ("0").value() == false);
+
+    CHECK(!from_string<bool> ("rip"));
+    CHECK(!from_string<bool> ("1234"));
+    CHECK(!from_string<bool> (""));
+    CHECK(!from_string<bool> ("1h"));
+    CHECK(!from_string<bool> ("trueeee"));
+
+    CHECK(from_string<bool> (to_string<bool> (true)).value());
+    CHECK(from_string<bool> (to_string<bool> (false)).value() == false);
+}
+
 TEST_CASE("wf::int_wrapper_t")
 {
     CHECK(from_string<int>("456").value() == 456);
