@@ -198,6 +198,9 @@ static const std::string xml_section_full = R"(
     <option name="IntOption" type="int">
         <default>3</default>
     </option>
+    <option name="BoolOption" type="bool">
+        <default>true</default>
+    </option>
     <option name="DoubleOption" type="double">
         <default>5.0</default>
     </option>
@@ -281,7 +284,7 @@ TEST_CASE("wf::config::xml::create_section")
 
         std::set<std::string> expected_names = {
             "KeyOption", "ButtonOption", "TouchOption", "ActivatorOption",
-            "IntOption", "DoubleOption", "StringOption"};
+            "IntOption", "DoubleOption", "BoolOption", "StringOption"};
         CHECK(opt_names == expected_names);
         CHECK(wxml::get_section_xml_node(section) == section_root);
     }

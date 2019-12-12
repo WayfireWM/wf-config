@@ -165,6 +165,8 @@ std::shared_ptr<wf::config::option_base_t>
         option = create_option<double> (name, default_value);
         bounds_error = set_bounds<double>(option,
             min_value_ptr, max_value_ptr);
+    } else if (type == "bool") {
+        option = create_option<bool> (name, default_value);
     } else if (type == "string") {
         option = create_option<std::string> (name, default_value);
     } else if (type == "key") {
