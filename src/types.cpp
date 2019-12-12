@@ -110,10 +110,34 @@ static double hex_to_double(std::string value)
     return std::strtol(value.c_str(), &dummy, 16);
 }
 
+static std::experimental::optional<wf::color_t>
+    try_parse_rgba(const std::string& value)
+{
+    wf::color_t parsed = {0, 0, 0, 0};
+    std::stringstream ss(value);
+
+    auto old = std::locale::global(std::locale::classic());
+    bool valid_color =
+        (bool)(ss >> parsed.r >> parsed.g >> parsed.b >> parsed.a);
+
+    /* Check nothing else after that */
+    std::string dummy;
+    valid_color &= !(bool)(ss >> dummy);
+
+
+    std::locale::global(old);
+
+    return valid_color ? parsed : std::experimental::optional<wf::color_t>{};
+}
+
 static const std::string hex_digits = "0123456789ABCDEF";
 template<> std::experimental::optional<wf::color_t>
     wf::option_type::from_string(const std::string& value)
 {
+    auto as_rgba = try_parse_rgba(value);
+    if (as_rgba)
+        return as_rgba;
+
     /* Either #RGBA or #RRGGBBAA */
     if (value.size() != 5 && value.size() != 9)
         return {};

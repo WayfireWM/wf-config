@@ -101,11 +101,16 @@ TEST_CASE("wf::color_t")
         0.4, 0.8, 0.3686274, 0.9686274);
     check_color_equals(from_string<color_t>("#0F0F"), 0, 1, 0, 1);
 
+    check_color_equals(from_string<color_t>("0.34 0.5 0.5 1.0"), 0.34, 0.5, 0.5, 1.0);
+
     CHECK(!from_string<color_t>("#FFF"));
     CHECK(!from_string<color_t>("0C1A"));
     CHECK(!from_string<color_t>(""));
     CHECK(!from_string<color_t>("#ZYXUIOPQ"));
     CHECK(!from_string<color_t>("#AUIO")); // invalid color
+    CHECK(!from_string<color_t>("1.0 0.5 0.5 1.0 1.0")); // invalid color
+    CHECK(!from_string<color_t>("1.0 0.5 0.5 1.0 asdf")); // invalid color
+    CHECK(!from_string<color_t>("1.0 0.5")); // invalid color
 
     CHECK(to_string<color_t>(color_t{0, 0, 0, 0}) == "#00000000");
     CHECK(to_string<color_t>(color_t{0.4, 0.8, 0.3686274, 0.9686274}) == "#66CC5EF7");
