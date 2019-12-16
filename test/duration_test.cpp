@@ -46,6 +46,7 @@ TEST_CASE("wf::animation::timed_transition_t")
     auto length = std::make_shared<option_t<int>>("length", 100);
     duration_t duration{length, smoothing::linear};
     timed_transition_t transition{duration};
+    timed_transition_t transition2{duration, 1, 2};
     transition.set(1, 2);
     CHECK(transition.start == doctest::Approx(1.0));
     CHECK(transition.end == doctest::Approx(2.0));
@@ -54,9 +55,17 @@ TEST_CASE("wf::animation::timed_transition_t")
     CHECK((double)transition == doctest::Approx(1.0));
     usleep(50000);
     CHECK((double)transition == doctest::Approx(1.5));
+    CHECK((double)transition2 == doctest::Approx(1.5));
     transition.restart_with_end(3);
+    transition2.restart_same_end();
     CHECK(transition.start == doctest::Approx(1.5));
+    CHECK(transition2.start == doctest::Approx(1.5));
     CHECK(transition.end == doctest::Approx(3));
+    CHECK(transition2.end == doctest::Approx(2));
     usleep(60000);
     CHECK((double)transition == doctest::Approx(3.0));
+
+    transition.flip();
+    CHECK(transition.start == doctest::Approx(3.0));
+    CHECK(transition.end == doctest::Approx(1.5));
 }

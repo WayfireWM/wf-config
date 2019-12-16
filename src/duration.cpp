@@ -1,4 +1,5 @@
 #include <wayfire/util/duration.hpp>
+#include <wayfire/util/log.hpp>
 #include <chrono>
 #include <cmath>
 
@@ -35,10 +36,18 @@ struct wf::animation::duration_t::impl
         return duration_cast<milliseconds>(now - start_point).count();
     }
 
+    int get_duration() const
+    {
+        if (length)
+            return std::max(1, length->get_value());
+
+        LOGD("Calling methods on wf::animation::duration_t without a length");
+        return 1;
+    }
+
     bool is_ready() const
     {
-        int msec = std::max(1, length->get_value());
-        return get_elapsed() >= msec;
+        return get_elapsed() >= get_duration();
     }
 
     double get_progress_percentage() const
@@ -46,8 +55,7 @@ struct wf::animation::duration_t::impl
         if (!length || is_ready())
             return 1.0;
 
-        double msec = std::max(1, length->get_value());
-        return get_elapsed() / msec;
+        return 1.0 * get_elapsed() / get_duration();
     }
 };
 
@@ -61,6 +69,10 @@ wf::animation::duration_t::duration_t(
     this->priv->is_running = false;
     this->priv->smooth_function = smooth;
 }
+
+wf::animation::duration_t::duration_t(duration_t&& other) = default;
+wf::animation::duration_t& wf::animation::duration_t::operator = (
+    duration_t&& other) = default;
 
 wf::animation::duration_t::~duration_t() = default;
 
@@ -107,14 +119,24 @@ void wf::animation::timed_transition_t::restart_with_end(double new_end)
     this->end = new_end;
 }
 
+void wf::animation::timed_transition_t::restart_same_end()
+{
+    this->start = (double)*this;
+}
+
 void wf::animation::timed_transition_t::set(double start, double end)
 {
     this->start = start;
     this->end = end;
 }
 
-wf::animation::timed_transition_t::operator double()
+void wf::animation::timed_transition_t::flip()
 {
-    double alpha = this->duration.progress();
+    std::swap(this->start, this->end);
+}
+
+wf::animation::timed_transition_t::operator double() const
+{
+    double alpha = this->duration.get().progress();
     return (1 - alpha) * start + alpha * end;
 }

@@ -48,8 +48,8 @@ class duration_t
         smoothing::smooth_function smooth = smoothing::circle);
     ~duration_t();
 
-    duration_t(duration_t&& other) = default;
-    duration_t& operator = (duration_t&& other) = default;
+    duration_t(duration_t&& other);
+    duration_t& operator = (duration_t&& other);
 
     /**
      * Start the duration.
@@ -100,11 +100,19 @@ struct timed_transition_t : public transition_t
     timed_transition_t(const duration_t& duration,
         double start = 0, double end = 0);
 
+    timed_transition_t(timed_transition_t&& other) = default;
+    timed_transition_t& operator = (timed_transition_t&& other) = default;
+
     /**
      * Set the transition start to the current state and the end to the given
      * @new_end.
      */
     void restart_with_end(double new_end);
+
+    /**
+     * Set the transition start to the current state, and don't change the end.
+     */
+    void restart_same_end();
 
     /**
      * Set the transition start and end state.
@@ -114,12 +122,17 @@ struct timed_transition_t : public transition_t
     void set(double start, double end);
 
     /**
+     * Swap start and end values.
+     */
+    void flip();
+
+    /**
      * Implicitly convert the transition to its current state.
      */
-    operator double();
+    operator double() const;
 
   private:
-    const duration_t& duration;
+    std::reference_wrapper<const duration_t> duration;
 };
 }
 }

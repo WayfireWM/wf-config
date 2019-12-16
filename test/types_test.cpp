@@ -54,7 +54,7 @@ TEST_CASE("wf::int_wrapper_t")
 
 TEST_CASE("wf::double_wrapper_t")
 {
-    CHECK(from_string<double>("0.378").value() == doctest::Approx(0.378));
+    CHECK(from_string<double>("0.378000").value() == doctest::Approx(0.378));
     CHECK(from_string<double>("-89.1847").value() == doctest::Approx(-89.1847));
 
     double max = std::numeric_limits<double>::max();
