@@ -22,6 +22,14 @@ option_test = executable(
     install: false)
 test('Option test', option_test)
 
+option_wrapper_test = executable(
+    'option_wrapper_test',
+    'option_wrapper_test.cpp',
+    include_directories: wfconfig_inc,
+    link_with: lib_wfconfig,
+    install: false)
+test('Option wrapper test', option_wrapper_test)
+
 section_test = executable(
     'section_test',
     'section_test.cpp',
