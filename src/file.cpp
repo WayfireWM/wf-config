@@ -388,9 +388,9 @@ static xmlNodePtr find_section_start_node(const std::string& file)
     }
 
     auto root = xmlDocGetRootElement(doc);
-    if (!root || (const char*)root->name != std::string("wayfire"))
+    if (!root)
     {
-        LOGE(file, ": missing <wayfire> root element.");
+        LOGE(file, ": missing root element.");
         xmlFreeDoc(doc);
         return nullptr;
     }
