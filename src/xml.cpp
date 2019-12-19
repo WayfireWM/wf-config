@@ -224,6 +224,37 @@ std::shared_ptr<wf::config::option_base_t>
     return option;
 }
 
+static void recursively_parse_section_node(xmlNodePtr node,
+    std::shared_ptr<wf::config::section_t> section)
+{
+    auto child_ptr = node->children;
+    while (child_ptr != nullptr)
+    {
+        if (child_ptr->type == XML_ELEMENT_NODE &&
+            std::string((const char*)child_ptr->name) == "option")
+        {
+            auto option = wf::config::xml::create_option_from_xml_node(
+                child_ptr);
+            if (option)
+                section->register_new_option(option);
+        }
+
+        if (child_ptr->type == XML_ELEMENT_NODE &&
+            std::string((const char*)child_ptr->name) == "group")
+        {
+            recursively_parse_section_node(child_ptr, section);
+        }
+
+        if (child_ptr->type == XML_ELEMENT_NODE &&
+            std::string((const char*)child_ptr->name) == "subgroup")
+        {
+            recursively_parse_section_node(child_ptr, section);
+        }
+
+        child_ptr = child_ptr->next;
+    }
+}
+
 std::shared_ptr<wf::config::section_t>
     wf::config::xml::create_section_from_xml_node(xmlNodePtr node)
 {
@@ -245,21 +276,7 @@ std::shared_ptr<wf::config::section_t>
 
     auto section = std::make_shared<xml_section_t> ((const char*)name_ptr);
     section->xml_node = node;
-
-    auto child_ptr = node->children;
-    while (child_ptr != nullptr)
-    {
-        if (child_ptr->type == XML_ELEMENT_NODE &&
-            std::string((const char*)child_ptr->name) == "option")
-        {
-            auto option = create_option_from_xml_node(child_ptr);
-            if (option)
-                section->register_new_option(option);
-        }
-
-        child_ptr = child_ptr->next;
-    }
-
+    recursively_parse_section_node(node, section);
     return section;
 }
 

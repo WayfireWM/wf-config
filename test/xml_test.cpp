@@ -217,18 +217,22 @@ static const std::string xml_section_full = R"(
     <option name="IntOption" type="int">
         <default>3</default>
     </option>
-    <option name="BoolOption" type="bool">
-        <default>true</default>
-    </option>
-    <option name="DoubleOption" type="double">
-        <default>5.0</default>
-    </option>
-    <option name="StringOption" type="string">
-        <default>test</default>
-    </option>
-    <option name="KeyOption2" type="invalid">
-        <default>&lt;super&gt; KEY_T</default>
-    </option>
+    <group>
+        <option name="BoolOption" type="bool">
+            <default>true</default>
+        </option>
+        <option name="DoubleOption" type="double">
+            <default>5.0</default>
+        </option>
+        <subgroup>
+            <option name="StringOption" type="string">
+                <default>test</default>
+            </option>
+        </subgroup>
+        <option name="KeyOption2" type="invalid">
+            <default>&lt;super&gt; KEY_T</default>
+        </option>
+    </group>
 </plugin>
 )";
 
