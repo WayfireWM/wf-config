@@ -46,10 +46,11 @@ class duration_t
      */
     duration_t(std::shared_ptr<wf::config::option_t<int>> length = nullptr,
         smoothing::smooth_function smooth = smoothing::circle);
-    ~duration_t();
 
-    duration_t(duration_t&& other);
-    duration_t& operator = (duration_t&& other);
+    /* Copy-constructor */
+    duration_t(const duration_t& other);
+    /* Copy-assignment */
+    duration_t& operator = (const duration_t& other);
 
     /**
      * Start the duration.
@@ -75,9 +76,10 @@ class duration_t
      * @return Whether the duration still has not elapsed.
      */
     bool running();
-  protected:
-    struct impl;
-    std::unique_ptr<impl> priv;
+
+    class impl;
+    /** Implementation details. */
+    std::shared_ptr<impl> priv;
 };
 
 /**
@@ -99,9 +101,6 @@ struct timed_transition_t : public transition_t
      */
     timed_transition_t(const duration_t& duration,
         double start = 0, double end = 0);
-
-    timed_transition_t(timed_transition_t&& other) = default;
-    timed_transition_t& operator = (timed_transition_t&& other) = default;
 
     /**
      * Set the transition start to the current state and the end to the given
@@ -132,7 +131,7 @@ struct timed_transition_t : public transition_t
     operator double() const;
 
   private:
-    std::reference_wrapper<const duration_t> duration;
+    std::shared_ptr<const duration_t::impl> duration;
 };
 }
 }
