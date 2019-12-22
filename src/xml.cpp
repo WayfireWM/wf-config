@@ -120,7 +120,7 @@ std::shared_ptr<wf::config::option_base_t>
     if (node->type != XML_ELEMENT_NODE ||
         (const char*)node->name != std::string{"option"})
     {
-        LOGE("Could not parse ", node->doc->name,
+        LOGE("Could not parse ", node->doc->URL,
             ": line ", node->line, " is not an option element.");
         return nullptr;
     }
@@ -128,7 +128,7 @@ std::shared_ptr<wf::config::option_base_t>
     auto name_ptr = xmlGetProp(node, (const xmlChar*)"name");
     if (!name_ptr)
     {
-        LOGE("Could not parse ", node->doc->name,
+        LOGE("Could not parse ", node->doc->URL,
             ": option at line ", node->line, " is missing \"name\" attribute.");
         return nullptr;
     }
@@ -136,7 +136,7 @@ std::shared_ptr<wf::config::option_base_t>
     auto type_ptr = xmlGetProp(node, (const xmlChar*)"type");
     if (!type_ptr)
     {
-        LOGE("Could not parse ", node->doc->name,
+        LOGE("Could not parse ", node->doc->URL,
             ": option at line ", node->line, " is missing \"type\" attribute.");
         return nullptr;
     }
@@ -144,7 +144,7 @@ std::shared_ptr<wf::config::option_base_t>
     auto default_value_ptr = extract_value(node, "default");
     if (!default_value_ptr)
     {
-        LOGE("Could not parse ", node->doc->name,
+        LOGE("Could not parse ", node->doc->URL,
             ": option at line ", node->line, " has no default value specified.");
         return nullptr;
     }
@@ -183,7 +183,7 @@ std::shared_ptr<wf::config::option_base_t>
         option = create_option<wf::activatorbinding_t> (name, default_value);
     } else
     {
-        LOGE("Could not parse ", node->doc->name,
+        LOGE("Could not parse ", node->doc->URL,
             ": option at line ", node->line,
             " has invalid type \"", type, "\"");
         return nullptr;
@@ -192,7 +192,7 @@ std::shared_ptr<wf::config::option_base_t>
     if (!option)
     {
         /* This can only happen if default value was invalid */
-        LOGE("Could not parse ", node->doc->name,
+        LOGE("Could not parse ", node->doc->URL,
             ": option at line ", node->line,
             " has invalid default value \"", default_value, "\" for type ",
             type);
@@ -203,7 +203,7 @@ std::shared_ptr<wf::config::option_base_t>
     {
         case BOUNDS_INVALID_MINIMUM:
             assert(min_value_ptr);
-            LOGE("Could not parse ", node->doc->name,
+            LOGE("Could not parse ", node->doc->URL,
                 ": option at line ", node->line,
                 " has invalid minimum value \"", min_value_ptr.value(), "\"",
                 "for type ", type);
@@ -211,7 +211,7 @@ std::shared_ptr<wf::config::option_base_t>
 
         case BOUNDS_INVALID_MAXIMUM:
             assert(max_value_ptr);
-            LOGE("Could not parse ", node->doc->name,
+            LOGE("Could not parse ", node->doc->URL,
                 ": option at line ", node->line,
                 " has invalid maximum value \"", max_value_ptr.value(), "\"",
                 "for type ", type);
@@ -261,7 +261,7 @@ std::shared_ptr<wf::config::section_t>
     if (node->type != XML_ELEMENT_NODE ||
         (const char*)node->name != std::string{"plugin"})
     {
-        LOGE("Could not parse ", node->doc->name,
+        LOGE("Could not parse ", node->doc->URL,
             ": line ", node->line, " is not a plugin element.");
         return nullptr;
     }
@@ -269,7 +269,7 @@ std::shared_ptr<wf::config::section_t>
     auto name_ptr = xmlGetProp(node, (const xmlChar*)"name");
     if (!name_ptr)
     {
-        LOGE("Could not parse ", node->doc->name,
+        LOGE("Could not parse ", node->doc->URL,
             ": section at line ", node->line, " is missing \"name\" attribute.");
         return nullptr;
     }
