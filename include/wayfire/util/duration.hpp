@@ -133,5 +133,30 @@ struct timed_transition_t : public transition_t
   private:
     std::shared_ptr<const duration_t::impl> duration;
 };
+
+class simple_animation_t : public duration_t, public timed_transition_t
+{
+  public:
+    simple_animation_t(
+        std::shared_ptr<wf::config::option_t<int>> length = nullptr,
+        smoothing::smooth_function smooth = smoothing::circle);
+
+    /**
+     * Set the start and the end of the animation and start the duration.
+     */
+    void animate(double start, double end);
+
+    /**
+     * Animate from the current progress to the given end, and start the
+     * duration.
+     */
+    void animate(double end);
+
+    /**
+     * Animate from the current progress to the current end, and start the
+     * duration.
+     */
+    void animate();
+};
 }
 }

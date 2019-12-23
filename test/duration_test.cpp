@@ -69,3 +69,33 @@ TEST_CASE("wf::animation::timed_transition_t")
     CHECK(transition.start == doctest::Approx(3.0));
     CHECK(transition.end == doctest::Approx(1.5));
 }
+
+TEST_CASE("wf::animation::simple_animation_t")
+{
+    auto length = std::make_shared<option_t<int>>("length", 10);
+    simple_animation_t anim{length, smoothing::linear};
+
+    auto cycle_through = [&] (double s, double e, bool x1, bool x2)
+    {
+        if (!x1 && !x2)
+            anim.animate(s, e);
+        else if (!x2)
+            anim.animate(e);
+        else if (!x1)
+            anim.animate();
+
+        CHECK(anim.running());
+        CHECK((double)anim == doctest::Approx(s));
+        usleep(5000);
+        CHECK((double)anim == doctest::Approx((s + e) / 2));
+        CHECK(anim.running());
+        usleep(5500);
+        CHECK((double)anim == doctest::Approx(e));
+        CHECK(anim.running());
+        CHECK(!anim.running());
+    };
+
+    cycle_through(1, 2, false, false);
+    cycle_through(2, 3, true, false);
+    cycle_through(3, 3, false, true);
+}

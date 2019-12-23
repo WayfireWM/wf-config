@@ -149,3 +149,29 @@ wf::animation::timed_transition_t::operator double() const
     double alpha = this->duration->progress();
     return (1 - alpha) * start + alpha * end;
 }
+
+wf::animation::simple_animation_t::simple_animation_t(
+    std::shared_ptr<wf::config::option_t<int>> length,
+    smoothing::smooth_function smooth)
+    : duration_t(length, smooth),
+    timed_transition_t((duration_t&)*this)
+{
+}
+
+void wf::animation::simple_animation_t::animate(double start, double end)
+{
+    this->set(start, end);
+    this->duration_t::start();
+}
+
+void wf::animation::simple_animation_t::animate(double end)
+{
+    this->restart_with_end(end);
+    this->duration_t::start();
+}
+
+void wf::animation::simple_animation_t::animate()
+{
+    this->restart_same_end();
+    this->duration_t::start();
+}
