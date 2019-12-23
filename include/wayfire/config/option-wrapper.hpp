@@ -52,6 +52,11 @@ class base_option_wrapper_t
     base_option_wrapper_t& operator = (
         const base_option_wrapper_t& other) = delete;
 
+    base_option_wrapper_t(base_option_wrapper_t&& other) = default;
+    base_option_wrapper_t& operator = (
+        base_option_wrapper_t&& other) = default;
+
+
     /**
      * Load the option with the given name from the config.
      * @throws logic_error if the option wrapper already has an option loaded.

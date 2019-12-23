@@ -10,6 +10,7 @@ template<class Type>
 class wrapper_t : public wf::base_option_wrapper_t<Type>
 {
   public:
+    wrapper_t() : wf::base_option_wrapper_t<Type> () {}
     wrapper_t(const std::string& option)
         : wf::base_option_wrapper_t<Type>()
     {
@@ -44,4 +45,9 @@ TEST_CASE("wf::base_option_wrapper_t")
     });
     opt->set_value(6);
     CHECK(updated);
+
+    /* Check move operations */
+    wrapper_t<int> wrapper1;
+    wrapper1 = wrapper_t<int>{"Test/Option1"};
+    CHECK(wrapper1.raw_option == opt);
 }
