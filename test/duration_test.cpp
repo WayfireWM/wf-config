@@ -98,4 +98,9 @@ TEST_CASE("wf::animation::simple_animation_t")
     cycle_through(1, 2, false, false);
     cycle_through(2, 3, true, false);
     cycle_through(3, 3, false, true);
+
+    simple_animation_t sa;
+    sa = simple_animation_t{length};
+    sa.animate(1, 2);
+    CHECK((double)sa == doctest::Approx(1.0));
 }

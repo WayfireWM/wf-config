@@ -52,6 +52,11 @@ class duration_t
     /* Copy-assignment */
     duration_t& operator = (const duration_t& other);
 
+    /* Move-constructor */
+    duration_t(duration_t&& other) = default;
+    /* Move-assignment */
+    duration_t& operator = (duration_t&& other) = default;
+
     /**
      * Start the duration.
      * This means that the progress will get reset to 0.
