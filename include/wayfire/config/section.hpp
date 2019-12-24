@@ -55,7 +55,7 @@ class section_t
 
     /**
      * Remove an option from the registered options in this section.
-     * No-op if the option is not part of the section.
+     * No-op if the option is not part of the section, or if option is null.
      */
     void unregister_option(std::shared_ptr<option_base_t> option);
 

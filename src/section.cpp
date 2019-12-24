@@ -68,10 +68,7 @@ void wf::config::section_t::unregister_option(
     std::shared_ptr<option_base_t> option)
 {
     if (!option)
-    {
-        throw std::invalid_argument(
-            "Cannot remove null option from section " + this->get_name());
-    }
+        return;
 
     auto it = this->priv->options.find(option->get_name());
     if (it != this->priv->options.end() && it->second == option)
