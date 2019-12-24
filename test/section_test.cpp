@@ -32,4 +32,6 @@ TEST_CASE("wf::config::section_t")
     reg_opts = section.get_registered_options();
     REQUIRE(reg_opts.size() == 1);
     CHECK(reg_opts.back() == intopt2);
+    section.unregister_option(intopt2);
+    CHECK(section.get_registered_options().empty());
 }

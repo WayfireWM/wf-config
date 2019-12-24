@@ -53,6 +53,12 @@ class section_t
      */
     void register_new_option(std::shared_ptr<option_base_t> option);
 
+    /**
+     * Remove an option from the registered options in this section.
+     * No-op if the option is not part of the section.
+     */
+    void unregister_option(std::shared_ptr<option_base_t> option);
+
   private:
     struct impl;
     std::unique_ptr<impl> priv;
