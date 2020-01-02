@@ -54,6 +54,7 @@ void initialize_logging(std::ostream& output_stream, log_level_t minimum_level,
  * @param contents The message to be printed.
  * @param source The file where the message originates from. The prefix
  *  strip_path specified in initialize_logging will be removed, if it exists.
+ *  If source is empty, no file/line information will be printed.
  * @param line The line number of @source
  */
 void log_plain(log_level_t level, const std::string& contents,

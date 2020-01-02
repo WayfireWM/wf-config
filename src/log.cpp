@@ -130,11 +130,17 @@ void wf::log::log_plain(log_level_t level, const std::string& contents,
     if (state.level > level)
         return;
 
+    std::string path_info;
+    if (!source.empty())
+    {
+        path_info = wf::log::detail::format_concat(
+            "[", strip_path(source), ":", line_nr, "] ");
+    }
+
     state.out.get() <<
         wf::log::detail::format_concat(
             get_level_prefix(level), " ",
             get_formatted_date_time(),
-            " - [", strip_path(source), ":", line_nr, "] ", contents)
+            " - ", path_info, contents)
         << state.clear_color << std::endl;
 }
-

@@ -62,6 +62,9 @@ TEST_CASE("wf::log::log_plain()")
     log_plain(LOG_LEVEL_DEBUG, "Test log", "/test/strip/main.cpp", 5);
     check_line("DD - [main.cpp:5] Test log");
 
+    log_plain(LOG_LEVEL_INFO, "Test no source");
+    check_line("II - Test no source");
+
     log_plain(LOG_LEVEL_INFO, "Test log", "/test/strip/main.cpp", 56789);
     check_line("II - [main.cpp:56789] Test log");
 
