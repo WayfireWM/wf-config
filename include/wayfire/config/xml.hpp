@@ -7,7 +7,6 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-#include <experimental/optional>
 #include <wayfire/config/option.hpp>
 #include <wayfire/config/section.hpp>
 

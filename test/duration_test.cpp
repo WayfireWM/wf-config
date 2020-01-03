@@ -43,31 +43,36 @@ TEST_CASE("wf::animation::duration_t")
 
 TEST_CASE("wf::animation::timed_transition_t")
 {
+    const double start = 1.0;
+    const double end = 2.0;
+    const double overend = 3.0;
+    const double middle = (start + end) / 2.0;
+
     auto length = std::make_shared<option_t<int>>("length", 100);
     duration_t duration{length, smoothing::linear};
     timed_transition_t transition{duration};
-    timed_transition_t transition2{duration, 1, 2};
-    transition.set(1, 2);
-    CHECK(transition.start == doctest::Approx(1.0));
-    CHECK(transition.end == doctest::Approx(2.0));
+    timed_transition_t transition2{duration, start, end};
+    transition.set(start, end);
+    CHECK(transition.start == doctest::Approx(start));
+    CHECK(transition.end == doctest::Approx(end));
 
     duration.start();
-    CHECK((double)transition == doctest::Approx(1.0));
+    CHECK((double)transition == doctest::Approx(start));
     usleep(50000);
-    CHECK((double)transition == doctest::Approx(1.5));
-    CHECK((double)transition2 == doctest::Approx(1.5));
-    transition.restart_with_end(3);
+    CHECK((double)transition == doctest::Approx(middle).epsilon(0.1));
+    CHECK((double)transition2 == doctest::Approx(middle).epsilon(0.1));
+    transition.restart_with_end(overend);
     transition2.restart_same_end();
-    CHECK(transition.start == doctest::Approx(1.5));
-    CHECK(transition2.start == doctest::Approx(1.5));
-    CHECK(transition.end == doctest::Approx(3));
-    CHECK(transition2.end == doctest::Approx(2));
+    CHECK(transition.start == doctest::Approx(middle).epsilon(0.1));
+    CHECK(transition2.start == doctest::Approx(middle).epsilon(0.1));
+    CHECK(transition.end == doctest::Approx(overend));
+    CHECK(transition2.end == doctest::Approx(end));
     usleep(60000);
-    CHECK((double)transition == doctest::Approx(3.0));
+    CHECK((double)transition == doctest::Approx(overend).epsilon(0.1));
 
     transition.flip();
-    CHECK(transition.start == doctest::Approx(3.0));
-    CHECK(transition.end == doctest::Approx(1.5));
+    CHECK(transition.start == doctest::Approx(3.0).epsilon(0.1));
+    CHECK(transition.end == doctest::Approx(middle).epsilon(0.1));
 }
 
 TEST_CASE("wf::animation::simple_animation_t")
@@ -87,7 +92,7 @@ TEST_CASE("wf::animation::simple_animation_t")
         CHECK(anim.running());
         CHECK((double)anim == doctest::Approx(s));
         usleep(5000);
-        CHECK((double)anim == doctest::Approx((s + e) / 2));
+        CHECK((double)anim == doctest::Approx((s + e) / 2).epsilon(0.1));
         CHECK(anim.running());
         usleep(5500);
         CHECK((double)anim == doctest::Approx(e));

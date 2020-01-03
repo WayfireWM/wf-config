@@ -15,7 +15,7 @@ namespace option_type
  * @param string The string representation of the value.
  * @return The parsed value, if the string was valid.
  */
-template<class Type> std::experimental::optional<Type> from_string(
+template<class Type> stdx::optional<Type> from_string(
     const std::string& string);
 
 /**
@@ -29,53 +29,46 @@ template<class Type> std::string to_string(const Type& value);
 /**
  * Parse the given string as a signed 32-bit integer in decimal system.
  */
-template<> std::experimental::optional<int>
-    from_string<int>(const std::string&);
+template<> stdx::optional<int> from_string<int>(const std::string&);
 
 /**
  * Parse the given string as a boolean value.
  * Truthy values are "True" (any capitalization) and 1.
  * False values are "False" (any capitalization) and 0.
  */
-template<> std::experimental::optional<bool>
-    from_string<bool>(const std::string&);
+template<> stdx::optional<bool> from_string<bool>(const std::string&);
 
 /**
  * Parse the given string as a signed 64-bit floating point number.
  */
-template<> std::experimental::optional<double>
-    from_string<double>(const std::string&);
+template<> stdx::optional<double> from_string<double>(const std::string&);
 
 /**
  * Parse the string as a string.
  * The string should not contain newline characters.
  */
-template<> std::experimental::optional<std::string>
+template<> stdx::optional<std::string>
     from_string<std::string>(const std::string&);
 
 /**
  * Convert the given bool to a string.
  */
-template<> std::string
-    to_string<bool>(const bool& value);
+template<> std::string to_string<bool>(const bool& value);
 
 /**
  * Convert the given integer to a string.
  */
-template<> std::string
-    to_string<int>(const int& value);
+template<> std::string to_string<int>(const int& value);
 
 /**
  * Convert the given double to a string.
  */
-template<> std::string
-    to_string<double>(const double& value);
+template<> std::string to_string<double>(const double& value);
 
 /**
  * Convert the given string to a string.
  */
-template<> std::string
-    to_string<std::string>(const std::string& value);
+template<> std::string to_string<std::string>(const std::string& value);
 }
 
 /**
@@ -121,8 +114,7 @@ namespace option_type
  * Create a new color value from the given hex string, format is either
  * #RRGGBBAA or #RGBA.
  */
-template<> std::experimental::optional<color_t>
-    from_string(const std::string& value);
+template<> stdx::optional<color_t> from_string(const std::string& value);
 
 /** Convert the color to its hex string representation. */
 template<> std::string to_string(const color_t& value);
@@ -188,7 +180,7 @@ namespace option_type
  * Special cases are "none" and "disabled", which result in modifiers and
  * key 0.
  */
-template<> std::experimental::optional<keybinding_t> from_string(
+template<> stdx::optional<keybinding_t> from_string(
     const std::string& description);
 
 /** Represent the keybinding as a string. */
@@ -232,7 +224,7 @@ namespace option_type
  * Special case are descriptions "none" and "disable", which result in
  * mod = button = 0
  */
-template<> std::experimental::optional<buttonbinding_t> from_string(
+template<> stdx::optional<buttonbinding_t> from_string(
     const std::string& description);
 
 /** Represent the buttonbinding as a string. */
@@ -325,7 +317,7 @@ namespace option_type
  * 3. [edge-]swipe up-left|right-down|... <fingercount>
  * 4. disable | none
  */
-template<> std::experimental::optional<touchgesture_t> from_string(
+template<> stdx::optional<touchgesture_t> from_string(
     const std::string& description);
 
 /** Represent the touch gesture as a string. */
@@ -380,7 +372,7 @@ namespace option_type
  * The string consists of valid descriptions of keybindings, buttonbindings
  * and touch gestures, separated by a single '|' sign.
  */
-template<> std::experimental::optional<activatorbinding_t> from_string(
+template<> stdx::optional<activatorbinding_t> from_string(
     const std::string& string);
 
 /** Represent the activator binding as a string. */

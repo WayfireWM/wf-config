@@ -29,10 +29,10 @@ class xml_section_t : public wf::config::section_t, public xml_derived_element_t
     using wf::config::section_t::section_t;
 };
 
-static std::experimental::optional<const xmlChar*>
+static stdx::optional<const xmlChar*>
     extract_value(xmlNodePtr node, std::string value_name)
 {
-    std::experimental::optional<const xmlChar*> value_ptr;
+    stdx::optional<const xmlChar*> value_ptr;
 
     auto child_ptr = node->children;
     while (child_ptr != nullptr)
@@ -79,8 +79,8 @@ enum bounds_error_t
 
 template<class T> bounds_error_t set_bounds(
     std::shared_ptr<wf::config::option_base_t>& option,
-    std::experimental::optional<const xmlChar*> min_ptr,
-    std::experimental::optional<const xmlChar*> max_ptr)
+    stdx::optional<const xmlChar*> min_ptr,
+    stdx::optional<const xmlChar*> max_ptr)
 {
     if (!option)
         return BOUNDS_OK; // there has been an earlier error
@@ -102,7 +102,7 @@ template<class T> bounds_error_t set_bounds(
 
     if (max_ptr)
     {
-        std::experimental::optional<T> value = wf::option_type::from_string<T>(
+        stdx::optional<T> value = wf::option_type::from_string<T>(
             (const char*)max_ptr.value());
         if (value) {
             typed_option->set_maximum(value.value());
