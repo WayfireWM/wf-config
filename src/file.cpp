@@ -462,9 +462,13 @@ void override_defaults(wf::config::config_manager_t& manager,
             if (real_option)
             {
                 if (!real_option->set_default_value_str(
-                        real_option->get_value_str()))
+                        option->get_value_str()))
                 {
                     LOGW("Invalid value for ", full_name, " in ", sysconf);
+                } else
+                {
+                    /* Set the value to the new default */
+                    real_option->reset_to_default();
                 }
             } else
             {

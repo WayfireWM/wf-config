@@ -228,10 +228,13 @@ TEST_CASE("wf::config::build_configuration")
     check_int_test_config(config, "10");
 
     auto o1 = config.get_option("section1/option1");
-
     auto o2 = config.get_option("section2/option2");
     auto o3 = config.get_option("section2/option3");
     auto o4 = config.get_option("section2/option4");
+    auto o5 = config.get_option("section2/option5");
+
+    REQUIRE(o4);
+    REQUIRE(o5);
 
     using namespace wf;
     using namespace wf::config;
@@ -239,16 +242,20 @@ TEST_CASE("wf::config::build_configuration")
     CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o2) != nullptr);
     CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o3) != nullptr);
     CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o4) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o5) != nullptr);
 
     CHECK(o4->get_value_str() == "DoesNotExistInConfig");
+    CHECK(o5->get_value_str() == "Option5Sys");
 
     o1->reset_to_default();
     o2->reset_to_default();
     o3->reset_to_default();
     o4->reset_to_default();
+    o5->reset_to_default();
 
     CHECK(o1->get_value_str() == "4");
     CHECK(o2->get_value_str() == "XMLDefault");
     CHECK(o3->get_value_str() == "");
     CHECK(o4->get_value_str() == "DoesNotExistInConfig");
+    CHECK(o5->get_value_str() == "Option5Sys");
 }

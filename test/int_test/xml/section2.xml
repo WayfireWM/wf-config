@@ -8,5 +8,8 @@
     <option name="option4" type="string">
       <default>DoesNotExistInConfig</default>
     </option>
+    <option name="option5" type="string">
+      <default>Option5XML</default>
+    </option>
   </plugin>
 </wf-config>
