@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<wayfire>
+  <plugin name="section1">
+    <category>General</category>
+    <option name="option1" type="int">
+      <default>4</default>
+      <min>0</min>
+      <max>10</max>
+    </option>
+  </plugin>
+</wayfire>

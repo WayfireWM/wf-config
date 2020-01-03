@@ -5,26 +5,32 @@ project(
 	license: 'MIT',
 	meson_version: '>=0.43.0',
 	default_options: [
-		'cpp_std=c++11',
+		'cpp_std=gnu++14',
 		'warning_level=2',
 		'werror=false',
 	],
 )
 
+glm = dependency('glm')
 evdev = dependency('libevdev')
-wlroots = dependency('wlroots', version: '>=0.8.0')
+libxml2 = dependency('libxml-2.0')
 
 sources = [
-    'src/config.cpp',
-    'src/parse.cpp',
-    'src/animation.cpp'
-    ]
+'src/types.cpp',
+'src/option.cpp',
+'src/section.cpp',
+'src/log.cpp',
+'src/xml.cpp',
+'src/config-manager.cpp',
+'src/file.cpp',
+'src/duration.cpp',
+]
 
-wfconfig_inc = include_directories('include/wayfire')
+wfconfig_inc = include_directories('include')
 
 lib_wfconfig = library('wf-config',
     sources,
-    dependencies: [evdev, wlroots],
+    dependencies: [evdev, glm, libxml2],
     include_directories: wfconfig_inc,
     install: true,
     version: meson.project_version())
@@ -32,14 +38,18 @@ lib_wfconfig = library('wf-config',
 pkgconfig = import('pkgconfig')
 pkgconfig.generate(
     libraries:    lib_wfconfig,
-    subdirs:      'wayfire',
     version:      meson.project_version(),
     filebase:     meson.project_name(),
     name:         meson.project_name(),
     description: 'Dynamic file-based configuration library for Wayfire')
 
-install_headers(['include/wayfire/config.hpp', 'include/wayfire/animation.hpp'],
-    subdir: 'wayfire')
+install_headers([], subdir: 'wayfire/config')
 
 wfconfig = declare_dependency(link_with: lib_wfconfig,
     include_directories: wfconfig_inc)
+
+# Install headers
+subdir('include')
+
+# Unit tests
+subdir('test')
