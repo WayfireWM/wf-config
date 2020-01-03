@@ -5,11 +5,13 @@ project(
 	license: 'MIT',
 	meson_version: '>=0.43.0',
 	default_options: [
-		'cpp_std=gnu++14',
+        'cpp_std=c++17',
 		'warning_level=2',
 		'werror=false',
 	],
 )
+
+add_project_arguments(['-Wno-deprecated-declarations'], language: ['cpp'])
 
 glm = dependency('glm')
 evdev = dependency('libevdev')

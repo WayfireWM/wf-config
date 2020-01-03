@@ -8,7 +8,7 @@
 #include <sstream>
 
 /* --------------------------- Primitive types ------------------------------ */
-template<> std::experimental::optional<bool>
+template<> stdx::optional<bool>
     wf::option_type::from_string(const std::string& value)
 {
     std::string lowercase = value;
@@ -24,7 +24,7 @@ template<> std::experimental::optional<bool>
     return {};
 }
 
-template<> std::experimental::optional<int>
+template<> stdx::optional<int>
     wf::option_type::from_string(const std::string& value)
 {
     std::istringstream in{value};
@@ -38,7 +38,7 @@ template<> std::experimental::optional<int>
 }
 
 /** Attempt to parse a string as an double value */
-template<> std::experimental::optional<double>
+template<> stdx::optional<double>
     wf::option_type::from_string(const std::string& value)
 {
     auto old = std::locale::global(std::locale::classic());
@@ -56,7 +56,7 @@ template<> std::experimental::optional<double>
     return result;
 }
 
-template<> std::experimental::optional<std::string>
+template<> stdx::optional<std::string>
     wf::option_type::from_string(const std::string& value)
 {
     if (value.find_first_of("\n\r") != std::string::npos)
@@ -110,7 +110,7 @@ static double hex_to_double(std::string value)
     return std::strtol(value.c_str(), &dummy, 16);
 }
 
-static std::experimental::optional<wf::color_t>
+static stdx::optional<wf::color_t>
     try_parse_rgba(const std::string& value)
 {
     wf::color_t parsed = {0, 0, 0, 0};
@@ -127,11 +127,11 @@ static std::experimental::optional<wf::color_t>
 
     std::locale::global(old);
 
-    return valid_color ? parsed : std::experimental::optional<wf::color_t>{};
+    return valid_color ? parsed : stdx::optional<wf::color_t>{};
 }
 
 static const std::string hex_digits = "0123456789ABCDEF";
-template<> std::experimental::optional<wf::color_t>
+template<> stdx::optional<wf::color_t>
     wf::option_type::from_string(const std::string& value)
 {
     auto as_rgba = try_parse_rgba(value);
@@ -291,7 +291,7 @@ static std::string filter_out(std::string value, std::string filter)
 
 static const std::string whitespace_chars = " \t\n\r\v\b";
 
-static std::experimental::optional<general_binding_t>
+static stdx::optional<general_binding_t>
     parse_binding(std::string binding_description)
 {
     /* Handle disabled bindings */
@@ -365,7 +365,7 @@ wf::keybinding_t::keybinding_t(uint32_t modifier, uint32_t keyval)
     this->keyval = keyval;
 }
 
-template<> std::experimental::optional<wf::keybinding_t>
+template<> stdx::optional<wf::keybinding_t>
     wf::option_type::from_string(const std::string& description)
 {
     auto parsed_opt = parse_binding(description);
@@ -419,7 +419,7 @@ wf::buttonbinding_t::buttonbinding_t(uint32_t modifier, uint32_t buttonval)
     this->button = buttonval;
 }
 
-template<> std::experimental::optional<wf::buttonbinding_t>
+template<> stdx::optional<wf::buttonbinding_t>
     wf::option_type::from_string(const std::string& description)
 {
     auto parsed_opt = parse_binding(description);
@@ -575,7 +575,7 @@ wf::touchgesture_t parse_gesture(const std::string& value)
     return wf::touchgesture_t{wf::GESTURE_TYPE_NONE, 0, 0};
 }
 
-template<> std::experimental::optional<wf::touchgesture_t>
+template<> stdx::optional<wf::touchgesture_t>
     wf::option_type::from_string(const std::string& description)
 {
     auto as_binding = parse_binding(description);
@@ -699,7 +699,7 @@ template<class Type> bool try_add_binding(
     return false;
 }
 
-template<> std::experimental::optional<wf::activatorbinding_t>
+template<> stdx::optional<wf::activatorbinding_t>
     wf::option_type::from_string(const std::string& string)
 {
     activatorbinding_t binding;

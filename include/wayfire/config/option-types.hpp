@@ -1,6 +1,6 @@
 #pragma once
 
-#include <experimental/optional>
+#include <wayfire/nonstd/optional.hpp>
 #include <string>
 
 namespace wf
@@ -14,7 +14,7 @@ namespace option_type
  * @param string The string representation of the value.
  * @return The parsed value, if the string was valid.
  */
-template<class Type> std::experimental::optional<Type> from_string(
+template<class Type> stdx::optional<Type> from_string(
     const std::string& string);
 
 /**
