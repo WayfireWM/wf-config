@@ -37,25 +37,13 @@ template<class Type>
 class base_option_wrapper_t
 {
   public:
-    /**
-     * Initialize the option wrapper.
-     */
-    base_option_wrapper_t()
-    {
-        option_update_listener = [=] () {
-            if (this->on_update)
-                this->on_update();
-        };
-    }
-
     base_option_wrapper_t(const base_option_wrapper_t& other) = delete;
     base_option_wrapper_t& operator = (
         const base_option_wrapper_t& other) = delete;
 
-    base_option_wrapper_t(base_option_wrapper_t&& other) = default;
+    base_option_wrapper_t(base_option_wrapper_t&& other) = delete;
     base_option_wrapper_t& operator = (
-        base_option_wrapper_t&& other) = default;
-
+        base_option_wrapper_t&& other) = delete;
 
     /**
      * Load the option with the given name from the config.
@@ -106,12 +94,23 @@ class base_option_wrapper_t
         this->on_update = callback;
     }
 
-    /** The actual option wrapped by the option wrapper */
-    option_sptr_t<Type> raw_option;
-
   protected:
     std::function<void()> on_update;
     wf::config::option_base_t::updated_callback_t option_update_listener;
+
+    /** The actual option wrapped by the option wrapper */
+    option_sptr_t<Type> raw_option;
+
+    /**
+     * Initialize the option wrapper.
+     */
+    base_option_wrapper_t()
+    {
+        option_update_listener = [=] () {
+            if (this->on_update)
+                this->on_update();
+        };
+    }
 
     /**
      * Load the option with the given name from the application configuration.

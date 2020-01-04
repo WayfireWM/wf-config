@@ -47,7 +47,6 @@ TEST_CASE("wf::base_option_wrapper_t")
     CHECK(updated);
 
     /* Check move operations */
-    wrapper_t<int> wrapper1;
-    wrapper1 = wrapper_t<int>{"Test/Option1"};
-    CHECK(wrapper1.raw_option == opt);
+    wrapper_t<int> wrapper1{"Test/Option1"};
+    CHECK((option_sptr_t<int>)wrapper1 == opt);
 }
