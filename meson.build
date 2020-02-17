@@ -48,7 +48,8 @@ pkgconfig.generate(
 install_headers([], subdir: 'wayfire/config')
 
 wfconfig = declare_dependency(link_with: lib_wfconfig,
-    include_directories: wfconfig_inc)
+    include_directories: wfconfig_inc,
+    dependencies: glm)
 
 # Install headers
 subdir('include')
