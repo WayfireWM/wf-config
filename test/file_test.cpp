@@ -2,6 +2,7 @@
 #include <iostream>
 #include "doctest.h"
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/file.h>
 #include <iostream>
 #include <fstream>
