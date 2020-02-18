@@ -7,6 +7,7 @@
 #include <cassert>
 
 #include <sys/file.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
 
