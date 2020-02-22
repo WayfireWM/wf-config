@@ -59,9 +59,6 @@ template<> stdx::optional<double>
 template<> stdx::optional<std::string>
     wf::option_type::from_string(const std::string& value)
 {
-    if (value.find_first_of("\n\r") != std::string::npos)
-        return {};
-
     return value;
 }
 
