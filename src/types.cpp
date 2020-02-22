@@ -130,10 +130,15 @@ static stdx::optional<wf::color_t>
     return valid_color ? parsed : stdx::optional<wf::color_t>{};
 }
 
+#include <iostream>
 static const std::string hex_digits = "0123456789ABCDEF";
 template<> stdx::optional<wf::color_t>
-    wf::option_type::from_string(const std::string& value)
+    wf::option_type::from_string(const std::string& param_value)
 {
+    auto value = param_value;
+    for (auto& ch : value)
+        ch = std::toupper(ch);
+
     auto as_rgba = try_parse_rgba(value);
     if (as_rgba)
         return as_rgba;

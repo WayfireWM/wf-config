@@ -97,7 +97,7 @@ TEST_CASE("wf::color_t")
     check_color_equals(color_t{0.345, 0.127, 0.188, 1.0}, 0.345, 0.127, 0.188, 1.0);
     check_color_equals(color_t{glm::vec4(0.7)}, 0.7, 0.7, 0.7, 0.7);
 
-    check_color_equals(from_string<color_t>("#66CC5EF7"),
+    check_color_equals(from_string<color_t>("#66CC5ef7"),
         0.4, 0.8, 0.3686274, 0.9686274);
     check_color_equals(from_string<color_t>("#0F0F"), 0, 1, 0, 1);
 
