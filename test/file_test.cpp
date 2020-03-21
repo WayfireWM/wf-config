@@ -173,7 +173,7 @@ void check_int_test_config(const wf::config::config_manager_t& manager,
 
 TEST_CASE("wf::config::load_configuration_options_from_file - success")
 {
-    std::string test_config = std::string("../test/int_test/config.ini");
+    std::string test_config = std::string(TEST_SOURCE "/int_test/config.ini");
 
     /* Init with one section */
     wf::config::config_manager_t manager;
@@ -189,7 +189,7 @@ TEST_CASE("wf::config::load_configuration_options_from_file - success")
 
 TEST_CASE("wf::config::save_configuration_to_file - success")
 {
-    std::string test_config =  std::string("../test/dummy.ini");
+    std::string test_config =  std::string(TEST_SOURCE "/dummy.ini");
 
     {
         std::ofstream clr(test_config, std::ios::trunc | std::ios::ate);
@@ -215,9 +215,9 @@ TEST_CASE("wf::config::save_configuration_to_file - success")
 TEST_CASE("wf::config::build_configuration")
 {
     wf::log::initialize_logging(std::cout, wf::log::LOG_LEVEL_DEBUG, wf::log::LOG_COLOR_MODE_ON);
-    std::string xmldir = std::string("../test/int_test/xml");
-    std::string sysconf = std::string("../test/int_test/sys.ini");
-    std::string userconf = std::string("../test/int_test/config.ini");
+    std::string xmldir = std::string(TEST_SOURCE "/int_test/xml");
+    std::string sysconf = std::string(TEST_SOURCE "/int_test/sys.ini");
+    std::string userconf = std::string(TEST_SOURCE "/int_test/config.ini");
 
     auto config = wf::config::build_configuration(xmldir, sysconf, userconf);
     check_int_test_config(config, "10");

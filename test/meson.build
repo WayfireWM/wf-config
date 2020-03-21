@@ -52,7 +52,8 @@ file_parse_test = executable(
     'file_test',
     'file_test.cpp',
     dependencies: wfconfig,
-    install: false)
+    install: false,
+    cpp_args: '-DTEST_SOURCE="' + meson.current_source_dir() + '"')
 test('File parsing test', file_parse_test)
 
 # Utils
