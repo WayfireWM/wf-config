@@ -1,4 +1,5 @@
 #include <wayfire/config/section.hpp>
+#include <stdexcept>
 #include <map>
 
 struct wf::config::section_t::impl
