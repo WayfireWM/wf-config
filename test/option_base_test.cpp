@@ -12,6 +12,7 @@ class option_base_stub_t : public wf::config::option_base_t
     bool set_value_str(const std::string&) override { return false; }
     void reset_to_default() override {}
     std::string get_value_str() const override { return ""; }
+    std::string get_default_value_str() const override { return ""; }
 
   public:
     void notify_updated() const

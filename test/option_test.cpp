@@ -58,6 +58,8 @@ TEST_CASE("wf::config::option_t<unboundable>")
     CHECK(opt.set_default_value_str("<super>KEY_T"));
     opt.reset_to_default();
     CHECK(opt.get_value() == binding2);
+    CHECK(opt.get_default_value() == binding2);
+    CHECK(wf::option_type::from_string<wf::keybinding_t>(opt.get_default_value_str()) == binding2);
 
     CHECK(are_bounds_enabled<option_t<wf::keybinding_t>>::value == false);
     CHECK(are_bounds_enabled<option_t<wf::buttonbinding_t>>::value == false);
@@ -114,6 +116,7 @@ TEST_CASE("wf::config::option_t<boundable>")
     CHECK(!dopt.set_default_value_str("invalid dobule"));
     dopt.reset_to_default();
     CHECK(dopt.get_value() == doctest::Approx(55));
+    CHECK(dopt.get_default_value() == doctest::Approx(55));
 
     CHECK(dopt.set_default_value_str("75")); // invalid wrt min/max
     dopt.reset_to_default();

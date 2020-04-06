@@ -46,6 +46,9 @@ class option_base_t
     /** Get the option value in string format */
     virtual std::string get_value_str() const = 0;
 
+    /** Get the default option value in string format */
+    virtual std::string get_default_value_str() const = 0;
+
     /**
      * A function to be executed when the option value changes.
      */
@@ -212,9 +215,19 @@ class option_t : public option_base_t,
          return value;
      }
 
+     Type get_default_value() const
+     {
+         return default_value;
+     }
+
      virtual std::string get_value_str() const override
      {
          return option_type::to_string<Type>(get_value());
+     }
+
+     virtual std::string get_default_value_str() const override
+     {
+         return option_type::to_string<Type>(get_default_value());
      }
 
   public:
