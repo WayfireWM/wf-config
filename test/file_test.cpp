@@ -219,7 +219,8 @@ TEST_CASE("wf::config::build_configuration")
     std::string sysconf = std::string(TEST_SOURCE "/int_test/sys.ini");
     std::string userconf = std::string(TEST_SOURCE "/int_test/config.ini");
 
-    auto config = wf::config::build_configuration(xmldir, sysconf, userconf);
+    std::vector xmldirs(1, xmldir);
+    auto config = wf::config::build_configuration(xmldirs, sysconf, userconf);
     check_int_test_config(config, "10");
 
     auto o1 = config.get_option("section1/option1");
