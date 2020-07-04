@@ -242,6 +242,41 @@ static std::shared_ptr<wf::config::section_t>
     return section;
 }
 
+/**
+ * Resets options to default that have been removed from the config file.
+ */
+
+static void reset_nonexistent_options(wf::config::section_t& section, std::vector<line_t> lines)
+{
+    if (lines.empty())
+    {
+        return;
+    }
+    for (auto& option : section.get_registered_options())
+    {
+        bool found = false;
+        for (auto& line : lines)
+        {
+            size_t equal_sign = line.find_first_of("=");
+            if (equal_sign == std::string::npos)
+            {
+                continue;
+            }
+
+            auto name = ignore_leading_trailing_whitespace(line.substr(0, equal_sign));
+            if (option->get_name() == name)
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            option->reset_to_default();
+        }
+    }
+}
+
 void wf::config::load_configuration_options_from_string(
     config_manager_t& config, const std::string& source,
     const std::string& source_name)
@@ -253,13 +288,16 @@ void wf::config::load_configuration_options_from_string(
                     remove_comments(
                         split_to_lines(source)))));
 
+    std::vector<line_t> section_lines;
     std::shared_ptr<wf::config::section_t> current_section;
     for (const auto& line : lines)
     {
         auto next_section = check_section(config, line);
         if (next_section)
         {
+            reset_nonexistent_options(*current_section, section_lines);
             current_section = next_section;
+            section_lines.clear();
             continue;
         }
 
@@ -283,9 +321,11 @@ void wf::config::load_configuration_options_from_string(
                     line.source_line_number, ", invalid option value!");
                 break;
             default:
+                section_lines.push_back(line);
                 break;
         }
     }
+    reset_nonexistent_options(*current_section, section_lines);
 }
 
 std::string wf::config::save_configuration_options_to_string(
