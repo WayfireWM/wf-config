@@ -35,7 +35,8 @@ lib_wfconfig = library('wf-config',
     dependencies: [evdev, glm, libxml2],
     include_directories: wfconfig_inc,
     install: true,
-    version: meson.project_version())
+    version: meson.project_version(),
+    soversion: '1')
 
 pkgconfig = import('pkgconfig')
 pkgconfig.generate(
