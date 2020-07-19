@@ -412,38 +412,43 @@ static xmlNodePtr find_section_start_node(const std::string& file)
     return section;
 }
 
-static wf::config::config_manager_t load_xml_files(const std::string& xmldir)
+static wf::config::config_manager_t load_xml_files(const std::vector<std::string>& xmldirs)
 {
-    auto xmld = opendir(xmldir.c_str());
-    if (NULL == xmld)
-    {
-        LOGE("Failed to open XML directory ", xmldir);
-        return {};
-    }
-
-    LOGI("Reading XML configuration options from directory ", xmldir);
     wf::config::config_manager_t manager;
-    struct dirent *entry;
-    while ((entry = readdir(xmld)) != NULL)
-    {
-        if (entry->d_type != DT_LNK && entry->d_type != DT_REG)
-            continue;
 
-        std::string filename = xmldir + '/' + entry->d_name;
-        if (filename.length() > 4 &&
-            filename.rfind(".xml") == filename.length() - 4)
+    for (auto& xmldir : xmldirs)
+    {
+        auto xmld = opendir(xmldir.c_str());
+        if (NULL == xmld)
         {
-            LOGI("Reading XML configuration options from file ", filename);
-            auto node = find_section_start_node(filename);
-            if (node)
+            LOGW("Failed to open XML directory ", xmldir);
+            continue;
+        }
+
+        LOGI("Reading XML configuration options from directory ", xmldir);
+        struct dirent *entry;
+        while ((entry = readdir(xmld)) != NULL)
+        {
+            if (entry->d_type != DT_LNK && entry->d_type != DT_REG)
+                continue;
+
+            std::string filename = xmldir + '/' + entry->d_name;
+            if (filename.length() > 4 &&
+                filename.rfind(".xml") == filename.length() - 4)
             {
-                manager.merge_section(
-                    wf::config::xml::create_section_from_xml_node(node));
+                LOGI("Reading XML configuration options from file ", filename);
+                auto node = find_section_start_node(filename);
+                if (node)
+                {
+                    manager.merge_section(
+                        wf::config::xml::create_section_from_xml_node(node));
+                }
             }
         }
+
+        closedir(xmld);
     }
 
-    closedir(xmld);
     return manager;
 }
 
@@ -482,10 +487,10 @@ void override_defaults(wf::config::config_manager_t& manager,
 #include <iostream>
 
 wf::config::config_manager_t wf::config::build_configuration(
-    const std::string& xmldir, const std::string& sysconf,
+    const std::vector<std::string>& xmldirs, const std::string& sysconf,
     const std::string& userconf)
 {
-    auto manager = load_xml_files(xmldir);
+    auto manager = load_xml_files(xmldirs);
     override_defaults(manager, sysconf);
     load_configuration_options_from_file(manager, userconf);
     return manager;
