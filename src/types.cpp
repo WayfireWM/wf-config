@@ -874,3 +874,130 @@ bool wf::activatorbinding_t::operator ==(const activatorbinding_t& other) const
            priv->buttons == other.priv->buttons &&
            priv->gestures == other.priv->gestures;
 }
+
+wf::hotspot_binding_t::hotspot_binding_t(uint32_t edges,
+    int32_t along_edge, int32_t away_from_edge, int32_t timeout)
+{
+    this->edges = edges;
+    this->along = along_edge;
+    this->away = away_from_edge;
+    this->timeout = timeout;
+}
+
+bool wf::hotspot_binding_t::operator== (const hotspot_binding_t& other) const
+{
+    return edges == other.edges && along == other.along && away == other.away &&
+        timeout == other.timeout;
+}
+
+int32_t wf::hotspot_binding_t::get_timeout() const
+{
+    return timeout;
+}
+
+int32_t wf::hotspot_binding_t::get_size_away_from_edge() const
+{
+    return away;
+}
+
+int32_t wf::hotspot_binding_t::get_size_along_edge() const
+{
+    return along;
+}
+
+uint32_t wf::hotspot_binding_t::get_edges() const
+{
+    return edges;
+}
+
+static std::map<std::string, wf::output_edge_t> hotspot_edges =
+{
+    {"top", wf::OUTPUT_EDGE_TOP},
+    {"bottom", wf::OUTPUT_EDGE_BOTTOM},
+    {"left", wf::OUTPUT_EDGE_LEFT},
+    {"right", wf::OUTPUT_EDGE_RIGHT},
+};
+
+template<> stdx::optional<wf::hotspot_binding_t> wf::option_type::from_string(
+    const std::string& description)
+{
+    std::istringstream stream{description};
+    std::string token;
+    stream >> token; // "hotspot"
+    stream >> token; // direction
+
+    uint32_t edges = 0;
+
+    size_t hyphen = token.find("-");
+    if (hyphen == token.npos)
+    {
+        if (hotspot_edges.count(token) == 0)
+        {
+            return {};
+        }
+
+        edges = hotspot_edges[token];
+    } else
+    {
+        std::string first_direction = token.substr(0, hyphen);
+        std::string second_direction = token.substr(hyphen + 1);
+
+        if (hotspot_edges.count(first_direction) == 0 ||
+            hotspot_edges.count(second_direction) == 0)
+        {
+            return {};
+        }
+
+        edges = hotspot_edges[first_direction] | hotspot_edges[second_direction];
+    }
+
+    stream >> token;
+    int32_t along, away;
+    if (2 != sscanf(token.c_str(), "%dx%d", &along, &away))
+    {
+        return {};
+    }
+
+    stream >> token;
+    auto timeout = wf::option_type::from_string<int>(token);
+
+    if (!timeout || stream >> token) // check for trailing characters
+    {
+        return {};
+    }
+
+    return wf::hotspot_binding_t(edges, along, away, timeout.value());
+}
+
+template<> std::string wf::option_type::to_string(
+    const wf::hotspot_binding_t& value)
+{
+    std::ostringstream out;
+    out << "hotspot ";
+
+    uint32_t remaining_edges = value.get_edges();
+
+    const auto& find_edge = [&] (bool need_hyphen)
+    {
+        for (const auto& edge : hotspot_edges)
+        {
+            if (remaining_edges & edge.second)
+            {
+                remaining_edges &= ~edge.second;
+                if (need_hyphen)
+                {
+                    out << "-";
+                }
+                out << edge.first;
+                break;
+            }
+        }
+    };
+
+    find_edge(false);
+    find_edge(true);
+
+    out << " " << value.get_size_along_edge() << "x" << value.get_size_away_from_edge()
+        << " " << value.get_timeout();
+    return out.str();
+}
