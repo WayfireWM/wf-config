@@ -3,6 +3,7 @@
 #include <wayfire/config/option-types.hpp>
 #include <glm/vec4.hpp>
 #include <memory>
+#include <vector>
 
 namespace wf
 {
@@ -410,7 +411,7 @@ template<> std::string to_string(const hotspot_binding_t& value);
 
 /**
  * Represents a binding which can be activated via multiple actions -
- * keybindings, buttonbindings and touch gestures.
+ * keybindings, buttonbindings, touch gestures and hotspots.
  */
 struct activatorbinding_t
 {
@@ -435,6 +436,11 @@ struct activatorbinding_t
 
     /** @return true if the activator is activated by the given gesture. */
     bool has_match(const touchgesture_t& gesture) const;
+
+    /**
+     * @return A list of all hotspots which activate this binding.
+     */
+    const std::vector<wf::hotspot_binding_t>& get_hotspots() const;
 
     /**
      * Check equality of two activator bindings.

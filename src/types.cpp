@@ -748,6 +748,7 @@ struct wf::activatorbinding_t::impl
     std::vector<keybinding_t> keys;
     std::vector<buttonbinding_t> buttons;
     std::vector<touchgesture_t> gestures;
+    std::vector<hotspot_binding_t> hotspots;
 };
 
 wf::activatorbinding_t::activatorbinding_t()
@@ -804,7 +805,8 @@ stdx::optional<wf::activatorbinding_t> wf::option_type::from_string(
         bool is_valid_binding =
             try_add_binding(binding.priv->keys, token) ||
             try_add_binding(binding.priv->buttons, token) ||
-            try_add_binding(binding.priv->gestures, token);
+            try_add_binding(binding.priv->gestures, token) ||
+            try_add_binding(binding.priv->hotspots, token);
 
         if (!is_valid_binding)
         {
@@ -835,7 +837,8 @@ std::string wf::option_type::to_string(
     std::string repr =
         concatenate_bindings(value.priv->keys) +
         concatenate_bindings(value.priv->buttons) +
-        concatenate_bindings(value.priv->gestures);
+        concatenate_bindings(value.priv->gestures) +
+        concatenate_bindings(value.priv->hotspots);
 
     /* Remove trailing " | " */
     if (repr.size() >= 3)
@@ -873,6 +876,12 @@ bool wf::activatorbinding_t::operator ==(const activatorbinding_t& other) const
     return priv->keys == other.priv->keys &&
            priv->buttons == other.priv->buttons &&
            priv->gestures == other.priv->gestures;
+}
+
+const std::vector<wf::hotspot_binding_t>&
+wf::activatorbinding_t::get_hotspots() const
+{
+    return priv->hotspots;
 }
 
 wf::hotspot_binding_t::hotspot_binding_t(uint32_t edges,
@@ -924,6 +933,11 @@ template<> stdx::optional<wf::hotspot_binding_t> wf::option_type::from_string(
     std::istringstream stream{description};
     std::string token;
     stream >> token; // "hotspot"
+    if (token != "hotspot")
+    {
+        return {};
+    }
+
     stream >> token; // direction
 
     uint32_t edges = 0;
