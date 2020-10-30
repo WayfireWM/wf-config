@@ -23,6 +23,9 @@ class option_base_t
     /** @return The name of the option */
     std::string get_name() const;
 
+    /** @return A copy of the option */
+    virtual std::shared_ptr<option_base_t> clone_option() const = 0;
+
     /**
      * Set the option value from the given string.
      * Invalid values are ignored.
@@ -154,6 +157,21 @@ class option_t : public option_base_t,
     option_t(const std::string& name, Type def_value)
         : option_base_t(name), default_value(def_value), value(default_value)
     { }
+
+    /**
+     * Create a copy of the option.
+     */
+    virtual std::shared_ptr<option_base_t> clone_option() const override
+    {
+        auto result = std::make_shared<option_t>(get_name(), get_default_value());
+        result->set_value(get_value());
+        if constexpr (std::is_arithmetic<Type>::value)
+        {
+            result->minimum = this->minimum;
+            result->maximum = this->maximum;
+        }
+        return result;
+    }
 
     /**
      * Set the value of the option from the given string.

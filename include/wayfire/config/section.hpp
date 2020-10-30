@@ -27,6 +27,9 @@ class section_t
     /** @return The name of the config section. */
     std::string get_name() const;
 
+    /** @return A deep copy of the config section with a new name. */
+    std::shared_ptr<section_t> clone_with_name(const std::string name) const;
+
     /**
      * @return The option with the given name, or nullptr if no such option
      * has been added yet.
