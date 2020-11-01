@@ -21,6 +21,16 @@ std::string wf::config::section_t::get_name() const
     return this->priv->name;
 }
 
+std::shared_ptr<wf::config::section_t>
+wf::config::section_t::clone_with_name(const std::string name) const
+{
+    auto result = std::make_shared<wf::config::section_t>(name);
+    for (auto& option : priv->options)
+        result->register_new_option(option.second->clone_option());
+
+    return result;
+}
+
 std::shared_ptr<wf::config::option_base_t>
 wf::config::section_t::get_option_or(const std::string& name)
 {

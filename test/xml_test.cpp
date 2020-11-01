@@ -323,6 +323,6 @@ TEST_CASE("wf::config::xml::create_section")
     {
         auto section = initialize_section(xml_section_bad_tag);
         CHECK(section == nullptr);
-        EXPECT_LINE(log, "is not a plugin element");
+        EXPECT_LINE(log, "is not a plugin/object element");
     }
 }

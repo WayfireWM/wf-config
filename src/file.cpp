@@ -235,6 +235,22 @@ static std::shared_ptr<wf::config::section_t>
     auto section = config.get_section(real_name);
     if (!section)
     {
+        size_t splitter = real_name.find_first_of(":");
+        if (splitter != std::string::npos)
+        {
+            auto obj_type_name = real_name.substr(0, splitter);
+            auto section_name = real_name.substr(splitter + 1); // only for the empty check
+            if (!obj_type_name.empty() && !section_name.empty())
+            {
+                auto parent_section = config.get_section(obj_type_name);
+                if (parent_section)
+                {
+                    section = parent_section->clone_with_name(real_name);
+                    config.merge_section(section);
+                    return section;
+                }
+            }
+        }
         section = std::make_shared<wf::config::section_t> (real_name);
         config.merge_section(section);
     }
@@ -401,7 +417,8 @@ static xmlNodePtr find_section_start_node(const std::string& file)
     while (section != nullptr)
     {
         if (section->type == XML_ELEMENT_NODE &&
-            (const char*)section->name == (std::string)"plugin")
+            ((const char*)section->name == (std::string)"plugin" ||
+             (const char*)section->name == (std::string)"object"))
         {
             break;
         }

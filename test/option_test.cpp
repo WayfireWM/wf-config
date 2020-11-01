@@ -65,6 +65,21 @@ TEST_CASE("wf::config::option_t<unboundable>")
     CHECK(are_bounds_enabled<option_t<wf::buttonbinding_t>>::value == false);
     CHECK(are_bounds_enabled<option_t<wf::touchgesture_t>>::value == false);
     CHECK(are_bounds_enabled<option_t<std::string>>::value == false);
+
+    int callback_called = 0, clone_callback_called = 0;
+    wf::config::option_base_t::updated_callback_t
+    callback = [&] () { callback_called++; }, clone_callback = [&] () { clone_callback_called++; };
+    opt.add_updated_handler(&callback);
+    auto clone = std::static_pointer_cast<option_t<wf::keybinding_t>>(opt.clone_option());
+    CHECK(clone->get_name() == opt.get_name());
+    CHECK(clone->get_default_value() == opt.get_default_value());
+    CHECK(clone->get_value() == opt.get_value());
+    opt.set_value_str("<super>KEY_F");
+    CHECK(callback_called == 1);
+    clone->add_updated_handler(&clone_callback);
+    clone->set_value_str("<super>KEY_F");
+    CHECK(callback_called == 1);
+    CHECK(clone_callback_called == 1);
 }
 
 TEST_CASE("wf::config::option_t<boundable>")
@@ -121,6 +136,10 @@ TEST_CASE("wf::config::option_t<boundable>")
     CHECK(dopt.set_default_value_str("75")); // invalid wrt min/max
     dopt.reset_to_default();
     CHECK(dopt.get_value() == doctest::Approx(60)); // not more than max
+
+    auto clone = std::static_pointer_cast<option_t<double>>(dopt.clone_option());
+    CHECK(clone->get_minimum() == dopt.get_minimum());
+    CHECK(clone->get_maximum() == dopt.get_maximum());
 
     CHECK(are_bounds_enabled<option_t<int>>::value);
     CHECK(are_bounds_enabled<option_t<double>>::value);

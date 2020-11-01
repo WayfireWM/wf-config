@@ -228,6 +228,7 @@ TEST_CASE("wf::config::build_configuration")
     auto o3 = config.get_option("section2/option3");
     auto o4 = config.get_option("section2/option4");
     auto o5 = config.get_option("section2/option5");
+    auto o6 = config.get_option("sectionobj:objtest/option6");
 
     REQUIRE(o4);
     REQUIRE(o5);
@@ -239,19 +240,23 @@ TEST_CASE("wf::config::build_configuration")
     CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o3) != nullptr);
     CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o4) != nullptr);
     CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o5) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<int>> (o6) != nullptr);
 
     CHECK(o4->get_value_str() == "DoesNotExistInConfig");
     CHECK(o5->get_value_str() == "Option5Sys");
+    CHECK(o6->get_value_str() == "10"); // bounds from xml applied
 
     o1->reset_to_default();
     o2->reset_to_default();
     o3->reset_to_default();
     o4->reset_to_default();
     o5->reset_to_default();
+    o6->reset_to_default();
 
     CHECK(o1->get_value_str() == "4");
     CHECK(o2->get_value_str() == "XMLDefault");
     CHECK(o3->get_value_str() == "");
     CHECK(o4->get_value_str() == "DoesNotExistInConfig");
     CHECK(o5->get_value_str() == "Option5Sys");
+    CHECK(o6->get_value_str() == "1");
 }

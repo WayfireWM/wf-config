@@ -259,10 +259,11 @@ std::shared_ptr<wf::config::section_t>
     wf::config::xml::create_section_from_xml_node(xmlNodePtr node)
 {
     if (node->type != XML_ELEMENT_NODE ||
-        (const char*)node->name != std::string{"plugin"})
+        ((const char*)node->name != std::string{"plugin"} &&
+         (const char*)node->name != std::string{"object"}))
     {
         LOGE("Could not parse ", node->doc->URL,
-            ": line ", node->line, " is not a plugin element.");
+            ": line ", node->line, " is not a plugin/object element.");
         return nullptr;
     }
 

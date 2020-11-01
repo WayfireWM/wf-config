@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<wayfire>
+  <object name="sectionobj">
+    <category>General</category>
+    <option name="option6" type="int">
+      <default>1</default>
+      <min>0</min>
+      <max>10</max>
+    </option>
+  </object>
+</wayfire>

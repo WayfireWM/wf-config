@@ -34,4 +34,11 @@ TEST_CASE("wf::config::section_t")
     CHECK(reg_opts.back() == intopt2);
     section.unregister_option(intopt2);
     CHECK(section.get_registered_options().empty());
+
+    section.register_new_option(intopt);
+    auto clone = section.clone_with_name("Cloned_Section");
+    CHECK(clone->get_name() == "Cloned_Section");
+    CHECK(clone->get_option_or("IntOption") != intopt);
+    CHECK(clone->get_option_or("IntOption")->get_name() == intopt->get_name());
+    CHECK(clone->get_option_or("IntOption")->get_value_str() == intopt->get_value_str());
 }
