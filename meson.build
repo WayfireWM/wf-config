@@ -1,7 +1,7 @@
 project(
 	'wf-config',
 	'cpp',
-	version: '0.5.0',
+	version: '0.6.0',
 	license: 'MIT',
 	meson_version: '>=0.43.0',
 	default_options: [
