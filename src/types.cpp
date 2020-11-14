@@ -874,8 +874,9 @@ bool wf::activatorbinding_t::has_match(const touchgesture_t& gesture) const
 bool wf::activatorbinding_t::operator ==(const activatorbinding_t& other) const
 {
     return priv->keys == other.priv->keys &&
-           priv->buttons == other.priv->buttons &&
-           priv->gestures == other.priv->gestures;
+        priv->buttons == other.priv->buttons &&
+        priv->gestures == other.priv->gestures &&
+        priv->hotspots == other.priv->hotspots;
 }
 
 const std::vector<wf::hotspot_binding_t>&
