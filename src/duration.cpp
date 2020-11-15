@@ -9,13 +9,13 @@ namespace animation
 {
 namespace smoothing
 {
-smooth_function linear  =
+smooth_function linear =
     [] (double x) -> double { return x; };
-smooth_function circle  =
+smooth_function circle =
     [] (double x) -> double { return std::sqrt(2 * x - x * x); };
 
 const double sigmoid_max = 1 + std::exp(-6);
-smooth_function sigmoid =
+smooth_function sigmoid  =
     [] (double x) -> double { return sigmoid_max / (1 + exp(-12 * x + 6)); };
 }
 }
@@ -40,7 +40,9 @@ class wf::animation::duration_t::impl
     int get_duration() const
     {
         if (length)
+        {
             return std::max(1, length->get_value());
+        }
 
         LOGD("Calling methods on wf::animation::duration_t without a length");
         return 1;
@@ -54,7 +56,9 @@ class wf::animation::duration_t::impl
     double get_progress_percentage() const
     {
         if (!length || is_ready())
+        {
             return 1.0;
+        }
 
         return 1.0 * get_elapsed() / get_duration();
     }
@@ -62,7 +66,9 @@ class wf::animation::duration_t::impl
     double progress() const
     {
         if (is_ready())
+        {
             return 1.0;
+        }
 
         return smooth_function(get_progress_percentage());
     }
@@ -73,29 +79,31 @@ wf::animation::duration_t::duration_t(
     std::shared_ptr<wf::config::option_t<int>> length,
     smoothing::smooth_function smooth)
 {
-    this->priv = std::make_shared<impl> ();
-    this->priv->length = length;
+    this->priv = std::make_shared<impl>();
+    this->priv->length     = length;
     this->priv->is_running = false;
     this->priv->smooth_function = smooth;
 }
 
 wf::animation::duration_t::duration_t(const duration_t& other)
 {
-    this->priv = std::make_shared<impl> (*other.priv);
+    this->priv = std::make_shared<impl>(*other.priv);
 }
 
-wf::animation::duration_t& wf::animation::duration_t::operator= (
+wf::animation::duration_t& wf::animation::duration_t::operator =(
     const duration_t& other)
 {
     if (&other != this)
-        this->priv = std::make_shared<impl> (*other.priv);
+    {
+        this->priv = std::make_shared<impl>(*other.priv);
+    }
 
     return *this;
 }
 
 void wf::animation::duration_t::start()
 {
-    this->priv->is_running = 1;
+    this->priv->is_running  = 1;
     this->priv->start_point = std::chrono::system_clock::now();
 }
 
@@ -125,7 +133,7 @@ wf::animation::timed_transition_t::timed_transition_t(
 void wf::animation::timed_transition_t::restart_with_end(double new_end)
 {
     this->start = (double)*this;
-    this->end = new_end;
+    this->end   = new_end;
 }
 
 void wf::animation::timed_transition_t::restart_same_end()
@@ -136,7 +144,7 @@ void wf::animation::timed_transition_t::restart_same_end()
 void wf::animation::timed_transition_t::set(double start, double end)
 {
     this->start = start;
-    this->end = end;
+    this->end   = end;
 }
 
 void wf::animation::timed_transition_t::flip()
@@ -152,11 +160,10 @@ wf::animation::timed_transition_t::operator double() const
 
 wf::animation::simple_animation_t::simple_animation_t(
     std::shared_ptr<wf::config::option_t<int>> length,
-    smoothing::smooth_function smooth)
-    : duration_t(length, smooth),
+    smoothing::smooth_function smooth) :
+    duration_t(length, smooth),
     timed_transition_t((duration_t&)*this)
-{
-}
+{}
 
 void wf::animation::simple_animation_t::animate(double start, double end)
 {

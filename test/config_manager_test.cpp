@@ -31,36 +31,37 @@ TEST_CASE("wf::config::config_manager_t")
     CHECK(config.get_option<int>("section/nonexist/ent") == nullptr);
 
     CHECK(config.get_section("FirstSection") == nullptr);
-    config.merge_section(std::make_shared<section_t> ("FirstSection"));
+    config.merge_section(std::make_shared<section_t>("FirstSection"));
     expect_sections({"FirstSection"});
 
-    auto section = config.get_section("FirstSection");
+    auto section  = config.get_section("FirstSection");
     REQUIRE(section != nullptr);
     CHECK(section->get_name() == "FirstSection");
     CHECK(section->get_registered_options().empty());
 
     CHECK(config.get_option("FirstSection/FirstOption") == nullptr);
 
-    auto color = option_type::from_string<color_t>("#FFFF").value();
-    auto option = std::make_shared<option_t<color_t>> ("ColorOption", color);
+    auto color    = option_type::from_string<color_t>("#FFFF").value();
+    auto option   = std::make_shared<option_t<color_t>>("ColorOption", color);
     section->register_new_option(option);
 
-    CHECK(config.get_option<color_t>("FirstSection/ColorOption")->get_value() == color);
+    CHECK(config.get_option<color_t>(
+        "FirstSection/ColorOption")->get_value() == color);
     CHECK(config.get_option("FirstSection/ColorOption") == option);
 
     auto section2 = config.get_section("SecondSection");
     CHECK(section2 == nullptr);
 
-    auto section_overwrite = std::make_shared<section_t> ("FirstSection");
+    auto section_overwrite = std::make_shared<section_t>("FirstSection");
     section_overwrite->register_new_option(
         std::make_shared<option_t<color_t>>(
             "ColorOption", from_string<color_t>("#CCCC").value()));
     section_overwrite->register_new_option(
-        std::make_shared<option_t<int>> ("IntOption", 5));
+        std::make_shared<option_t<int>>("IntOption", 5));
 
-    section2 = std::make_shared<section_t> ("SecondSection");
+    section2 = std::make_shared<section_t>("SecondSection");
     section2->register_new_option(
-        std::make_shared<option_t<int>> ("IntOption", 6));
+        std::make_shared<option_t<int>>("IntOption", 6));
 
     config.merge_section(section_overwrite);
     CHECK(config.get_section("FirstSection") == section); // do not overwrite

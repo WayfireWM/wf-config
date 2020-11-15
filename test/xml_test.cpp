@@ -8,7 +8,8 @@
 #include <wayfire/util/log.hpp>
 #include <linux/input-event-codes.h>
 
-static const std::string xml_option_int = R"(
+static const std::string xml_option_int =
+    R"(
 <option name="IntOption" type="int">
 <default>3</default>
 <min>0</min>
@@ -16,25 +17,29 @@ static const std::string xml_option_int = R"(
 </option>
 )";
 
-static const std::string xml_option_string = R"(
+static const std::string xml_option_string =
+    R"(
 <option name="StringOption" type="string">
 <default></default>
 </option>
 )";
 
-static const std::string xml_option_key = R"(
+static const std::string xml_option_key =
+    R"(
 <option name="KeyOption" type="key">
 <default>&lt;super&gt; KEY_E</default>
 </option>
 )";
 
-static const std::string xml_option_bad_tag = R"(
+static const std::string xml_option_bad_tag =
+    R"(
 <invalid name="KeyOption" type="key">
 <default>&lt;super&gt; KEY_E</default>
 </invalid>
 )";
 
-static const std::string xml_option_int_bad_min = R"(
+static const std::string xml_option_int_bad_min =
+    R"(
 <option name="IntOption" type="int">
 <default>3</default>
 <min>sfd</min>
@@ -42,7 +47,8 @@ static const std::string xml_option_int_bad_min = R"(
 </option>
 )";
 
-static const std::string xml_option_int_bad_max = R"(
+static const std::string xml_option_int_bad_max =
+    R"(
 <option name="IntOption" type="int">
 <default>3</default>
 <min>0</min>
@@ -50,30 +56,35 @@ static const std::string xml_option_int_bad_max = R"(
 </option>
 )";
 
-static const std::string xml_option_bad_type = R"(
+static const std::string xml_option_bad_type =
+    R"(
 <option name="KeyOption" type="unknown">
 <default>&lt;super&gt; KEY_E</default>
 </option>
 )";
 
-static const std::string xml_option_bad_default = R"(
+static const std::string xml_option_bad_default =
+    R"(
 <option name="KeyOption" type="key">
 <default>&lt;super&gt; e</default>
 </option>
 )";
 
 
-static const std::string xml_option_missing_name = R"(
+static const std::string xml_option_missing_name =
+    R"(
 <option type="int">
 </option>
 )";
 
-static const std::string xml_option_missing_type = R"(
+static const std::string xml_option_missing_type =
+    R"(
 <option name="IntOption">
 </option>
 )";
 
-static const std::string xml_option_missing_default_value = R"(
+static const std::string xml_option_missing_default_value =
+    R"(
 <option name="IntOption" type="int">
 </option>
 )";
@@ -87,7 +98,7 @@ TEST_CASE("wf::config::xml::create_option")
         wf::log::LOG_LEVEL_DEBUG, wf::log::LOG_COLOR_MODE_OFF);
 
     namespace wxml = wf::config::xml;
-    namespace wc = wf::config;
+    namespace wc   = wf::config;
     xmlNodePtr option_node;
 
     auto initialize_option = [&] (std::string source)
@@ -100,7 +111,7 @@ TEST_CASE("wf::config::xml::create_option")
 
     SUBCASE("Not an XML option")
     {
-        auto opt = std::make_shared<wf::config::option_t<int>> ("Test", 1);
+        auto opt = std::make_shared<wf::config::option_t<int>>("Test", 1);
         CHECK(wxml::get_option_xml_node(opt) == nullptr);
     }
 
@@ -112,7 +123,7 @@ TEST_CASE("wf::config::xml::create_option")
         CHECK(option->get_name() == "IntOption");
 
         auto as_int =
-            std::dynamic_pointer_cast<wc::option_t<int>> (option);
+            std::dynamic_pointer_cast<wc::option_t<int>>(option);
         REQUIRE(as_int);
         REQUIRE(as_int->get_minimum());
         REQUIRE(as_int->get_maximum());
@@ -131,7 +142,7 @@ TEST_CASE("wf::config::xml::create_option")
         CHECK(option->get_name() == "StringOption");
 
         auto as_string =
-            std::dynamic_pointer_cast<wc::option_t<std::string>> (option);
+            std::dynamic_pointer_cast<wc::option_t<std::string>>(option);
         REQUIRE(as_string);
         CHECK(as_string->get_value() == "");
     }
@@ -144,7 +155,7 @@ TEST_CASE("wf::config::xml::create_option")
         CHECK(option->get_name() == "KeyOption");
 
         auto as_key =
-            std::dynamic_pointer_cast<wc::option_t<wf::keybinding_t>> (option);
+            std::dynamic_pointer_cast<wc::option_t<wf::keybinding_t>>(option);
         REQUIRE(as_key);
 
         CHECK(as_key->get_value() ==
@@ -154,7 +165,7 @@ TEST_CASE("wf::config::xml::create_option")
 
     /* Generate a subcase where the given xml source can't be parsed to an
      * option, and check that the output in the log is as expected. */
-#define SUBCASE_BAD_OPTION(subcase_name,xml_source,expected_log) \
+#define SUBCASE_BAD_OPTION(subcase_name, xml_source, expected_log) \
     SUBCASE(subcase_name) \
     { \
         auto option = initialize_option(xml_source); \
@@ -169,38 +180,41 @@ TEST_CASE("wf::config::xml::create_option")
         xml_option_bad_type, "invalid type \"unknown\"");
 
     SUBCASE_BAD_OPTION("Invalid default value",
-            xml_option_bad_default, "invalid default value");
+        xml_option_bad_default, "invalid default value");
 
     SUBCASE_BAD_OPTION("Invalid minimum value",
-            xml_option_int_bad_min, "invalid minimum value");
+        xml_option_int_bad_min, "invalid minimum value");
 
     SUBCASE_BAD_OPTION("Invalid maximum value",
-            xml_option_int_bad_max, "invalid maximum value");
+        xml_option_int_bad_max, "invalid maximum value");
 
     SUBCASE_BAD_OPTION("Missing option name",
-            xml_option_missing_name, "missing \"name\" attribute");
+        xml_option_missing_name, "missing \"name\" attribute");
 
     SUBCASE_BAD_OPTION("Missing option type",
-            xml_option_missing_type, "missing \"type\" attribute");
+        xml_option_missing_type, "missing \"type\" attribute");
 
     SUBCASE_BAD_OPTION("Missing option default value",
-            xml_option_missing_default_value, "no default value specified");
+        xml_option_missing_default_value, "no default value specified");
 }
 
 /* ------------------------- create_section test ---------------------------- */
-static const std::string xml_section_empty = R"(
+static const std::string xml_section_empty =
+    R"(
 <plugin name="TestPluginEmpty">
 </plugin>
 )";
 
-static const std::string xml_section_no_plugins = R"(
+static const std::string xml_section_no_plugins =
+    R"(
 <plugin name="TestPluginNoPlugins">
 <description> </description>
 <check> </check>
 </plugin>
 )";
 
-static const std::string xml_section_full = R"(
+static const std::string xml_section_full =
+    R"(
 <plugin name="TestPluginFull">
     <option name="KeyOption" type="key">
         <default>&lt;super&gt; KEY_E</default>
@@ -236,7 +250,8 @@ static const std::string xml_section_full = R"(
 </plugin>
 )";
 
-static const std::string xml_section_missing_name = R"(
+static const std::string xml_section_missing_name =
+    R"(
 <plugin>
     <option name="KeyOption" type="key">
         <default>&lt;super&gt; KEY_T</default>
@@ -244,7 +259,8 @@ static const std::string xml_section_missing_name = R"(
 </plugin>
 )";
 
-static const std::string xml_section_bad_tag = R"(
+static const std::string xml_section_bad_tag =
+    R"(
 <invalid>
     <option name="KeyOption" type="key">
         <default>&lt;super&gt; KEY_T</default>
@@ -259,7 +275,7 @@ TEST_CASE("wf::config::xml::create_section")
         wf::log::LOG_LEVEL_DEBUG, wf::log::LOG_COLOR_MODE_OFF);
 
     namespace wxml = wf::config::xml;
-    namespace wc = wf::config;
+    namespace wc   = wf::config;
 
     xmlNodePtr section_root;
     auto initialize_section = [&] (std::string xml_source)
@@ -303,7 +319,9 @@ TEST_CASE("wf::config::xml::create_section")
         auto opts = section->get_registered_options();
         std::set<std::string> opt_names;
         for (auto& opt : opts)
+        {
             opt_names.insert(opt->get_name());
+        }
 
         std::set<std::string> expected_names = {
             "KeyOption", "ButtonOption", "TouchOption", "ActivatorOption",

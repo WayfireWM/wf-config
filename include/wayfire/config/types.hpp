@@ -15,7 +15,8 @@ namespace option_type
  * @param string The string representation of the value.
  * @return The parsed value, if the string was valid.
  */
-template<class Type> stdx::optional<Type> from_string(
+template<class Type>
+stdx::optional<Type> from_string(
     const std::string& string);
 
 /**
@@ -24,51 +25,59 @@ template<class Type> stdx::optional<Type> from_string(
  * @return The string representation of a value.
  *   It is expected that from_string(to_string(value)) == value.
  */
-template<class Type> std::string to_string(const Type& value);
+template<class Type>
+std::string to_string(const Type& value);
 
 /**
  * Parse the given string as a signed 32-bit integer in decimal system.
  */
-template<> stdx::optional<int> from_string<int>(const std::string&);
+template<>
+stdx::optional<int> from_string<int>(const std::string&);
 
 /**
  * Parse the given string as a boolean value.
  * Truthy values are "True" (any capitalization) and 1.
  * False values are "False" (any capitalization) and 0.
  */
-template<> stdx::optional<bool> from_string<bool>(const std::string&);
+template<>
+stdx::optional<bool> from_string<bool>(const std::string&);
 
 /**
  * Parse the given string as a signed 64-bit floating point number.
  */
-template<> stdx::optional<double> from_string<double>(const std::string&);
+template<>
+stdx::optional<double> from_string<double>(const std::string&);
 
 /**
  * Parse the string as a string.
  * The string should not contain newline characters.
  */
-template<> stdx::optional<std::string>
-    from_string<std::string>(const std::string&);
+template<>
+stdx::optional<std::string> from_string<std::string>(const std::string&);
 
 /**
  * Convert the given bool to a string.
  */
-template<> std::string to_string<bool>(const bool& value);
+template<>
+std::string to_string<bool>(const bool& value);
 
 /**
  * Convert the given integer to a string.
  */
-template<> std::string to_string<int>(const int& value);
+template<>
+std::string to_string<int>(const int& value);
 
 /**
  * Convert the given double to a string.
  */
-template<> std::string to_string<double>(const double& value);
+template<>
+std::string to_string<double>(const double& value);
 
 /**
  * Convert the given string to a string.
  */
-template<> std::string to_string<std::string>(const std::string& value);
+template<>
+std::string to_string<std::string>(const std::string& value);
 }
 
 /**
@@ -96,7 +105,7 @@ struct color_t
      * Compare colors channel-for-channel.
      * Comparisons use a small epsilon 1e-6.
      */
-    bool operator == (const color_t& other) const;
+    bool operator ==(const color_t& other) const;
 
     /** Red channel value */
     double r;
@@ -114,10 +123,12 @@ namespace option_type
  * Create a new color value from the given hex string, format is either
  * #RRGGBBAA or #RGBA.
  */
-template<> stdx::optional<color_t> from_string(const std::string& value);
+template<>
+stdx::optional<color_t> from_string(const std::string& value);
 
 /** Convert the color to its hex string representation. */
-template<> std::string to_string(const color_t& value);
+template<>
+std::string to_string(const color_t& value);
 }
 
 /**
@@ -127,13 +138,13 @@ template<> std::string to_string(const color_t& value);
 enum keyboard_modifier_t
 {
     /* Shift modifier, <shift> */
-	KEYBOARD_MODIFIER_SHIFT = 1,
+    KEYBOARD_MODIFIER_SHIFT = 1,
     /* Control modifier, <ctrl> */
-	KEYBOARD_MODIFIER_CTRL = 4,
+    KEYBOARD_MODIFIER_CTRL  = 4,
     /* Alt modifier, <alt> */
-	KEYBOARD_MODIFIER_ALT = 8,
+    KEYBOARD_MODIFIER_ALT   = 8,
     /* Windows/Mac logo modifier, <super> */
-	KEYBOARD_MODIFIER_LOGO = 64,
+    KEYBOARD_MODIFIER_LOGO  = 64,
 };
 
 /**
@@ -148,7 +159,7 @@ struct keybinding_t
     keybinding_t(uint32_t modifier, uint32_t keyval);
 
     /* Check whether two keybindings refer to the same shortcut */
-    bool operator == (const keybinding_t& other) const;
+    bool operator ==(const keybinding_t& other) const;
 
     /** @return The modifiers of the keybinding */
     uint32_t get_modifiers() const;
@@ -180,11 +191,13 @@ namespace option_type
  * Special cases are "none" and "disabled", which result in modifiers and
  * key 0.
  */
-template<> stdx::optional<keybinding_t> from_string(
+template<>
+stdx::optional<keybinding_t> from_string(
     const std::string& description);
 
 /** Represent the keybinding as a string. */
-template<> std::string to_string(const keybinding_t& value);
+template<>
+std::string to_string(const keybinding_t& value);
 }
 
 /**
@@ -200,7 +213,7 @@ struct buttonbinding_t
     buttonbinding_t(uint32_t modifier, uint32_t button);
 
     /* Check whether two keybindings refer to the same shortcut */
-    bool operator == (const buttonbinding_t& other) const;
+    bool operator ==(const buttonbinding_t& other) const;
 
     /** @return The modifiers of the buttonbinding */
     uint32_t get_modifiers() const;
@@ -224,11 +237,13 @@ namespace option_type
  * Special case are descriptions "none" and "disable", which result in
  * mod = button = 0
  */
-template<> stdx::optional<buttonbinding_t> from_string(
+template<>
+stdx::optional<buttonbinding_t> from_string(
     const std::string& description);
 
 /** Represent the buttonbinding as a string. */
-template<> std::string to_string(const buttonbinding_t& value);
+template<>
+std::string to_string(const buttonbinding_t& value);
 }
 
 /**
@@ -294,7 +309,7 @@ struct touchgesture_t
      * touchgesture_t matches any touchgesture_t of the same type with the same
      * finger count
      */
-    bool operator == (const touchgesture_t& other) const;
+    bool operator ==(const touchgesture_t& other) const;
 
   private:
     /** Type of the gesture */
@@ -317,11 +332,13 @@ namespace option_type
  * 3. [edge-]swipe up-left|right-down|... <fingercount>
  * 4. disable | none
  */
-template<> stdx::optional<touchgesture_t> from_string(
+template<>
+stdx::optional<touchgesture_t> from_string(
     const std::string& description);
 
 /** Represent the touch gesture as a string. */
-template<> std::string to_string(const touchgesture_t& value);
+template<>
+std::string to_string(const touchgesture_t& value);
 }
 
 /**
@@ -341,7 +358,7 @@ struct activatorbinding_t
     /* Copy constructor */
     activatorbinding_t(const activatorbinding_t& other);
     /* Copy assignment */
-    activatorbinding_t& operator = (const activatorbinding_t& other);
+    activatorbinding_t& operator =(const activatorbinding_t& other);
 
     /** @return true if the activator is activated by the given keybinding. */
     bool has_match(const keybinding_t& key) const;
@@ -358,7 +375,7 @@ struct activatorbinding_t
      * @return true if the two activator bindings are activated by the exact
      *  same bindings, false otherwise.
      */
-    bool operator == (const activatorbinding_t& other) const;
+    bool operator ==(const activatorbinding_t& other) const;
 
   public:
     struct impl;
@@ -372,11 +389,12 @@ namespace option_type
  * The string consists of valid descriptions of keybindings, buttonbindings
  * and touch gestures, separated by a single '|' sign.
  */
-template<> stdx::optional<activatorbinding_t> from_string(
+template<>
+stdx::optional<activatorbinding_t> from_string(
     const std::string& string);
 
 /** Represent the activator binding as a string. */
-template<> std::string to_string(const activatorbinding_t& value);
+template<>
+std::string to_string(const activatorbinding_t& value);
 }
-
 }

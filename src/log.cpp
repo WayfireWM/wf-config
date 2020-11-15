@@ -6,17 +6,21 @@
 #include <chrono>
 #include <iomanip>
 
-template<> std::string wf::log::to_string<void*> (void* arg)
+template<>
+std::string wf::log::to_string<void*>(void *arg)
 {
     if (!arg)
+    {
         return "(null)";
+    }
 
     std::ostringstream out;
     out << arg;
     return out.str();
 }
 
-template<> std::string wf::log::to_string(bool arg)
+template<>
+std::string wf::log::to_string(bool arg)
 {
     return arg ? "true" : "false";
 }
@@ -41,19 +45,23 @@ struct log_global_t
     }
 
   private:
-    log_global_t() {};
+    log_global_t()
+    {}
 };
+
 void wf::log::initialize_logging(std::ostream& output_stream,
     log_level_t minimum_level, color_mode_t color_mode, std::string strip_path)
 {
     auto& state = log_global_t::get();
-    state.out = std::ref(output_stream);
+    state.out   = std::ref(output_stream);
     state.level = minimum_level;
     state.color_mode = color_mode;
     state.strip_path = strip_path;
 
     if (state.color_mode == LOG_COLOR_MODE_ON)
+    {
         state.clear_color = "\033[0m";
+    }
 }
 
 /** Get the line prefix for the given log level */
@@ -63,21 +71,23 @@ static std::string get_level_prefix(wf::log::log_level_t level)
     static std::map<wf::log::log_level_t, std::string> color_codes =
     {
         {wf::log::LOG_LEVEL_DEBUG, "\033[0m"},
-        {wf::log::LOG_LEVEL_INFO,  "\033[0;34m"},
-        {wf::log::LOG_LEVEL_WARN,  "\033[0;33m"},
+        {wf::log::LOG_LEVEL_INFO, "\033[0;34m"},
+        {wf::log::LOG_LEVEL_WARN, "\033[0;33m"},
         {wf::log::LOG_LEVEL_ERROR, "\033[1;31m"},
     };
 
     static std::map<wf::log::log_level_t, std::string> line_prefix =
     {
         {wf::log::LOG_LEVEL_DEBUG, "DD"},
-        {wf::log::LOG_LEVEL_INFO,  "II"},
-        {wf::log::LOG_LEVEL_WARN,  "WW"},
+        {wf::log::LOG_LEVEL_INFO, "II"},
+        {wf::log::LOG_LEVEL_WARN, "WW"},
         {wf::log::LOG_LEVEL_ERROR, "EE"},
     };
 
     if (color)
+    {
         return color_codes[level] + line_prefix[level];
+    }
 
     return line_prefix[level];
 }
@@ -87,8 +97,8 @@ static std::string get_formatted_date_time()
 {
     using namespace std::chrono;
     auto now = system_clock::now();
-    auto tt = system_clock::to_time_t(now);
-    auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+    auto tt  = system_clock::to_time_t(now);
+    auto ms  = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
 
     std::ostringstream out;
     out << std::put_time(std::localtime(&tt), "%d-%m-%y %H:%M:%S.");
@@ -100,13 +110,17 @@ static std::string get_formatted_date_time()
 static std::string strip_path(const std::string& path)
 {
     auto prefix = log_global_t::get().strip_path;
-    if (prefix.length() > 0 && path.find(prefix) == 0)
+    if ((prefix.length() > 0) && (path.find(prefix) == 0))
+    {
         return path.substr(prefix.length());
+    }
 
     std::string skip_chars = "./";
     size_t idx = path.find_first_not_of(skip_chars);
     if (idx != std::string::npos)
+    {
         return path.substr(idx);
+    }
 
     return path;
 }
@@ -128,7 +142,9 @@ void wf::log::log_plain(log_level_t level, const std::string& contents,
 {
     auto& state = log_global_t::get();
     if (state.level > level)
+    {
         return;
+    }
 
     std::string path_info;
     if (!source.empty())
@@ -139,8 +155,8 @@ void wf::log::log_plain(log_level_t level, const std::string& contents,
 
     state.out.get() <<
         wf::log::detail::format_concat(
-            get_level_prefix(level), " ",
-            get_formatted_date_time(),
-            " - ", path_info, contents)
-        << state.clear_color << std::endl;
+        get_level_prefix(level), " ",
+        get_formatted_date_time(),
+        " - ", path_info, contents) <<
+        state.clear_color << std::endl;
 }

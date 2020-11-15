@@ -14,7 +14,7 @@ namespace wf
 namespace log
 {
 template<>
-    std::string to_string<test_struct>(test_struct str)
+std::string to_string<test_struct>(test_struct str)
 {
     return "(" + std::to_string(str.x) + "," + std::to_string(str.y) + ")";
 }
@@ -26,8 +26,9 @@ TEST_CASE("wf::log::detail::format_concat()")
     using namespace wf::log;
 
     CHECK(detail::format_concat("test", 123) == "test123");
-    CHECK(detail::format_concat("test ", 123, " ", false, true) == "test 123 falsetrue");
-    int *p = (int*) 0xfff;
+    CHECK(detail::format_concat("test ", 123, " ", false,
+        true) == "test 123 falsetrue");
+    int *p    = (int*)0xfff;
     int *null = nullptr;
     CHECK(detail::format_concat("test ", p) == "test 0xfff");
     CHECK(detail::format_concat("test ", null) == "test (null)");
@@ -85,7 +86,8 @@ TEST_CASE("wf::log::log_plain()")
     check_line("EE - [main.cpp:5] Test error");
 
     /* Stream shouldn't have any more characters */
-    char dummy; out >> dummy;
+    char dummy;
+    out >> dummy;
     CHECK(out.eof());
 }
 

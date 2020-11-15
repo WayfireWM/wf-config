@@ -43,10 +43,10 @@ TEST_CASE("wf::animation::duration_t")
 
 TEST_CASE("wf::animation::timed_transition_t")
 {
-    const double start = 1.0;
-    const double end = 2.0;
+    const double start   = 1.0;
+    const double end     = 2.0;
     const double overend = 3.0;
-    const double middle = (start + end) / 2.0;
+    const double middle  = (start + end) / 2.0;
 
     auto length = std::make_shared<option_t<int>>("length", 100);
     duration_t duration{length, smoothing::linear};
@@ -83,11 +83,15 @@ TEST_CASE("wf::animation::simple_animation_t")
     auto cycle_through = [&] (double s, double e, bool x1, bool x2)
     {
         if (!x1 && !x2)
+        {
             anim.animate(s, e);
-        else if (!x2)
+        } else if (!x2)
+        {
             anim.animate(e);
-        else if (!x1)
+        } else if (!x1)
+        {
             anim.animate();
+        }
 
         CHECK(anim.running());
         CHECK((double)anim == doctest::Approx(s));

@@ -12,7 +12,7 @@ namespace smoothing
  * another double in R. Both ranges represent percentage of a progress of
  * an animation.
  */
-using smooth_function = std::function<double(double)>;
+using smooth_function = std::function<double (double)>;
 
 /** linear smoothing function, i.e x -> x */
 extern smooth_function linear;
@@ -50,12 +50,12 @@ class duration_t
     /* Copy-constructor */
     duration_t(const duration_t& other);
     /* Copy-assignment */
-    duration_t& operator = (const duration_t& other);
+    duration_t& operator =(const duration_t& other);
 
     /* Move-constructor */
     duration_t(duration_t&& other) = default;
     /* Move-assignment */
-    duration_t& operator = (duration_t&& other) = default;
+    duration_t& operator =(duration_t&& other) = default;
 
     /**
      * Start the duration.

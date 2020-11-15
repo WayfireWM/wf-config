@@ -18,7 +18,7 @@ class option_base_t
   public:
     virtual ~option_base_t();
     option_base_t(const option_base_t& other) = delete;
-    option_base_t& operator = (const option_base_t& other) = delete;
+    option_base_t& operator =(const option_base_t& other) = delete;
 
     /** @return The name of the option */
     std::string get_name() const;
@@ -55,7 +55,7 @@ class option_base_t
     /**
      * A function to be executed when the option value changes.
      */
-    using updated_callback_t = std::function<void()>;
+    using updated_callback_t = std::function<void ()>;
 
     /**
      * Register a new callback to execute when the option value changes.
@@ -128,10 +128,14 @@ class bounded_option_base_t<Type, true>
             maximum.value_or(std::numeric_limits<Type>::max());
 
         if (value < real_minimum)
+        {
             return real_minimum;
+        }
 
         if (value > real_maximum)
+        {
             return real_maximum;
+        }
 
         return value;
     }
@@ -154,9 +158,9 @@ class option_t : public option_base_t,
     /**
      * Create a new option with the given name and default value.
      */
-    option_t(const std::string& name, Type def_value)
-        : option_base_t(name), default_value(def_value), value(default_value)
-    { }
+    option_t(const std::string& name, Type def_value) :
+        option_base_t(name), default_value(def_value), value(default_value)
+    {}
 
     /**
      * Create a copy of the option.
@@ -170,6 +174,7 @@ class option_t : public option_base_t,
             result->minimum = this->minimum;
             result->maximum = this->maximum;
         }
+
         return result;
     }
 
@@ -218,65 +223,64 @@ class option_t : public option_base_t,
      * The value will be auto-clamped to the defined bounds, if they exist.
      * If the value actually changes, the updated handlers will be called.
      */
-     void set_value(const Type& new_value)
-     {
-         auto real_value = this->closest_valid_value(new_value);
-         if (!(this->value == real_value))
-         {
-             this->value = real_value;
-             this->notify_updated();
-         }
-     }
+    void set_value(const Type& new_value)
+    {
+        auto real_value = this->closest_valid_value(new_value);
+        if (!(this->value == real_value))
+        {
+            this->value = real_value;
+            this->notify_updated();
+        }
+    }
 
-     Type get_value() const
-     {
-         return value;
-     }
+    Type get_value() const
+    {
+        return value;
+    }
 
-     Type get_default_value() const
-     {
-         return default_value;
-     }
+    Type get_default_value() const
+    {
+        return default_value;
+    }
 
-     virtual std::string get_value_str() const override
-     {
-         return option_type::to_string<Type>(get_value());
-     }
+    virtual std::string get_value_str() const override
+    {
+        return option_type::to_string<Type>(get_value());
+    }
 
-     virtual std::string get_default_value_str() const override
-     {
-         return option_type::to_string<Type>(get_default_value());
-     }
+    virtual std::string get_default_value_str() const override
+    {
+        return option_type::to_string<Type>(get_default_value());
+    }
 
   public:
-     /**
-      * Set the minimum permissible value for arithmetic type options.
-      * An attempt to set the value to a value below the minimum will set the
-      * value of the option to the minimum.
-      */
-     template<class U = void>
-         detail::boundable_type_only<Type, U> set_minimum(Type min)
-     {
-         this->minimum = {min};
-         this->value = this->closest_valid_value(this->value);
-     }
+    /**
+     * Set the minimum permissible value for arithmetic type options.
+     * An attempt to set the value to a value below the minimum will set the
+     * value of the option to the minimum.
+     */
+    template<class U = void>
+    detail::boundable_type_only<Type, U> set_minimum(Type min)
+    {
+        this->minimum = {min};
+        this->value   = this->closest_valid_value(this->value);
+    }
 
-     /**
-      * Set the maximum permissible value for arithmetic type options.
-      * An attempt to set the value to a value above the maximum will set the
-      * value of the option to the maximum.
-      */
-     template<class U = void>
-         detail::boundable_type_only<Type, U> set_maximum(Type max)
-     {
-         this->maximum = {max};
-         this->value = this->closest_valid_value(this->value);
-     }
+    /**
+     * Set the maximum permissible value for arithmetic type options.
+     * An attempt to set the value to a value above the maximum will set the
+     * value of the option to the maximum.
+     */
+    template<class U = void>
+    detail::boundable_type_only<Type, U> set_maximum(Type max)
+    {
+        this->maximum = {max};
+        this->value   = this->closest_valid_value(this->value);
+    }
 
   protected:
-     Type default_value; /* default value */
-     Type value; /* current value */
+    Type default_value; /* default value */
+    Type value; /* current value */
 };
-
 }
 }

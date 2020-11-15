@@ -14,13 +14,16 @@
 class line_t : public std::string
 {
   public:
-    template<class T> line_t(T source) : std::string(source) {}
+    template<class T>
+    line_t(T source) : std::string(source)
+    {}
 
-    line_t() : std::string() {}
+    line_t() : std::string()
+    {}
     line_t(const line_t& other) = default;
     line_t(line_t&& other) = default;
-    line_t& operator = (const line_t& other) = default;
-    line_t& operator = (line_t&& other) = default;
+    line_t& operator =(const line_t& other) = default;
+    line_t& operator =(line_t&& other) = default;
 
   public:
     line_t substr(size_t start, size_t length = npos) const
@@ -65,7 +68,9 @@ static size_t find_first_nonescaped(const std::string& line, char ch)
     /* Find first not-escaped # */
     size_t pos = 0;
     while (pos != std::string::npos && !is_nonescaped(line, ch, pos))
+    {
         pos = line.find(ch, pos + 1);
+    }
 
     return pos;
 }
@@ -78,11 +83,12 @@ line_t remove_escaped_sharps(const line_t& line)
     bool had_escape = false;
     for (auto& ch : line)
     {
-        if (ch == '#' && had_escape)
+        if ((ch == '#') && had_escape)
+        {
             result.pop_back();
+        }
 
-
-        result += ch;
+        result    += ch;
         had_escape = (ch == '\\');
     }
 
@@ -109,7 +115,9 @@ static lines_t remove_trailing_whitespace(const lines_t& lines)
     {
         auto result_line = line;
         while (!result_line.empty() && std::isspace(result_line.back()))
+        {
             result_line.pop_back();
+        }
 
         result.push_back(result_line);
     }
@@ -124,19 +132,25 @@ lines_t join_lines(const lines_t& lines)
 
     for (const auto& line : lines)
     {
-        if (in_concat_mode) {
+        if (in_concat_mode)
+        {
             assert(!result.empty());
             result.back() += line;
-        } else {
+        } else
+        {
             result.push_back(line);
         }
 
-        if (result.empty() || result.back().empty()) {
+        if (result.empty() || result.back().empty())
+        {
             in_concat_mode = false;
-        } else {
+        } else
+        {
             in_concat_mode = (result.back().back() == '\\');
             if (in_concat_mode) /* pop last \ */
+            {
                 result.back().pop_back();
+            }
 
             /* If last \ was escaped, we should ignore it */
             bool was_escaped =
@@ -154,7 +168,9 @@ lines_t skip_empty(const lines_t& lines)
     for (auto& line : lines)
     {
         if (!line.empty())
+        {
             result.push_back(line);
+        }
     }
 
     return result;
@@ -163,19 +179,27 @@ lines_t skip_empty(const lines_t& lines)
 static std::string ignore_leading_trailing_whitespace(const std::string& string)
 {
     if (string.empty())
+    {
         return "";
+    }
 
     size_t i = 0;
     size_t j = string.size() - 1;
     while (i < j && std::isspace(string[i]))
+    {
         ++i;
+    }
+
     while (i < j && std::isspace(string[j]))
+    {
         --j;
+    }
 
     return string.substr(i, j - i + 1);
 }
 
-enum option_parsing_result {
+enum option_parsing_result
+{
     /* Line was valid */
     OPTION_PARSED_OK,
     /* Line has wrong format */
@@ -196,22 +220,26 @@ static option_parsing_result parse_option_line(
 {
     size_t equal_sign = line.find_first_of("=");
     if (equal_sign == std::string::npos)
+    {
         return OPTION_PARSED_WRONG_FORMAT;
+    }
 
-    auto name = ignore_leading_trailing_whitespace(line.substr(0, equal_sign));
+    auto name  = ignore_leading_trailing_whitespace(line.substr(0, equal_sign));
     auto value = ignore_leading_trailing_whitespace(line.substr(equal_sign + 1));
 
     auto option = current_section.get_option_or(name);
     if (!option)
     {
         using namespace wf;
-        option = std::make_shared<config::option_t<std::string>> (name, "");
+        option = std::make_shared<config::option_t<std::string>>(name, "");
         option->set_value_str(value);
         current_section.register_new_option(option);
     }
 
     if (!option->set_value_str(value))
+    {
         return OPTION_PARSED_INVALID_CONTENTS;
+    }
 
     return OPTION_PARSED_OK;
 }
@@ -223,12 +251,14 @@ static option_parsing_result parse_option_line(
  *
  * @return nullptr if line is not a valid section, the section otherwise.
  */
-static std::shared_ptr<wf::config::section_t>
-    check_section(wf::config::config_manager_t& config, const line_t& line)
+static std::shared_ptr<wf::config::section_t> check_section(
+    wf::config::config_manager_t& config, const line_t& line)
 {
     auto name = ignore_leading_trailing_whitespace(line);
-    if (name.empty() || name.front() != '[' || name.back() != ']')
+    if (name.empty() || (name.front() != '[') || (name.back() != ']'))
+    {
         return {};
+    }
 
     auto real_name = name.substr(1, name.length() - 2);
 
@@ -239,7 +269,8 @@ static std::shared_ptr<wf::config::section_t>
         if (splitter != std::string::npos)
         {
             auto obj_type_name = real_name.substr(0, splitter);
-            auto section_name = real_name.substr(splitter + 1); // only for the empty check
+            auto section_name  = real_name.substr(splitter + 1); // only for the
+                                                                 // empty check
             if (!obj_type_name.empty() && !section_name.empty())
             {
                 auto parent_section = config.get_section(obj_type_name);
@@ -251,7 +282,8 @@ static std::shared_ptr<wf::config::section_t>
                 }
             }
         }
-        section = std::make_shared<wf::config::section_t> (real_name);
+
+        section = std::make_shared<wf::config::section_t>(real_name);
         config.merge_section(section);
     }
 
@@ -287,19 +319,21 @@ void wf::config::load_configuration_options_from_string(
         }
 
         auto status = parse_option_line(*current_section, line);
-        switch(status)
+        switch (status)
         {
-            case OPTION_PARSED_WRONG_FORMAT:
-                LOGE("Error in file ", source_name, ":",
-                    line.source_line_number, ", invalid option format ",
-                    "(allowed <option_name> = <value>)");
-                break;
-            case OPTION_PARSED_INVALID_CONTENTS:
-                LOGE("Error in file ", source_name, ":",
-                    line.source_line_number, ", invalid option value!");
-                break;
-            default:
-                break;
+          case OPTION_PARSED_WRONG_FORMAT:
+            LOGE("Error in file ", source_name, ":",
+                line.source_line_number, ", invalid option format ",
+                "(allowed <option_name> = <value>)");
+            break;
+
+          case OPTION_PARSED_INVALID_CONTENTS:
+            LOGE("Error in file ", source_name, ":",
+                line.source_line_number, ", invalid option value!");
+            break;
+
+          default:
+            break;
         }
     }
 }
@@ -331,13 +365,17 @@ std::string wf::config::save_configuration_options_to_string(
             sharp = line.find_first_of("#", sharp + 2);
         }
 
-        if (!line.empty() && line.back() == '\\')
+        if (!line.empty() && (line.back() == '\\'))
+        {
             line += '\\';
+        }
     }
 
     std::string result;
     for (const auto& line : lines)
+    {
         result += line + "\n";
+    }
 
     return result;
 }
@@ -352,21 +390,21 @@ static std::string load_file_contents(const std::string& file)
 }
 
 bool wf::config::load_configuration_options_from_file(config_manager_t& manager,
-	const std::string& file)
+    const std::string& file)
 {
     /* Try to lock the file */
-	auto fd = open(file.c_str(), O_RDONLY);
-	if (flock(fd, LOCK_SH | LOCK_NB))
-	{
-		close(fd);
-		return false;
+    auto fd = open(file.c_str(), O_RDONLY);
+    if (flock(fd, LOCK_SH | LOCK_NB))
+    {
+        close(fd);
+        return false;
     }
 
     auto file_contents = load_file_contents(file);
 
     /* Release lock */
     flock(fd, LOCK_UN);
-	close(fd);
+    close(fd);
 
     load_configuration_options_from_string(manager, file_contents, file);
     return true;
@@ -416,9 +454,9 @@ static xmlNodePtr find_section_start_node(const std::string& file)
     auto section = root->children;
     while (section != nullptr)
     {
-        if (section->type == XML_ELEMENT_NODE &&
-            ((const char*)section->name == (std::string)"plugin" ||
-             (const char*)section->name == (std::string)"object"))
+        if ((section->type == XML_ELEMENT_NODE) &&
+            (((const char*)section->name == (std::string)"plugin") ||
+             ((const char*)section->name == (std::string)"object")))
         {
             break;
         }
@@ -429,7 +467,8 @@ static xmlNodePtr find_section_start_node(const std::string& file)
     return section;
 }
 
-static wf::config::config_manager_t load_xml_files(const std::vector<std::string>& xmldirs)
+static wf::config::config_manager_t load_xml_files(
+    const std::vector<std::string>& xmldirs)
 {
     wf::config::config_manager_t manager;
 
@@ -446,12 +485,14 @@ static wf::config::config_manager_t load_xml_files(const std::vector<std::string
         struct dirent *entry;
         while ((entry = readdir(xmld)) != NULL)
         {
-            if (entry->d_type != DT_LNK && entry->d_type != DT_REG)
+            if ((entry->d_type != DT_LNK) && (entry->d_type != DT_REG))
+            {
                 continue;
+            }
 
             std::string filename = xmldir + '/' + entry->d_name;
-            if (filename.length() > 4 &&
-                filename.rfind(".xml") == filename.length() - 4)
+            if ((filename.length() > 4) &&
+                (filename.rfind(".xml") == filename.length() - 4))
             {
                 LOGI("Reading XML configuration options from file ", filename);
                 auto node = find_section_start_node(filename);
@@ -480,12 +521,12 @@ void override_defaults(wf::config::config_manager_t& manager,
     {
         for (auto& option : section->get_registered_options())
         {
-            auto full_name = section->get_name() + '/' + option->get_name();
+            auto full_name   = section->get_name() + '/' + option->get_name();
             auto real_option = manager.get_option(full_name);
             if (real_option)
             {
                 if (!real_option->set_default_value_str(
-                        option->get_value_str()))
+                    option->get_value_str()))
                 {
                     LOGW("Invalid value for ", full_name, " in ", sysconf);
                 } else
@@ -495,7 +536,7 @@ void override_defaults(wf::config::config_manager_t& manager,
                 }
             } else
             {
-                LOGW("Unused default value for " ,full_name, " in ", sysconf);
+                LOGW("Unused default value for ", full_name, " in ", sysconf);
             }
         }
     }

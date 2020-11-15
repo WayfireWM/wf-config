@@ -12,26 +12,26 @@ using namespace wf::option_type;
 
 TEST_CASE("wf::bool_wrapper_t")
 {
-    CHECK(from_string<bool> ("True").value());
-    CHECK(from_string<bool> ("true").value());
-    CHECK(from_string<bool> ("TRUE").value());
-    CHECK(from_string<bool> ("TrUe").value());
-    CHECK(from_string<bool> ("1").value());
+    CHECK(from_string<bool>("True").value());
+    CHECK(from_string<bool>("true").value());
+    CHECK(from_string<bool>("TRUE").value());
+    CHECK(from_string<bool>("TrUe").value());
+    CHECK(from_string<bool>("1").value());
 
-    CHECK(from_string<bool> ("False").value() == false);
-    CHECK(from_string<bool> ("false").value() == false);
-    CHECK(from_string<bool> ("FALSE").value() == false);
-    CHECK(from_string<bool> ("FaLSe").value() == false);
-    CHECK(from_string<bool> ("0").value() == false);
+    CHECK(from_string<bool>("False").value() == false);
+    CHECK(from_string<bool>("false").value() == false);
+    CHECK(from_string<bool>("FALSE").value() == false);
+    CHECK(from_string<bool>("FaLSe").value() == false);
+    CHECK(from_string<bool>("0").value() == false);
 
-    CHECK(!from_string<bool> ("rip"));
-    CHECK(!from_string<bool> ("1234"));
-    CHECK(!from_string<bool> (""));
-    CHECK(!from_string<bool> ("1h"));
-    CHECK(!from_string<bool> ("trueeee"));
+    CHECK(!from_string<bool>("rip"));
+    CHECK(!from_string<bool>("1234"));
+    CHECK(!from_string<bool>(""));
+    CHECK(!from_string<bool>("1h"));
+    CHECK(!from_string<bool>("trueeee"));
 
-    CHECK(from_string<bool> (to_string<bool> (true)).value());
-    CHECK(from_string<bool> (to_string<bool> (false)).value() == false);
+    CHECK(from_string<bool>(to_string<bool>(true)).value());
+    CHECK(from_string<bool>(to_string<bool>(false)).value() == false);
 }
 
 TEST_CASE("wf::int_wrapper_t")
@@ -66,7 +66,8 @@ TEST_CASE("wf::double_wrapper_t")
     CHECK(!from_string<double>(""));
     CHECK(!from_string<double>("abc"));
 
-    CHECK(from_string<double>(to_string<double>(-4.56)).value() == doctest::Approx(-4.56));
+    CHECK(from_string<double>(to_string<double>(-4.56)).value() ==
+        doctest::Approx(-4.56));
     CHECK(from_string<double>(to_string<double>(0.0)).value() == doctest::Approx(0));
 }
 
@@ -101,7 +102,8 @@ TEST_CASE("wf::color_t")
         0.4, 0.8, 0.3686274, 0.9686274);
     check_color_equals(from_string<color_t>("#0F0F"), 0, 1, 0, 1);
 
-    check_color_equals(from_string<color_t>("0.34 0.5 0.5 1.0"), 0.34, 0.5, 0.5, 1.0);
+    check_color_equals(from_string<color_t>("0.34 0.5 0.5 1.0"), 0.34, 0.5, 0.5,
+        1.0);
 
     CHECK(!from_string<color_t>("#FFF"));
     CHECK(!from_string<color_t>("0C1A"));
@@ -113,7 +115,8 @@ TEST_CASE("wf::color_t")
     CHECK(!from_string<color_t>("1.0 0.5")); // invalid color
 
     CHECK(to_string<color_t>(color_t{0, 0, 0, 0}) == "#00000000");
-    CHECK(to_string<color_t>(color_t{0.4, 0.8, 0.3686274, 0.9686274}) == "#66CC5EF7");
+    CHECK(to_string<color_t>(color_t{0.4, 0.8, 0.3686274,
+        0.9686274}) == "#66CC5EF7");
     CHECK(to_string<color_t>(color_t{1, 1, 1, 1}) == "#FFFFFFFF");
 }
 
@@ -121,7 +124,7 @@ TEST_CASE("wf::keybinding_t")
 {
     /* Test simple constructor */
     const uint32_t modifier1 =
-        wf::KEYBOARD_MODIFIER_ALT |wf::KEYBOARD_MODIFIER_LOGO;
+        wf::KEYBOARD_MODIFIER_ALT | wf::KEYBOARD_MODIFIER_LOGO;
     wf::keybinding_t binding1{modifier1, KEY_L};
     CHECK(binding1.get_modifiers() == modifier1);
     CHECK(binding1.get_key() == KEY_L);
@@ -283,8 +286,9 @@ TEST_CASE("wf::activatorbinding_t")
     touchgesture_t tg2{GESTURE_TYPE_PINCH, GESTURE_DIRECTION_IN, 4};
 
     auto test_binding = [&] (std::string description,
-        bool match_kb1, bool match_kb2, bool match_bb1, bool match_bb2,
-        bool match_tg1, bool match_tg2)
+                             bool match_kb1, bool match_kb2, bool match_bb1,
+                             bool match_bb2,
+                             bool match_tg1, bool match_tg2)
     {
         auto full_binding_opt = from_string<activatorbinding_t>(description);
         REQUIRE(full_binding_opt);
@@ -312,12 +316,35 @@ TEST_CASE("wf::activatorbinding_t")
                         for (auto t2 = 0; t2 <= 1; t2++)
                         {
                             std::string descr;
-                            if (k1) descr += to_string<keybinding_t>(kb1) + " | ";
-                            if (k2) descr += to_string<keybinding_t>(kb2) + " | ";
-                            if (b1) descr += to_string<buttonbinding_t>(bb1) + " | ";
-                            if (b2) descr += to_string<buttonbinding_t>(bb2) + " | ";
-                            if (t1) descr += to_string<touchgesture_t>(tg1) + " | ";
-                            if (t2) descr += to_string<touchgesture_t>(tg2) + " | ";
+                            if (k1)
+                            {
+                                descr += to_string<keybinding_t>(kb1) + " | ";
+                            }
+
+                            if (k2)
+                            {
+                                descr += to_string<keybinding_t>(kb2) + " | ";
+                            }
+
+                            if (b1)
+                            {
+                                descr += to_string<buttonbinding_t>(bb1) + " | ";
+                            }
+
+                            if (b2)
+                            {
+                                descr += to_string<buttonbinding_t>(bb2) + " | ";
+                            }
+
+                            if (t1)
+                            {
+                                descr += to_string<touchgesture_t>(tg1) + " | ";
+                            }
+
+                            if (t2)
+                            {
+                                descr += to_string<touchgesture_t>(tg2) + " | ";
+                            }
 
                             if (descr.length() >= 3)
                             {
@@ -327,7 +354,8 @@ TEST_CASE("wf::activatorbinding_t")
 
                             test_binding(descr, k1, k2, b1, b2, t1, t2);
                             CHECK(to_string<activatorbinding_t>(
-                                    from_string<activatorbinding_t>(descr).value()) == descr);
+                                from_string<activatorbinding_t>(
+                                    descr).value()) == descr);
                         }
                     }
                 }
