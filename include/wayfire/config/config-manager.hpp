@@ -48,14 +48,14 @@ class config_manager_t
      * get_option(std::string), but casts the result to the appropriate type.
      */
     template<class T>
-        std::shared_ptr<option_t<T>> get_option(const std::string& name) const
+    std::shared_ptr<option_t<T>> get_option(const std::string& name) const
     {
-        return std::dynamic_pointer_cast<option_t<T>> (get_option(name));
+        return std::dynamic_pointer_cast<option_t<T>>(get_option(name));
     }
 
     config_manager_t();
     config_manager_t(config_manager_t&& other);
-    config_manager_t& operator = (config_manager_t&& other);
+    config_manager_t& operator =(config_manager_t&& other);
 
     virtual ~config_manager_t();
 
@@ -63,6 +63,5 @@ class config_manager_t
     struct impl;
     std::unique_ptr<impl> priv;
 };
-
 }
 }

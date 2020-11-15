@@ -32,11 +32,14 @@ wf::config::option_base_t::option_base_t(const std::string& name)
     this->priv = std::make_unique<impl>();
     this->priv->name = name;
 }
+
 wf::config::option_base_t::~option_base_t() = default;
 
 void wf::config::option_base_t::notify_updated() const
 {
     auto to_call = priv->updated_handlers;
     for (auto& call : to_call)
+    {
         (*call)();
+    }
 }

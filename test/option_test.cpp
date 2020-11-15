@@ -9,21 +9,33 @@
  * A struct to check whether the maximum and minimum methods are enabled on the
  * template parameter class.
  */
-template<class U> struct are_bounds_enabled
+template<class U>
+struct are_bounds_enabled
 {
   private:
     template<class V>
-        static constexpr bool has_bounds(
-            decltype(&V::template set_maximum<>),
-            decltype(&V::template set_minimum<>),
-            decltype(&V::get_maximum),
-            decltype(&V::get_minimum)) { return true; }
+    static constexpr bool has_bounds(
+        decltype(&V::template set_maximum<>),
+        decltype(&V::template set_minimum<>),
+        decltype(&V::get_maximum),
+        decltype(&V::get_minimum))
+    {
+        return true;
+    }
 
     template<class V>
-        static constexpr bool has_bounds(...) { return false; }
+    static constexpr bool has_bounds(...)
+    {
+        return false;
+    }
+
   public:
-    enum {
-        value = has_bounds<U> (nullptr, nullptr, nullptr, nullptr),
+    enum
+    {
+        value = has_bounds<U>(nullptr,
+            nullptr,
+            nullptr,
+            nullptr),
     };
 };
 
@@ -53,13 +65,15 @@ TEST_CASE("wf::config::option_t<unboundable>")
     opt.reset_to_default();
     CHECK(opt.get_value() == binding1);
 
-    CHECK(wf::option_type::from_string<wf::keybinding_t>(opt.get_value_str()).value() == binding1);
+    CHECK(wf::option_type::from_string<wf::keybinding_t>(
+        opt.get_value_str()).value() == binding1);
 
     CHECK(opt.set_default_value_str("<super>KEY_T"));
     opt.reset_to_default();
     CHECK(opt.get_value() == binding2);
     CHECK(opt.get_default_value() == binding2);
-    CHECK(wf::option_type::from_string<wf::keybinding_t>(opt.get_default_value_str()) == binding2);
+    CHECK(wf::option_type::from_string<wf::keybinding_t>(
+        opt.get_default_value_str()) == binding2);
 
     CHECK(are_bounds_enabled<option_t<wf::keybinding_t>>::value == false);
     CHECK(are_bounds_enabled<option_t<wf::buttonbinding_t>>::value == false);
@@ -68,9 +82,13 @@ TEST_CASE("wf::config::option_t<unboundable>")
 
     int callback_called = 0, clone_callback_called = 0;
     wf::config::option_base_t::updated_callback_t
-    callback = [&] () { callback_called++; }, clone_callback = [&] () { clone_callback_called++; };
+        callback = [&] () { callback_called++; }, clone_callback = [&] ()
+    {
+        clone_callback_called++;
+    };
     opt.add_updated_handler(&callback);
-    auto clone = std::static_pointer_cast<option_t<wf::keybinding_t>>(opt.clone_option());
+    auto clone = std::static_pointer_cast<option_t<wf::keybinding_t>>(
+        opt.clone_option());
     CHECK(clone->get_name() == opt.get_name());
     CHECK(clone->get_default_value() == opt.get_default_value());
     CHECK(clone->get_value() == opt.get_value());

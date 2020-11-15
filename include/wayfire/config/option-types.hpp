@@ -14,7 +14,8 @@ namespace option_type
  * @param string The string representation of the value.
  * @return The parsed value, if the string was valid.
  */
-template<class Type> stdx::optional<Type> from_string(
+template<class Type>
+stdx::optional<Type> from_string(
     const std::string& string);
 
 /**
@@ -23,6 +24,7 @@ template<class Type> stdx::optional<Type> from_string(
  * @return The string representation of a value.
  *   It is expected that from_string(to_string(value)) == value.
  */
-template<class Type> std::string to_string(const Type& value);
+template<class Type>
+std::string to_string(const Type& value);
 }
 }

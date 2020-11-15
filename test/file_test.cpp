@@ -11,7 +11,8 @@
 #include <wayfire/util/log.hpp>
 #include <wayfire/config/types.hpp>
 
-const std::string contents = R"(
+const std::string contents =
+    R"(
 illegal_option = value
 
 [section1]
@@ -46,13 +47,13 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     config_manager_t config;
 
     /* Create the first section and add an option there */
-    auto section = std::make_shared<section_t> ("section1");
+    auto section = std::make_shared<section_t>("section1");
     section->register_new_option(
-        std::make_shared<option_t<int>> ("option1", 10));
+        std::make_shared<option_t<int>>("option1", 10));
     section->register_new_option(
-        std::make_shared<option_t<int>> ("option2", 5));
+        std::make_shared<option_t<int>>("option2", 5));
     section->register_new_option(
-        std::make_shared<option_t<std::string>> ("option4", std::string("option4")));
+        std::make_shared<option_t<std::string>>("option4", std::string("option4")));
 
     config.merge_section(section);
     load_configuration_options_from_string(config, contents, "test");
@@ -84,12 +85,14 @@ wf::config::config_manager_t build_simple_config()
 {
     using namespace wf;
     using namespace wf::config;
-    auto section1 = std::make_shared<section_t> ("section1");
-    auto section2 = std::make_shared<section_t> ("section2");
+    auto section1 = std::make_shared<section_t>("section1");
+    auto section2 = std::make_shared<section_t>("section2");
 
-    section1->register_new_option(std::make_shared<option_t<int>> ("option1", 4));
-    section1->register_new_option(std::make_shared<option_t<std::string>> ("option2", std::string("45 # 46 \\")));
-    section2->register_new_option(std::make_shared<option_t<double>> ("option1", 4.25));
+    section1->register_new_option(std::make_shared<option_t<int>>("option1", 4));
+    section1->register_new_option(std::make_shared<option_t<std::string>>("option2",
+        std::string("45 # 46 \\")));
+    section2->register_new_option(std::make_shared<option_t<double>>("option1",
+        4.25));
 
     config_manager_t config;
     config.merge_section(section1);
@@ -99,7 +102,7 @@ wf::config::config_manager_t build_simple_config()
 }
 
 std::string simple_config_source =
-R"([section1]
+    R"([section1]
 option1 = 4
 option2 = 45 \# 46 \\
 
@@ -177,9 +180,9 @@ TEST_CASE("wf::config::load_configuration_options_from_file - success")
 
     /* Init with one section */
     wf::config::config_manager_t manager;
-    auto s = std::make_shared<wf::config::section_t> ("section1");
+    auto s = std::make_shared<wf::config::section_t>("section1");
     s->register_new_option(
-        std::make_shared<wf::config::option_t<int>> ("option1", 1));
+        std::make_shared<wf::config::option_t<int>>("option1", 1));
     manager.merge_section(s);
 
     CHECK(load_configuration_options_from_file(manager, test_config));
@@ -189,7 +192,7 @@ TEST_CASE("wf::config::load_configuration_options_from_file - success")
 
 TEST_CASE("wf::config::save_configuration_to_file - success")
 {
-    std::string test_config =  std::string(TEST_SOURCE "/dummy.ini");
+    std::string test_config = std::string(TEST_SOURCE "/dummy.ini");
 
     {
         std::ofstream clr(test_config, std::ios::trunc | std::ios::ate);
@@ -214,9 +217,10 @@ TEST_CASE("wf::config::save_configuration_to_file - success")
 
 TEST_CASE("wf::config::build_configuration")
 {
-    wf::log::initialize_logging(std::cout, wf::log::LOG_LEVEL_DEBUG, wf::log::LOG_COLOR_MODE_ON);
-    std::string xmldir = std::string(TEST_SOURCE "/int_test/xml");
-    std::string sysconf = std::string(TEST_SOURCE "/int_test/sys.ini");
+    wf::log::initialize_logging(std::cout, wf::log::LOG_LEVEL_DEBUG,
+        wf::log::LOG_COLOR_MODE_ON);
+    std::string xmldir   = std::string(TEST_SOURCE "/int_test/xml");
+    std::string sysconf  = std::string(TEST_SOURCE "/int_test/sys.ini");
     std::string userconf = std::string(TEST_SOURCE "/int_test/config.ini");
 
     std::vector xmldirs(1, xmldir);
@@ -235,12 +239,12 @@ TEST_CASE("wf::config::build_configuration")
 
     using namespace wf;
     using namespace wf::config;
-    CHECK(std::dynamic_pointer_cast<option_t<int>> (o1) != nullptr);
-    CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o2) != nullptr);
-    CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o3) != nullptr);
-    CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o4) != nullptr);
-    CHECK(std::dynamic_pointer_cast<option_t<std::string>> (o5) != nullptr);
-    CHECK(std::dynamic_pointer_cast<option_t<int>> (o6) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<int>>(o1) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<std::string>>(o2) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<std::string>>(o3) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<std::string>>(o4) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<std::string>>(o5) != nullptr);
+    CHECK(std::dynamic_pointer_cast<option_t<int>>(o6) != nullptr);
 
     CHECK(o4->get_value_str() == "DoesNotExistInConfig");
     CHECK(o5->get_value_str() == "Option5Sys");

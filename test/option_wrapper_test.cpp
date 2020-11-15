@@ -10,16 +10,17 @@ template<class Type>
 class wrapper_t : public wf::base_option_wrapper_t<Type>
 {
   public:
-    wrapper_t() : wf::base_option_wrapper_t<Type> () {}
-    wrapper_t(const std::string& option)
-        : wf::base_option_wrapper_t<Type>()
+    wrapper_t() : wf::base_option_wrapper_t<Type>()
+    {}
+    wrapper_t(const std::string& option) :
+        wf::base_option_wrapper_t<Type>()
     {
         this->load_option(option);
     }
 
   protected:
-    std::shared_ptr<wf::config::option_base_t>
-        load_raw_option(const std::string& name) override
+    std::shared_ptr<wf::config::option_base_t> load_raw_option(
+        const std::string& name) override
     {
         return config.get_option(name);
     }
@@ -30,8 +31,8 @@ TEST_CASE("wf::base_option_wrapper_t")
     using namespace wf;
     using namespace wf::config;
 
-    auto section = std::make_shared<section_t> ("Test");
-    auto opt = std::make_shared<option_t<int>> ("Option1", 5);
+    auto section = std::make_shared<section_t>("Test");
+    auto opt     = std::make_shared<option_t<int>>("Option1", 5);
     section->register_new_option(opt);
     ::config.merge_section(section);
 
@@ -40,7 +41,8 @@ TEST_CASE("wf::base_option_wrapper_t")
     CHECK(wrapper == 5);
 
     bool updated = false;
-    wrapper.set_callback([&] () {
+    wrapper.set_callback([&] ()
+    {
         updated = true;
     });
     opt->set_value(6);

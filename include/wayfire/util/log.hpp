@@ -24,9 +24,9 @@ enum log_level_t
 enum color_mode_t
 {
     /** Color codes are on */
-    LOG_COLOR_MODE_ON   = 1,
+    LOG_COLOR_MODE_ON  = 1,
     /** Color codes are off */
-    LOG_COLOR_MODE_OFF  = 2,
+    LOG_COLOR_MODE_OFF = 2,
 };
 
 /**
@@ -65,15 +65,15 @@ void log_plain(log_level_t level, const std::string& contents,
 /**
  * A convenience wrapper around log_plain
  */
-#define LOG(level,...) wf::log::log_plain(level, \
+#define LOG(level, ...) \
+    wf::log::log_plain(level, \
     wf::log::detail::format_concat(__VA_ARGS__), __FILE__, __LINE__)
 
 /** Log a debug message */
 #define LOGD(...) LOG(wf::log::LOG_LEVEL_DEBUG, __VA_ARGS__)
 /** Log an info message */
-#define LOGI(...) LOG(wf::log::LOG_LEVEL_INFO,  __VA_ARGS__)
+#define LOGI(...) LOG(wf::log::LOG_LEVEL_INFO, __VA_ARGS__)
 /** Log a warning message */
-#define LOGW(...) LOG(wf::log::LOG_LEVEL_WARN,  __VA_ARGS__)
+#define LOGW(...) LOG(wf::log::LOG_LEVEL_WARN, __VA_ARGS__)
 /** Log an error message */
 #define LOGE(...) LOG(wf::log::LOG_LEVEL_ERROR, __VA_ARGS__)
-

@@ -30,8 +30,8 @@ namespace xml
  *  nullptr otherwise. The dynamic type of the option is
  *  wf::config::option_t<T>, depending on the type attribute of the xmlNode.
  */
-std::shared_ptr<wf::config::option_base_t>
-    create_option_from_xml_node(xmlNodePtr node);
+std::shared_ptr<wf::config::option_base_t> create_option_from_xml_node(
+    xmlNodePtr node);
 
 /**
  * Create a new section from the given xmlNode and add each successfully parsed
@@ -48,8 +48,7 @@ std::shared_ptr<wf::config::option_base_t>
  * @return nullptr if section name is missing from the xmlNode, and the
  *  generated config section otherwise.
  */
-std::shared_ptr<wf::config::section_t>
-    create_section_from_xml_node(xmlNodePtr node);
+std::shared_ptr<wf::config::section_t> create_section_from_xml_node(xmlNodePtr node);
 
 /**
  * Get the XML node which was used to create @option with

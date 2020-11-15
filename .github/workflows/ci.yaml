@@ -1,0 +1,24 @@
+name: CI
+
+on: [push, pull_request]
+jobs:
+  test_code_style:
+    name: "Check code style with uncrustify"
+    runs-on: ubuntu-latest
+    steps:
+        - run: sudo apt-get update
+        - run: sudo apt-get install -y git cmake gcc make
+        - uses: actions/checkout@v1
+        - run: git clone http://github.com/ammen99/uncrustify
+        - run: cd uncrustify && mkdir build && cd build && cmake ../ && make && cd ../../
+        - run: curl https://raw.githubusercontent.com/WayfireWM/wayfire/master/uncrustify.ini > uncrustify.ini
+        - run: git ls-files | grep "hpp$\|cpp$" | xargs ./uncrustify/build/uncrustify -c uncrustify.ini --check
+  run_tests:
+    name: "Check that tests do not break"
+    runs-on: ubuntu-latest
+    steps:
+        - run: sudo apt-get update
+        - run: sudo apt-get install -y git gcc meson libevdev-dev libxml2-dev libglm-dev
+        - uses: actions/checkout@v1
+        - run: meson build
+        - run: ninja -C build test

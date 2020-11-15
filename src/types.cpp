@@ -8,38 +8,46 @@
 #include <sstream>
 
 /* --------------------------- Primitive types ------------------------------ */
-template<> stdx::optional<bool>
-    wf::option_type::from_string(const std::string& value)
+template<>
+stdx::optional<bool> wf::option_type::from_string(const std::string& value)
 {
     std::string lowercase = value;
     for (auto& c : lowercase)
+    {
         c = std::tolower(c);
+    }
 
-    if (lowercase == "true" || lowercase == "1")
+    if ((lowercase == "true") || (lowercase == "1"))
+    {
         return true;
+    }
 
-    if (lowercase == "false" || lowercase == "0")
+    if ((lowercase == "false") || (lowercase == "0"))
+    {
         return false;
+    }
 
     return {};
 }
 
-template<> stdx::optional<int>
-    wf::option_type::from_string(const std::string& value)
+template<>
+stdx::optional<int> wf::option_type::from_string(const std::string& value)
 {
     std::istringstream in{value};
     int result;
     in >> result;
 
     if (value != std::to_string(result))
+    {
         return {};
+    }
 
     return result;
 }
 
 /** Attempt to parse a string as an double value */
-template<> stdx::optional<double>
-    wf::option_type::from_string(const std::string& value)
+template<>
+stdx::optional<double> wf::option_type::from_string(const std::string& value)
 {
     auto old = std::locale::global(std::locale::classic());
     std::istringstream in{value};
@@ -56,39 +64,44 @@ template<> stdx::optional<double>
     return result;
 }
 
-template<> stdx::optional<std::string>
-    wf::option_type::from_string(const std::string& value)
+template<>
+stdx::optional<std::string> wf::option_type::from_string(const std::string& value)
 {
     return value;
 }
 
-template<> std::string wf::option_type::to_string(
+template<>
+std::string wf::option_type::to_string(
     const bool& value)
 {
     return value ? "true" : "false";
 }
 
-template<> std::string wf::option_type::to_string(
+template<>
+std::string wf::option_type::to_string(
     const int& value)
 {
     return std::to_string(value);
 }
 
-template<> std::string wf::option_type::to_string(
+template<>
+std::string wf::option_type::to_string(
     const double& value)
 {
     return std::to_string(value);
 }
 
-template<> std::string wf::option_type::to_string(
+template<>
+std::string wf::option_type::to_string(
     const std::string& value)
 {
     return value;
 }
 
 /* ----------------------------- wf::color_t -------------------------------- */
-wf::color_t::color_t()
-    : color_t(0.0, 0.0, 0.0, 0.0) {}
+wf::color_t::color_t() :
+    color_t(0.0, 0.0, 0.0, 0.0)
+{}
 
 wf::color_t::color_t(double r, double g, double b, double a)
 {
@@ -98,8 +111,9 @@ wf::color_t::color_t(double r, double g, double b, double a)
     this->a = a;
 }
 
-wf::color_t::color_t(const glm::vec4& value)
-    : color_t(value.r, value.g, value.b, value.a) {}
+wf::color_t::color_t(const glm::vec4& value) :
+    color_t(value.r, value.g, value.b, value.a)
+{}
 
 static double hex_to_double(std::string value)
 {
@@ -107,8 +121,7 @@ static double hex_to_double(std::string value)
     return std::strtol(value.c_str(), &dummy, 16);
 }
 
-static stdx::optional<wf::color_t>
-    try_parse_rgba(const std::string& value)
+static stdx::optional<wf::color_t> try_parse_rgba(const std::string& value)
 {
     wf::color_t parsed = {0, 0, 0, 0};
     std::stringstream ss(value);
@@ -121,7 +134,6 @@ static stdx::optional<wf::color_t>
     std::string dummy;
     valid_color &= !(bool)(ss >> dummy);
 
-
     std::locale::global(old);
 
     return valid_color ? parsed : stdx::optional<wf::color_t>{};
@@ -129,26 +141,37 @@ static stdx::optional<wf::color_t>
 
 #include <iostream>
 static const std::string hex_digits = "0123456789ABCDEF";
-template<> stdx::optional<wf::color_t>
-    wf::option_type::from_string(const std::string& param_value)
+template<>
+stdx::optional<wf::color_t> wf::option_type::from_string(
+    const std::string& param_value)
 {
     auto value = param_value;
     for (auto& ch : value)
+    {
         ch = std::toupper(ch);
+    }
 
     auto as_rgba = try_parse_rgba(value);
     if (as_rgba)
+    {
         return as_rgba;
+    }
 
     /* Either #RGBA or #RRGGBBAA */
-    if (value.size() != 5 && value.size() != 9)
+    if ((value.size() != 5) && (value.size() != 9))
+    {
         return {};
+    }
 
     if (value[0] != '#')
+    {
         return {};
+    }
 
     if (value.find_first_not_of(hex_digits, 1) != std::string::npos)
+    {
         return {};
+    }
 
     double r, g, b, a;
 
@@ -159,7 +182,8 @@ template<> stdx::optional<wf::color_t>
         g = hex_to_double(value.substr(3, 2)) / 255.0;
         b = hex_to_double(value.substr(5, 2)) / 255.0;
         a = hex_to_double(value.substr(7, 2)) / 255.0;
-    } else {
+    } else
+    {
         assert(value.size() == 5);
         r = hex_to_double(value.substr(1, 1)) / 15.0;
         g = hex_to_double(value.substr(2, 1)) / 15.0;
@@ -170,7 +194,8 @@ template<> stdx::optional<wf::color_t>
     return wf::color_t{r, g, b, a};
 }
 
-template<> std::string wf::option_type::to_string(const color_t& value)
+template<>
+std::string wf::option_type::to_string(const color_t& value)
 {
     const int max_byte = 255;
     const int min_byte = 0;
@@ -189,10 +214,10 @@ template<> std::string wf::option_type::to_string(const color_t& value)
     };
 
     return "#" + to_hex(value.r * max_byte) + to_hex(value.g * max_byte) +
-        to_hex(value.b * max_byte) + to_hex(value.a * max_byte);
+           to_hex(value.b * max_byte) + to_hex(value.a * max_byte);
 }
 
-bool wf::color_t::operator== (const color_t& other) const
+bool wf::color_t::operator ==(const color_t& other) const
 {
     constexpr double epsilon = 1e-6;
 
@@ -237,11 +262,13 @@ static std::vector<std::string> split_at(std::string value, std::string at,
     std::vector<std::string> tokens;
     for (size_t i = 1; i < split_positions.size(); i++)
     {
-        if (split_positions[i] == split_positions[i - 1] + 1 && !allow_empty)
+        if ((split_positions[i] == split_positions[i - 1] + 1) && !allow_empty)
+        {
             continue; // skip empty tokens
+        }
 
         tokens.push_back(value.substr(split_positions[i - 1] + 1,
-                split_positions[i] - split_positions[i - 1] - 1));
+            split_positions[i] - split_positions[i - 1] - 1));
     }
 
     return tokens;
@@ -261,7 +288,9 @@ static std::string binding_to_string(general_binding_t binding)
     for (auto& pair : modifier_names)
     {
         if (binding.mods & pair.second)
+        {
             result += "<" + pair.first + "> ";
+        }
     }
 
     if (binding.value > 0)
@@ -283,7 +312,9 @@ static std::string filter_out(std::string value, std::string filter)
     for (auto& c : value)
     {
         if (filter.find(c) != std::string::npos)
+        {
             continue;
+        }
 
         result += c;
     }
@@ -293,14 +324,14 @@ static std::string filter_out(std::string value, std::string filter)
 
 static const std::string whitespace_chars = " \t\n\r\v\b";
 
-static stdx::optional<general_binding_t>
-    parse_binding(std::string binding_description)
+static stdx::optional<general_binding_t> parse_binding(
+    std::string binding_description)
 {
     /* Handle disabled bindings */
     auto binding_descr_no_whitespace =
         filter_out(binding_description, whitespace_chars);
-    if (binding_descr_no_whitespace == "none" ||
-        binding_descr_no_whitespace == "disabled")
+    if ((binding_descr_no_whitespace == "none") ||
+        (binding_descr_no_whitespace == "disabled"))
     {
         return general_binding_t{false, 0, 0};
     }
@@ -311,14 +342,18 @@ static stdx::optional<general_binding_t>
     static const std::string delims = "<>" + whitespace_chars;
     auto tokens = split_at(binding_description, delims);
     if (tokens.empty())
+    {
         return {};
+    }
 
     general_binding_t result = {true, 0, 0};
     for (size_t i = 0; i < tokens.size() - 1; i++)
     {
-        if (modifier_names.count(tokens[i])) {
+        if (modifier_names.count(tokens[i]))
+        {
             result.mods |= modifier_names[tokens[i]];
-        } else {
+        } else
+        {
             return {}; // invalid modifier
         }
     }
@@ -328,10 +363,12 @@ static stdx::optional<general_binding_t>
     {
         /* Last token might either be yet another modifier (in case of modifier
          * bindings) or it may be KEY_*. If neither, we have invalid binding */
-        if (modifier_names.count(tokens.back())) {
+        if (modifier_names.count(tokens.back()))
+        {
             result.mods |= modifier_names[tokens.back()];
             code = 0;
-        } else {
+        } else
+        {
             return {}; // not found
         }
     }
@@ -351,53 +388,65 @@ static stdx::optional<general_binding_t>
     {
         filtered_with_spaces += c;
         if (c == '>')
+        {
             filtered_with_spaces += " ";
+        }
     }
 
     auto minimal_descr = binding_to_string(result);
     if (filtered_with_spaces.length() == minimal_descr.length())
+    {
         return result;
+    }
 
     return {};
 }
 
 wf::keybinding_t::keybinding_t(uint32_t modifier, uint32_t keyval)
 {
-    this->mod = modifier;
+    this->mod    = modifier;
     this->keyval = keyval;
 }
 
-template<> stdx::optional<wf::keybinding_t>
-    wf::option_type::from_string(const std::string& description)
+template<>
+stdx::optional<wf::keybinding_t> wf::option_type::from_string(
+    const std::string& description)
 {
     auto parsed_opt = parse_binding(description);
     if (!parsed_opt)
-        return {};
-
-    auto parsed = parsed_opt.value();
-
-    /* Disallow buttons, because evdev treats buttons and keys the same */
-    if (parsed.enabled && parsed.value > 0 &&
-        description.find("KEY") == std::string::npos)
     {
         return {};
     }
 
-    if (parsed.enabled && parsed.mods == 0 && parsed.value == 0)
+    auto parsed = parsed_opt.value();
+
+    /* Disallow buttons, because evdev treats buttons and keys the same */
+    if (parsed.enabled && (parsed.value > 0) &&
+        (description.find("KEY") == std::string::npos))
+    {
         return {};
+    }
+
+    if (parsed.enabled && (parsed.mods == 0) && (parsed.value == 0))
+    {
+        return {};
+    }
 
     return wf::keybinding_t{parsed.mods, parsed.value};
 }
 
-template<> std::string wf::option_type::to_string(const wf::keybinding_t& value)
+template<>
+std::string wf::option_type::to_string(const wf::keybinding_t& value)
 {
-    if (value.get_modifiers() == 0 && value.get_key() == 0)
+    if ((value.get_modifiers() == 0) && (value.get_key() == 0))
+    {
         return "none";
+    }
 
     return binding_to_string({true, value.get_modifiers(), value.get_key()});
 }
 
-bool wf::keybinding_t::operator == (const keybinding_t& other) const
+bool wf::keybinding_t::operator ==(const keybinding_t& other) const
 {
     return this->mod == other.mod && this->keyval == other.keyval;
 }
@@ -417,41 +466,53 @@ uint32_t wf::keybinding_t::get_key() const
 /* -------------------------- wf::buttonbinding_t --------------------------- */
 wf::buttonbinding_t::buttonbinding_t(uint32_t modifier, uint32_t buttonval)
 {
-    this->mod = modifier;
+    this->mod    = modifier;
     this->button = buttonval;
 }
 
-template<> stdx::optional<wf::buttonbinding_t>
-    wf::option_type::from_string(const std::string& description)
+template<>
+stdx::optional<wf::buttonbinding_t> wf::option_type::from_string(
+    const std::string& description)
 {
     auto parsed_opt = parse_binding(description);
     if (!parsed_opt)
+    {
         return {};
+    }
 
     auto parsed = parsed_opt.value();
     if (!parsed.enabled)
+    {
         return wf::buttonbinding_t{0, 0};
+    }
 
     /* Disallow keys, because evdev treats buttons and keys the same */
     if (description.find("BTN") == std::string::npos)
+    {
         return {};
+    }
 
     if (parsed.value == 0)
+    {
         return {};
+    }
 
     return wf::buttonbinding_t{parsed.mods, parsed.value};
 }
 
-template<> std::string wf::option_type::to_string(
+template<>
+std::string wf::option_type::to_string(
     const wf::buttonbinding_t& value)
 {
-    if (value.get_modifiers() == 0 && value.get_button() == 0)
+    if ((value.get_modifiers() == 0) && (value.get_button() == 0))
+    {
         return "none";
+    }
 
     return binding_to_string({true, value.get_modifiers(), value.get_button()});
 }
 
-bool wf::buttonbinding_t::operator == (const buttonbinding_t& other) const
+bool wf::buttonbinding_t::operator ==(const buttonbinding_t& other) const
 {
     return this->mod == other.mod && this->button == other.button;
 }
@@ -467,19 +528,19 @@ uint32_t wf::buttonbinding_t::get_button() const
 }
 
 wf::touchgesture_t::touchgesture_t(touch_gesture_type_t type, uint32_t direction,
-        int finger_count)
+    int finger_count)
 {
     this->type = type;
-    this->direction = direction;
+    this->direction    = direction;
     this->finger_count = finger_count;
 }
 
 static const std::map<std::string, wf::touch_gesture_direction_t>
 touch_gesture_direction_string_map =
 {
-    {"up",    wf::GESTURE_DIRECTION_UP},
-    {"down",  wf::GESTURE_DIRECTION_DOWN},
-    {"left",  wf::GESTURE_DIRECTION_LEFT},
+    {"up", wf::GESTURE_DIRECTION_UP},
+    {"down", wf::GESTURE_DIRECTION_DOWN},
+    {"left", wf::GESTURE_DIRECTION_LEFT},
     {"right", wf::GESTURE_DIRECTION_RIGHT}
 };
 
@@ -487,7 +548,9 @@ static wf::touch_gesture_direction_t parse_single_direction(
     const std::string& direction)
 {
     if (touch_gesture_direction_string_map.count(direction))
+    {
         return touch_gesture_direction_string_map.at(direction);
+    }
 
     throw std::domain_error("invalid swipe direction");
 }
@@ -501,7 +564,7 @@ uint32_t parse_direction(const std::string& direction)
     } else
     {
         /* we support up to 2 directions, because >= 3 will be invalid anyway */
-        auto first = direction.substr(0, hyphen);
+        auto first  = direction.substr(0, hyphen);
         auto second = direction.substr(hyphen + 1);
 
         uint32_t mask =
@@ -516,7 +579,7 @@ uint32_t parse_direction(const std::string& direction)
             ((mask & both_vert) == both_vert))
         {
             throw std::domain_error("Cannot have two opposing directions in the"
-                "same gesture");
+                                    "same gesture");
         }
 
         return mask;
@@ -526,13 +589,17 @@ uint32_t parse_direction(const std::string& direction)
 wf::touchgesture_t parse_gesture(const std::string& value)
 {
     if (value.empty())
+    {
         return {wf::GESTURE_TYPE_NONE, 0, 0};
+    }
 
     auto tokens = split_at(value, " \t\v\b\n\r");
     assert(!tokens.empty());
 
     if (tokens.size() != 3)
+    {
         return {wf::GESTURE_TYPE_NONE, 0, 0};
+    }
 
     try {
         wf::touch_gesture_type_t type;
@@ -542,25 +609,25 @@ wf::touchgesture_t parse_gesture(const std::string& value)
         if (tokens[0] == "pinch")
         {
             type = wf::GESTURE_TYPE_PINCH;
-            if (tokens[1] == "in") {
+            if (tokens[1] == "in")
+            {
                 direction = wf::GESTURE_DIRECTION_IN;
-            } else if (tokens[1] == "out") {
+            } else if (tokens[1] == "out")
+            {
                 direction = wf::GESTURE_DIRECTION_OUT;
-            } else {
+            } else
+            {
                 throw std::domain_error("Invalid pinch direction: " + tokens[1]);
             }
-        }
-        else if (tokens[0] == "swipe")
+        } else if (tokens[0] == "swipe")
         {
             type = wf::GESTURE_TYPE_SWIPE;
             direction = parse_direction(tokens[1]);
-        }
-        else if (tokens[0] == "edge-swipe")
+        } else if (tokens[0] == "edge-swipe")
         {
             type = wf::GESTURE_TYPE_EDGE_SWIPE;
             direction = parse_direction(tokens[1]);
-        }
-        else
+        } else
         {
             throw std::domain_error("Invalid gesture type:" + tokens[0]);
         }
@@ -577,16 +644,21 @@ wf::touchgesture_t parse_gesture(const std::string& value)
     return wf::touchgesture_t{wf::GESTURE_TYPE_NONE, 0, 0};
 }
 
-template<> stdx::optional<wf::touchgesture_t>
-    wf::option_type::from_string(const std::string& description)
+template<>
+stdx::optional<wf::touchgesture_t> wf::option_type::from_string(
+    const std::string& description)
 {
     auto as_binding = parse_binding(description);
     if (as_binding && !as_binding.value().enabled)
+    {
         return touchgesture_t{GESTURE_TYPE_NONE, 0, 0};
+    }
 
     auto gesture = parse_gesture(description);
     if (gesture.get_type() == GESTURE_TYPE_NONE)
+    {
         return {};
+    }
 
     return gesture;
 }
@@ -597,7 +669,9 @@ static std::string direction_to_string(uint32_t direction)
     for (auto& pair : touch_gesture_direction_string_map)
     {
         if (direction & pair.second)
+        {
             result += pair.first + "-";
+        }
     }
 
     if (result.size() > 0)
@@ -609,29 +683,38 @@ static std::string direction_to_string(uint32_t direction)
     return result;
 }
 
-template<> std::string wf::option_type::to_string(const touchgesture_t& value)
+template<>
+std::string wf::option_type::to_string(const touchgesture_t& value)
 {
     std::string result;
     switch (value.get_type())
     {
-        case GESTURE_TYPE_NONE:
-            return "";
-        case GESTURE_TYPE_EDGE_SWIPE:
-            result += "edge-";
-            // fallthrough
-        case GESTURE_TYPE_SWIPE:
-            result += "swipe ";
-            result += direction_to_string(value.get_direction()) + " ";
-            break;
+      case GESTURE_TYPE_NONE:
+        return "";
 
-        case GESTURE_TYPE_PINCH:
-            result += "pinch ";
+      case GESTURE_TYPE_EDGE_SWIPE:
+        result += "edge-";
 
-            if (value.get_direction() == GESTURE_DIRECTION_IN)
-                result += "in ";
-            if (value.get_direction() == GESTURE_DIRECTION_OUT)
-                result += "out ";
-            break;
+      // fallthrough
+      case GESTURE_TYPE_SWIPE:
+        result += "swipe ";
+        result += direction_to_string(value.get_direction()) + " ";
+        break;
+
+      case GESTURE_TYPE_PINCH:
+        result += "pinch ";
+
+        if (value.get_direction() == GESTURE_DIRECTION_IN)
+        {
+            result += "in ";
+        }
+
+        if (value.get_direction() == GESTURE_DIRECTION_OUT)
+        {
+            result += "out ";
+        }
+
+        break;
     }
 
     result += std::to_string(value.get_finger_count());
@@ -653,10 +736,10 @@ uint32_t wf::touchgesture_t::get_direction() const
     return this->direction;
 }
 
-bool wf::touchgesture_t::operator == (const touchgesture_t& other) const
+bool wf::touchgesture_t::operator ==(const touchgesture_t& other) const
 {
     return type == other.type && finger_count == other.finger_count &&
-        (direction == 0 || other.direction == 0 || direction == other.direction);
+           (direction == 0 || other.direction == 0 || direction == other.direction);
 }
 
 /* --------------------------- activatorbinding_t --------------------------- */
@@ -669,26 +752,29 @@ struct wf::activatorbinding_t::impl
 
 wf::activatorbinding_t::activatorbinding_t()
 {
-    this->priv = std::make_unique<impl> ();
+    this->priv = std::make_unique<impl>();
 }
 
 wf::activatorbinding_t::~activatorbinding_t() = default;
 
 wf::activatorbinding_t::activatorbinding_t(const activatorbinding_t& other)
 {
-    this->priv = std::make_unique<impl> (*other.priv);
+    this->priv = std::make_unique<impl>(*other.priv);
 }
 
-wf::activatorbinding_t& wf::activatorbinding_t::operator= (
+wf::activatorbinding_t& wf::activatorbinding_t::operator =(
     const activatorbinding_t& other)
 {
     if (&other != this)
-        this->priv = std::make_unique<impl> (*other.priv);
+    {
+        this->priv = std::make_unique<impl>(*other.priv);
+    }
 
     return *this;
 }
 
-template<class Type> bool try_add_binding(
+template<class Type>
+bool try_add_binding(
     std::vector<Type>& to, const std::string& value)
 {
     auto binding = wf::option_type::from_string<Type>(value);
@@ -701,13 +787,16 @@ template<class Type> bool try_add_binding(
     return false;
 }
 
-template<> stdx::optional<wf::activatorbinding_t>
-    wf::option_type::from_string(const std::string& string)
+template<>
+stdx::optional<wf::activatorbinding_t> wf::option_type::from_string(
+    const std::string& string)
 {
     activatorbinding_t binding;
 
     if (filter_out(string, whitespace_chars) == "")
+    {
         return binding; // empty binding
+    }
 
     auto tokens = split_at(string, "|", true);
     for (auto& token : tokens)
@@ -718,7 +807,9 @@ template<> stdx::optional<wf::activatorbinding_t>
             try_add_binding(binding.priv->gestures, token);
 
         if (!is_valid_binding)
+        {
             return {};
+        }
     }
 
     return binding;
@@ -737,7 +828,8 @@ static std::string concatenate_bindings(const std::vector<Type>& bindings)
     return repr;
 }
 
-template<> std::string wf::option_type::to_string(
+template<>
+std::string wf::option_type::to_string(
     const activatorbinding_t& value)
 {
     std::string repr =
@@ -747,12 +839,15 @@ template<> std::string wf::option_type::to_string(
 
     /* Remove trailing " | " */
     if (repr.size() >= 3)
+    {
         repr.erase(repr.size() - 3);
+    }
 
     return repr;
 }
 
-template<class Type> bool find_in_container(const std::vector<Type>& haystack,
+template<class Type>
+bool find_in_container(const std::vector<Type>& haystack,
     Type needle)
 {
     return std::find(haystack.begin(), haystack.end(), needle) != haystack.end();
@@ -773,9 +868,9 @@ bool wf::activatorbinding_t::has_match(const touchgesture_t& gesture) const
     return find_in_container(priv->gestures, gesture);
 }
 
-bool wf::activatorbinding_t::operator == (const activatorbinding_t& other) const
+bool wf::activatorbinding_t::operator ==(const activatorbinding_t& other) const
 {
     return priv->keys == other.priv->keys &&
-        priv->buttons == other.priv->buttons &&
-        priv->gestures == other.priv->gestures;
+           priv->buttons == other.priv->buttons &&
+           priv->gestures == other.priv->gestures;
 }
