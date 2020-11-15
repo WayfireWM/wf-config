@@ -874,13 +874,13 @@ bool wf::activatorbinding_t::has_match(const touchgesture_t& gesture) const
 bool wf::activatorbinding_t::operator ==(const activatorbinding_t& other) const
 {
     return priv->keys == other.priv->keys &&
-        priv->buttons == other.priv->buttons &&
-        priv->gestures == other.priv->gestures &&
-        priv->hotspots == other.priv->hotspots;
+           priv->buttons == other.priv->buttons &&
+           priv->gestures == other.priv->gestures &&
+           priv->hotspots == other.priv->hotspots;
 }
 
-const std::vector<wf::hotspot_binding_t>&
-wf::activatorbinding_t::get_hotspots() const
+const std::vector<wf::hotspot_binding_t>& wf::activatorbinding_t::get_hotspots()
+const
 {
     return priv->hotspots;
 }
@@ -888,16 +888,16 @@ wf::activatorbinding_t::get_hotspots() const
 wf::hotspot_binding_t::hotspot_binding_t(uint32_t edges,
     int32_t along_edge, int32_t away_from_edge, int32_t timeout)
 {
-    this->edges = edges;
-    this->along = along_edge;
-    this->away = away_from_edge;
+    this->edges   = edges;
+    this->along   = along_edge;
+    this->away    = away_from_edge;
     this->timeout = timeout;
 }
 
-bool wf::hotspot_binding_t::operator== (const hotspot_binding_t& other) const
+bool wf::hotspot_binding_t::operator ==(const hotspot_binding_t& other) const
 {
     return edges == other.edges && along == other.along && away == other.away &&
-        timeout == other.timeout;
+           timeout == other.timeout;
 }
 
 int32_t wf::hotspot_binding_t::get_timeout() const
@@ -928,7 +928,8 @@ static std::map<std::string, wf::output_edge_t> hotspot_edges =
     {"right", wf::OUTPUT_EDGE_RIGHT},
 };
 
-template<> stdx::optional<wf::hotspot_binding_t> wf::option_type::from_string(
+template<>
+stdx::optional<wf::hotspot_binding_t> wf::option_type::from_string(
     const std::string& description)
 {
     std::istringstream stream{description};
@@ -954,11 +955,11 @@ template<> stdx::optional<wf::hotspot_binding_t> wf::option_type::from_string(
         edges = hotspot_edges[token];
     } else
     {
-        std::string first_direction = token.substr(0, hyphen);
+        std::string first_direction  = token.substr(0, hyphen);
         std::string second_direction = token.substr(hyphen + 1);
 
-        if (hotspot_edges.count(first_direction) == 0 ||
-            hotspot_edges.count(second_direction) == 0)
+        if ((hotspot_edges.count(first_direction) == 0) ||
+            (hotspot_edges.count(second_direction) == 0))
         {
             return {};
         }
@@ -984,7 +985,8 @@ template<> stdx::optional<wf::hotspot_binding_t> wf::option_type::from_string(
     return wf::hotspot_binding_t(edges, along, away, timeout.value());
 }
 
-template<> std::string wf::option_type::to_string(
+template<>
+std::string wf::option_type::to_string(
     const wf::hotspot_binding_t& value)
 {
     std::ostringstream out;
@@ -1003,6 +1005,7 @@ template<> std::string wf::option_type::to_string(
                 {
                     out << "-";
                 }
+
                 out << edge.first;
                 break;
             }
@@ -1012,7 +1015,8 @@ template<> std::string wf::option_type::to_string(
     find_edge(false);
     find_edge(true);
 
-    out << " " << value.get_size_along_edge() << "x" << value.get_size_away_from_edge()
-        << " " << value.get_timeout();
+    out << " " << value.get_size_along_edge() << "x" <<
+        value.get_size_away_from_edge() <<
+        " " << value.get_timeout();
     return out.str();
 }

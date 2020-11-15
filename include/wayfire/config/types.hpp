@@ -373,7 +373,7 @@ struct hotspot_binding_t
     hotspot_binding_t(uint32_t edges = 0, int32_t along_edge = 0,
         int32_t away_from_edge = 0, int32_t timeout = 0);
 
-    bool operator==(const hotspot_binding_t& other) const;
+    bool operator ==(const hotspot_binding_t& other) const;
 
     /** @return The edges this hotspot binding is on. */
     uint32_t get_edges() const;
@@ -402,11 +402,13 @@ namespace option_type
  * Format:
  * hotspot top|...|top-left|... <along>x<away> <timeout>
  */
-template<> stdx::optional<hotspot_binding_t> from_string(
+template<>
+stdx::optional<hotspot_binding_t> from_string(
     const std::string& description);
 
 /** Represent the hotspot binding as a string. */
-template<> std::string to_string(const hotspot_binding_t& value);
+template<>
+std::string to_string(const hotspot_binding_t& value);
 }
 
 /**

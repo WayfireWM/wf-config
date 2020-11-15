@@ -396,7 +396,8 @@ TEST_CASE("wf::activatorbinding_t")
 
     test_binding("none", 0, 0, 0, 0, 0, 0, 0);
     test_binding("disabled | none", 0, 0, 0, 0, 0, 0, 0);
-    test_binding("<alt>KEY_T|<alt>KEY_T|none|hotspot left 10x10 10", 1, 0, 0, 0, 0, 0, 1);
+    test_binding("<alt>KEY_T|<alt>KEY_T|none|hotspot left 10x10 10", 1, 0, 0, 0, 0,
+        0, 1);
 
     CHECK(!from_string<activatorbinding_t>("<alt> KEY_K || <alt> KEY_U"));
     CHECK(!from_string<activatorbinding_t>("<alt> KEY_K | thrash"));
