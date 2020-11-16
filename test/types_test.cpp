@@ -271,6 +271,31 @@ TEST_CASE("wf::touchgesture_t")
     CHECK(from_string<wt_t>(to_string<wt_t>(binding5)).value() == binding5);
 }
 
+TEST_CASE("wf::hotspot_binding_t")
+{
+    using hs = wf::hotspot_binding_t;
+    const uint32_t tl = OUTPUT_EDGE_TOP | OUTPUT_EDGE_LEFT;
+
+    // sanity check
+    auto h1 = hs(tl, 100, 20, 150);
+    CHECK(h1.get_edges() == tl);
+    CHECK(h1.get_size_along_edge() == 100);
+    CHECK(h1.get_size_away_from_edge() == 20);
+    CHECK(h1.get_timeout() == 150);
+
+    // parsing
+    CHECK(from_string<hs>("hotspot bottom 20x20 1500") ==
+        hs(OUTPUT_EDGE_BOTTOM, 20, 20, 1500));
+    CHECK(from_string<hs>(to_string(h1)) == h1);
+
+    // check parsing errors
+    CHECK(!from_string<hs>("top 10x10 10"));
+    CHECK(!from_string<hs>("hotspot topp 10x10 10"));
+    CHECK(!from_string<hs>("hotspot top 10x10 10 trailing"));
+    CHECK(!from_string<hs>("hotspot top 110 10"));
+    CHECK(!from_string<hs>("hotspot top 110"));
+}
+
 TEST_CASE("wf::activatorbinding_t")
 {
     using namespace wf;
@@ -285,10 +310,12 @@ TEST_CASE("wf::activatorbinding_t")
     touchgesture_t tg1{GESTURE_TYPE_SWIPE, GESTURE_DIRECTION_UP, 3};
     touchgesture_t tg2{GESTURE_TYPE_PINCH, GESTURE_DIRECTION_IN, 4};
 
+    hotspot_binding_t hs{OUTPUT_EDGE_LEFT, 10, 10, 10};
+
     auto test_binding = [&] (std::string description,
                              bool match_kb1, bool match_kb2, bool match_bb1,
                              bool match_bb2,
-                             bool match_tg1, bool match_tg2)
+                             bool match_tg1, bool match_tg2, bool match_hs)
     {
         auto full_binding_opt = from_string<activatorbinding_t>(description);
         REQUIRE(full_binding_opt);
@@ -300,6 +327,10 @@ TEST_CASE("wf::activatorbinding_t")
         CHECK(actbinding.has_match(bb2) == match_bb2);
         CHECK(actbinding.has_match(tg1) == match_tg1);
         CHECK(actbinding.has_match(tg2) == match_tg2);
+        if (match_hs)
+        {
+            CHECK(actbinding.get_hotspots() == std::vector{hs});
+        }
     };
 
     /** Test all possible combinations */
@@ -352,7 +383,7 @@ TEST_CASE("wf::activatorbinding_t")
                                 descr.erase(descr.size() - 3);
                             }
 
-                            test_binding(descr, k1, k2, b1, b2, t1, t2);
+                            test_binding(descr, k1, k2, b1, b2, t1, t2, false);
                             CHECK(to_string<activatorbinding_t>(
                                 from_string<activatorbinding_t>(
                                     descr).value()) == descr);
@@ -363,9 +394,10 @@ TEST_CASE("wf::activatorbinding_t")
         }
     }
 
-    test_binding("none", 0, 0, 0, 0, 0, 0);
-    test_binding("disabled | none", 0, 0, 0, 0, 0, 0);
-    test_binding("<alt>KEY_T|<alt>KEY_T|none", 1, 0, 0, 0, 0, 0);
+    test_binding("none", 0, 0, 0, 0, 0, 0, 0);
+    test_binding("disabled | none", 0, 0, 0, 0, 0, 0, 0);
+    test_binding("<alt>KEY_T|<alt>KEY_T|none|hotspot left 10x10 10", 1, 0, 0, 0, 0,
+        0, 1);
 
     CHECK(!from_string<activatorbinding_t>("<alt> KEY_K || <alt> KEY_U"));
     CHECK(!from_string<activatorbinding_t>("<alt> KEY_K | thrash"));

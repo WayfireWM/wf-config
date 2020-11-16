@@ -3,6 +3,7 @@
 #include <wayfire/config/option-types.hpp>
 #include <glm/vec4.hpp>
 #include <memory>
+#include <vector>
 
 namespace wf
 {
@@ -342,8 +343,77 @@ std::string to_string(const touchgesture_t& value);
 }
 
 /**
+ * The available edges of an output.
+ */
+enum output_edge_t
+{
+    OUTPUT_EDGE_LEFT   = (1 << 0),
+    OUTPUT_EDGE_RIGHT  = (1 << 1),
+    OUTPUT_EDGE_TOP    = (1 << 2),
+    OUTPUT_EDGE_BOTTOM = (1 << 3),
+};
+
+/**
+ * Represents a binding which can be activated by moving the mouse into a
+ * corner of the screen.
+ */
+struct hotspot_binding_t
+{
+    /**
+     * Initialize a hotspot with the given edges.
+     *
+     * @param edges The edges of the hotspot, a bitmask of output_edge_t
+     * @param along_edge The size of the hotspot alongside the edge(s)
+     *   it is located on.
+     * @param across_edge The size of the hotspot away from the edge(s)
+     *   it is located on.
+     * @param timeout The time in milliseconds needed for the mouse to stay
+     *   in the hotspot to activate it.
+     */
+    hotspot_binding_t(uint32_t edges = 0, int32_t along_edge = 0,
+        int32_t away_from_edge = 0, int32_t timeout = 0);
+
+    bool operator ==(const hotspot_binding_t& other) const;
+
+    /** @return The edges this hotspot binding is on. */
+    uint32_t get_edges() const;
+
+    /** @return The size along edges. */
+    int32_t get_size_along_edge() const;
+
+    /** @return The size away from edges. */
+    int32_t get_size_away_from_edge() const;
+
+    /** @return The timeout of the hotspot. */
+    int32_t get_timeout() const;
+
+  private:
+    uint32_t edges;
+    int32_t along;
+    int32_t away;
+    int32_t timeout;
+};
+
+namespace option_type
+{
+/**
+ * Construct a new hotspot_binding_t with the specified edges and size
+ *
+ * Format:
+ * hotspot top|...|top-left|... <along>x<away> <timeout>
+ */
+template<>
+stdx::optional<hotspot_binding_t> from_string(
+    const std::string& description);
+
+/** Represent the hotspot binding as a string. */
+template<>
+std::string to_string(const hotspot_binding_t& value);
+}
+
+/**
  * Represents a binding which can be activated via multiple actions -
- * keybindings, buttonbindings and touch gestures.
+ * keybindings, buttonbindings, touch gestures and hotspots.
  */
 struct activatorbinding_t
 {
@@ -368,6 +438,11 @@ struct activatorbinding_t
 
     /** @return true if the activator is activated by the given gesture. */
     bool has_match(const touchgesture_t& gesture) const;
+
+    /**
+     * @return A list of all hotspots which activate this binding.
+     */
+    const std::vector<wf::hotspot_binding_t>& get_hotspots() const;
 
     /**
      * Check equality of two activator bindings.
