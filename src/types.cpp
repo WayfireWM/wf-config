@@ -514,6 +514,11 @@ std::string wf::option_type::to_string(
 
 bool wf::buttonbinding_t::operator ==(const buttonbinding_t& other) const
 {
+    if ((this->mod == any_modifier) || (other.mod == any_modifier))
+    {
+        return this->button == other.button;
+    }
+
     return this->mod == other.mod && this->button == other.button;
 }
 

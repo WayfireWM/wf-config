@@ -221,6 +221,10 @@ struct buttonbinding_t
     /** @return The button of the buttonbinding */
     uint32_t get_button() const;
 
+    /** Constant to represent that a binding should match any (or no)
+     *  pressed modifiers. Only used internally, not exposed to users. */
+    static constexpr uint32_t any_modifier = (uint32_t)-1;
+
   private:
     /** The modifier mask of this keybinding */
     uint32_t mod;
