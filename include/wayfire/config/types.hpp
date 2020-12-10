@@ -546,6 +546,33 @@ struct mode_t
 
     mode_type_t type;
 };
+
+/**
+ * Represents the output's position.
+ */
+struct position_t
+{
+    /** Automatically positioned output. */
+    position_t();
+
+    /** Output positioned at a fixed position. */
+    position_t(int32_t x, int32_t y);
+
+    /** @return The configured X coordinate. */
+    int32_t get_x() const;
+    /** @return The configured X coordinate. */
+    int32_t get_y() const;
+
+    /** @return whether the output is automatically positioned. */
+    bool is_automatic_position() const;
+
+    bool operator ==(const position_t& other) const;
+
+  private:
+    int32_t x;
+    int32_t y;
+    bool automatic;
+};
 }
 
 namespace option_type
@@ -566,5 +593,20 @@ stdx::optional<output_config::mode_t> from_string(
 /** Represent the activator binding as a string. */
 template<>
 std::string to_string(const output_config::mode_t& value);
+
+/**
+ * Create an output position from its string description.
+ * The supported formats are:
+ *
+ * auto|default
+ * x , y
+ */
+template<>
+stdx::optional<output_config::position_t> from_string(
+    const std::string& string);
+
+/** Represent the activator binding as a string. */
+template<>
+std::string to_string(const output_config::position_t& value);
 }
 }

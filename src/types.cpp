@@ -1090,6 +1090,8 @@ bool wf::output_config::mode_t::operator ==(const mode_t& other) const
       case MODE_OFF:
         return true;
     }
+
+    return false;
 }
 
 template<>
@@ -1175,4 +1177,79 @@ std::string wf::option_type::to_string(const output_config::mode_t& value)
       case output_config::MODE_MIRROR:
         return "mirror " + value.get_mirror_from();
     }
+
+    return {};
+}
+
+wf::output_config::position_t::position_t()
+{
+    this->automatic = true;
+}
+
+wf::output_config::position_t::position_t(int32_t x, int32_t y)
+{
+    this->automatic = false;
+    this->x = x;
+    this->y = y;
+}
+
+int32_t wf::output_config::position_t::get_x() const
+{
+    return x;
+}
+
+int32_t wf::output_config::position_t::get_y() const
+{
+    return y;
+}
+
+bool wf::output_config::position_t::is_automatic_position() const
+{
+    return automatic;
+}
+
+bool wf::output_config::position_t::operator ==(const position_t& other) const
+{
+    if (is_automatic_position() != other.is_automatic_position())
+    {
+        return false;
+    }
+
+    if (is_automatic_position())
+    {
+        return true;
+    }
+
+    return x == other.x && y == other.y;
+}
+
+template<>
+stdx::optional<wf::output_config::position_t> wf::option_type::from_string(
+    const std::string& string)
+{
+    if ((string == "auto") || (string == "default"))
+    {
+        return wf::output_config::position_t();
+    }
+
+    int x, y;
+    char r;
+    if (sscanf(string.c_str(), "%d , %d%c", &x, &y, &r) != 2)
+    {
+        return {};
+    }
+
+    return wf::output_config::position_t(x, y);
+}
+
+/** Represent the activator binding as a string. */
+template<>
+std::string wf::option_type::to_string(const output_config::position_t& value)
+{
+    if (value.is_automatic_position())
+    {
+        return "auto";
+    }
+
+    return to_string(value.get_x()) + ", " + to_string(value.get_y());
 }
