@@ -403,3 +403,69 @@ TEST_CASE("wf::activatorbinding_t")
     CHECK(!from_string<activatorbinding_t>("<alt> KEY_K | thrash"));
     CHECK(!from_string<activatorbinding_t>("<alt> KEY_K |"));
 }
+
+TEST_CASE("wf::output_config::mode_t")
+{
+    using mt = wf::output_config::mode_t;
+    using namespace wf::output_config;
+
+    std::vector<mt> modes = {
+        mt{true},
+        mt{true},
+        mt{false},
+        mt{1920, 1080, 0},
+        mt{1920, 1080, 59000},
+        mt{1920, 1080, 59000},
+        mt{std::string{"eDP-1"}},
+    };
+
+    std::vector<mode_type_t> types = {
+        MODE_AUTO,
+        MODE_AUTO,
+        MODE_OFF,
+        MODE_RESOLUTION,
+        MODE_RESOLUTION,
+        MODE_RESOLUTION,
+        MODE_MIRROR,
+    };
+
+    std::vector<std::string> desc = {
+        "auto",
+        "default",
+        "off",
+        "1920 x 1080",
+        "1920x1080@59",
+        "1920x 1080 @ 59000",
+        "mirror    eDP-1",
+    };
+
+    std::vector<std::string> invalid = {
+        "mirroredp",
+        "autooo",
+        "192e x 1080",
+        "1920 1080",
+    };
+
+    CHECK(modes[3].get_refresh() == 0);
+    CHECK(modes[4].get_refresh() == 59000);
+    CHECK(modes[5].get_refresh() == 59000);
+    CHECK(modes[6].get_mirror_from() == "eDP-1");
+
+    for (size_t i = 0; i < modes.size(); i++)
+    {
+        CHECK(modes[i].get_type() == types[i]);
+        CHECK(from_string<mt>(desc[i]) == modes[i]);
+        CHECK(from_string<mt>(to_string(modes[i])) == modes[i]);
+
+        if (modes[i].get_type() == MODE_RESOLUTION)
+        {
+            CHECK(modes[i].get_width() == 1920);
+            CHECK(modes[i].get_height() == 1080);
+        }
+    }
+
+    for (auto& d : invalid)
+    {
+        CHECK(!from_string<mt>(d));
+    }
+}
