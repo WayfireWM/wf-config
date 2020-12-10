@@ -231,6 +231,12 @@ static const std::string xml_section_full =
     <option name="IntOption" type="int">
         <default>3</default>
     </option>
+    <option name="OutputModeOption" type="output::mode">
+        <default>1920x1080</default>
+    </option>
+    <option name="OutputPositionOption" type="output::position">
+        <default>0, 0</default>
+    </option>
     <group>
         <option name="BoolOption" type="bool">
             <default>true</default>
@@ -325,7 +331,8 @@ TEST_CASE("wf::config::xml::create_section")
 
         std::set<std::string> expected_names = {
             "KeyOption", "ButtonOption", "TouchOption", "ActivatorOption",
-            "IntOption", "DoubleOption", "BoolOption", "StringOption"};
+            "IntOption", "DoubleOption", "BoolOption", "StringOption",
+            "OutputModeOption", "OutputPositionOption"};
         CHECK(opt_names == expected_names);
         CHECK(wxml::get_section_xml_node(section) == section_root);
     }

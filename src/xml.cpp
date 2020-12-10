@@ -202,6 +202,12 @@ create_option_from_xml_node(xmlNodePtr node)
     } else if (type == "activator")
     {
         option = create_option<wf::activatorbinding_t>(name, default_value);
+    } else if (type == "output::mode")
+    {
+        option = create_option<wf::output_config::mode_t>(name, default_value);
+    } else if (type == "output::position")
+    {
+        option = create_option<wf::output_config::position_t>(name, default_value);
     } else
     {
         LOGE("Could not parse ", node->doc->URL,
