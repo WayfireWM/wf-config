@@ -1020,3 +1020,159 @@ std::string wf::option_type::to_string(
         " " << value.get_timeout();
     return out.str();
 }
+
+/* ------------------------- Output config types ---------------------------- */
+wf::output_config::mode_t::mode_t(bool auto_on)
+{
+    this->type = auto_on ? MODE_AUTO : MODE_OFF;
+}
+
+wf::output_config::mode_t::mode_t(int32_t width, int32_t height, int32_t refresh)
+{
+    this->type    = MODE_RESOLUTION;
+    this->width   = width;
+    this->height  = height;
+    this->refresh = refresh;
+}
+
+/**
+ * Initialize a mirror mode.
+ */
+wf::output_config::mode_t::mode_t(const std::string& mirror_from)
+{
+    this->type = MODE_MIRROR;
+    this->mirror_from = mirror_from;
+}
+
+/** @return The type of this mode. */
+wf::output_config::mode_type_t wf::output_config::mode_t::get_type() const
+{
+    return type;
+}
+
+int32_t wf::output_config::mode_t::get_width() const
+{
+    return width;
+}
+
+int32_t wf::output_config::mode_t::get_height() const
+{
+    return height;
+}
+
+int32_t wf::output_config::mode_t::get_refresh() const
+{
+    return refresh;
+}
+
+std::string wf::output_config::mode_t::get_mirror_from() const
+{
+    return mirror_from;
+}
+
+bool wf::output_config::mode_t::operator ==(const mode_t& other) const
+{
+    if (type != other.get_type())
+    {
+        return false;
+    }
+
+    switch (type)
+    {
+      case MODE_RESOLUTION:
+        return width == other.width && height == other.height &&
+               refresh == other.refresh;
+
+      case MODE_MIRROR:
+        return mirror_from == other.mirror_from;
+
+      case MODE_AUTO:
+      case MODE_OFF:
+        return true;
+    }
+}
+
+template<>
+stdx::optional<wf::output_config::mode_t> wf::option_type::from_string(
+    const std::string& string)
+{
+    if (string == "off")
+    {
+        return wf::output_config::mode_t{false};
+    }
+
+    if ((string == "auto") || (string == "default"))
+    {
+        return wf::output_config::mode_t{true};
+    }
+
+    if (string.substr(0, 6) == "mirror")
+    {
+        std::stringstream ss(string);
+        std::string from, dummy;
+        ss >> from; // the mirror word
+        if (!(ss >> from))
+        {
+            return {};
+        }
+
+        // trailing garbage
+        if (ss >> dummy)
+        {
+            return {};
+        }
+
+        return wf::output_config::mode_t{from};
+    }
+
+    int w, h, rr = 0;
+    char next;
+
+    int read = std::sscanf(string.c_str(), "%d x %d @ %d%c", &w, &h, &rr, &next);
+    if ((read < 2) || (read > 3))
+    {
+        return {};
+    }
+
+    if ((w < 0) || (h < 0) || (rr < 0))
+    {
+        return {};
+    }
+
+    // Ensure refresh rate in mHz
+    if (rr < 1000)
+    {
+        rr *= 1000;
+    }
+
+    return wf::output_config::mode_t{w, h, rr};
+}
+
+/** Represent the activator binding as a string. */
+template<>
+std::string wf::option_type::to_string(const output_config::mode_t& value)
+{
+    switch (value.get_type())
+    {
+      case output_config::MODE_AUTO:
+        return "auto";
+
+      case output_config::MODE_OFF:
+        return "off";
+
+      case output_config::MODE_RESOLUTION:
+        if (value.get_refresh() <= 0)
+        {
+            return to_string(value.get_width()) + "x" +
+                   to_string(value.get_height());
+        } else
+        {
+            return to_string(value.get_width()) + "x" +
+                   to_string(value.get_height()) + "@" + to_string(
+                value.get_refresh());
+        }
+
+      case output_config::MODE_MIRROR:
+        return "mirror " + value.get_mirror_from();
+    }
+}

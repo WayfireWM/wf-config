@@ -472,4 +472,99 @@ stdx::optional<activatorbinding_t> from_string(
 template<>
 std::string to_string(const activatorbinding_t& value);
 }
+
+/**
+ * Types which are related to various output options.
+ */
+namespace output_config
+{
+enum mode_type_t
+{
+    /** Output was configured in automatic mode. */
+    MODE_AUTO,
+    /** Output was configured to be turned off. */
+    MODE_OFF,
+    /** Output was configured with a given resolution. */
+    MODE_RESOLUTION,
+    /** Output was configured to be a mirror of another output. */
+    MODE_MIRROR,
+};
+
+/**
+ * Represents the output mode.
+ * It contains different values depending on the source.
+ */
+struct mode_t
+{
+    /**
+     * Initialize an OFF or AUTO mode.
+     *
+     * @param auto_on If true, the created mode will be an AUTO mode.
+     */
+    mode_t(bool auto_on = false);
+
+    /**
+     * Initialize the mode with source self.
+     *
+     * @param width The configured width.
+     * @param height The configured height.
+     * @param refresh The configured refresh rate, or 0 if undefined.
+     */
+    mode_t(int32_t width, int32_t height, int32_t refresh);
+
+    /**
+     * Initialize a mirror mode.
+     */
+    mode_t(const std::string& mirror_from);
+
+    /** @return The type of this mode. */
+    mode_type_t get_type() const;
+
+    /** @return The configured width, if applicable. */
+    int32_t get_width() const;
+    /** @return The configured height, if applicable. */
+    int32_t get_height() const;
+    /** @return The configured refresh rate, if applicable. */
+    int32_t get_refresh() const;
+
+    /** @return The configured mirror from output, if applicable. */
+    std::string get_mirror_from() const;
+
+    /**
+     * Check equality of two modes.
+     *
+     * @return true if the modes have the same source types and parameters.
+     */
+    bool operator ==(const mode_t& other) const;
+
+  private:
+    int32_t width;
+    int32_t height;
+    int32_t refresh;
+
+    std::string mirror_from;
+
+    mode_type_t type;
+};
+}
+
+namespace option_type
+{
+/**
+ * Create a mode from its string description.
+ * The supported formats are:
+ *
+ * For MODE_AUTO: auto|default
+ * For MODE_OFF: off
+ * For MODE_RESOLUTION: WxH[@RR]
+ * For MODE_MIRROR: mirror <output>
+ */
+template<>
+stdx::optional<output_config::mode_t> from_string(
+    const std::string& string);
+
+/** Represent the activator binding as a string. */
+template<>
+std::string to_string(const output_config::mode_t& value);
+}
 }
