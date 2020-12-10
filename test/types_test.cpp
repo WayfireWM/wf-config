@@ -469,3 +469,33 @@ TEST_CASE("wf::output_config::mode_t")
         CHECK(!from_string<mt>(d));
     }
 }
+
+TEST_CASE("wf::output_config::position_t")
+{
+    using pt = wf::output_config::position_t;
+    using namespace wf::output_config;
+
+    pt p1 = {0, 0};
+    pt p2 = {1920, -1080};
+
+    auto p1c = from_string<pt>("0, 0");
+    auto p2c = from_string<pt>("1920 , -1080");
+
+    CHECK(p2c.value().get_x() == 1920);
+    CHECK(p2c.value().get_y() == -1080);
+    CHECK(!p1c.value().is_automatic_position());
+    CHECK(!p2c.value().is_automatic_position());
+
+    CHECK(p1c == p1);
+    CHECK(p2c == p2);
+
+    CHECK(from_string<pt>(to_string<pt>(p1)) == p1);
+    CHECK(from_string<pt>(to_string<pt>(p2)) == p2);
+
+    CHECK(from_string<pt>("auto").value().is_automatic_position());
+    CHECK(from_string<pt>("default").value().is_automatic_position());
+
+    CHECK(!from_string<pt>("test"));
+    CHECK(!from_string<pt>("129 129"));
+    CHECK(!from_string<pt>("129,"));
+}
