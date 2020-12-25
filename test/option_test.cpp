@@ -2,8 +2,10 @@
 #include "doctest.h"
 
 #include <wayfire/config/option.hpp>
+#include <wayfire/config/compound-option.hpp>
 #include <wayfire/config/types.hpp>
 #include <linux/input-event-codes.h>
+#include <algorithm>
 
 /**
  * A struct to check whether the maximum and minimum methods are enabled on the
@@ -161,4 +163,71 @@ TEST_CASE("wf::config::option_t<boundable>")
 
     CHECK(are_bounds_enabled<option_t<int>>::value);
     CHECK(are_bounds_enabled<option_t<double>>::value);
+}
+
+TEST_CASE("compound options")
+{
+    using namespace wf;
+    using namespace wf::config;
+
+    compound_option_t::entries_t entries;
+    entries.push_back(std::make_unique<compound_option_entry_t<int>>("hey_"));
+    entries.push_back(std::make_unique<compound_option_entry_t<double>>("bey_"));
+
+    compound_option_t opt{"Test", std::move(entries)};
+
+    auto section = std::make_shared<section_t>("TestSection");
+    section->register_new_option(std::make_shared<option_t<int>>("hey_k1", 1));
+    section->register_new_option(std::make_shared<option_t<int>>("hey_k2", -12));
+    section->register_new_option(std::make_shared<option_t<double>>("bey_k1", 1.2));
+    section->register_new_option(std::make_shared<option_t<double>>("bey_k2",
+        3.1415));
+
+    // Not fully specified pairs
+    section->register_new_option(std::make_shared<option_t<double>>("hey_k3", 3));
+    section->register_new_option(std::make_shared<option_t<std::string>>("bey_k3",
+        "invalid value"));
+    section->register_new_option(std::make_shared<option_t<double>>("bey_k4", 3.5));
+
+    // Options which don't match anything
+    section->register_new_option(std::make_shared<option_t<double>>("hallo", 3.5));
+
+    opt.update_from_section(section);
+    auto values = opt.get_value<int, double>();
+
+    CHECK(values.size() == 2);
+    std::sort(values.begin(), values.end());
+
+    CHECK(std::get<0>(values[0]) == "k1");
+    CHECK(std::get<1>(values[0]) == 1);
+    CHECK(std::get<2>(values[0]) == 1.2);
+
+    CHECK(std::get<0>(values[1]) == "k2");
+    CHECK(std::get<1>(values[1]) == -12);
+    CHECK(std::get<2>(values[1]) == 3.1415);
+
+    compound_list_t<int, double> v = {
+        {"k3", 1, 1.23}
+    };
+
+    opt.set_value<int, double>(v);
+    CHECK(v == opt.get_value<int, double>());
+
+    compound_option_t::stored_type_t v2 = {
+        {"k3", "1", "1.23"}
+    };
+
+    CHECK(opt.set_value_untyped(v2));
+    CHECK(v == opt.get_value<int, double>());
+
+    // Fail to set
+    compound_option_t::stored_type_t v3 = {
+        {"k3", "1"}
+    };
+    CHECK(!opt.set_value_untyped(v3));
+
+    compound_option_t::stored_type_t v4 = {
+        {"k3", "1", "invalid double"}
+    };
+    CHECK(!opt.set_value_untyped(v4));
 }

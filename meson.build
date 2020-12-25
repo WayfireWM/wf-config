@@ -26,6 +26,7 @@ sources = [
 'src/config-manager.cpp',
 'src/file.cpp',
 'src/duration.cpp',
+'src/compound-option.cpp',
 ]
 
 wfconfig_inc = include_directories('include')
