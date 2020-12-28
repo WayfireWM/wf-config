@@ -1,6 +1,7 @@
 #include <wayfire/config/xml.hpp>
 #include <wayfire/config/types.hpp>
 #include <wayfire/util/log.hpp>
+#include <wayfire/config/compound-option.hpp>
 
 class xml_derived_element_t
 {
@@ -18,6 +19,13 @@ class xml_option_t :
 {
   public:
     using wf::config::option_t<T>::option_t;
+};
+
+class xml_compound_option_t :
+    public wf::config::compound_option_t, public xml_derived_element_t
+{
+  public:
+    using wf::config::compound_option_t::compound_option_t;
 };
 
 /**
@@ -126,6 +134,79 @@ bounds_error_t set_bounds(
     return BOUNDS_OK;
 }
 
+#define GET_XML_PROP_OR_BAIL(node, name, str) \
+    const char *name ## _ptr = (const char*)xmlGetProp(node, (const xmlChar*)(str)); \
+    if (!name ## _ptr) \
+    { \
+        LOGE("Could not parse ", (node)->doc->URL, \
+    ": XML node at line ", node->line, " is missing \"" #name "\" attribute."); \
+        return nullptr; \
+    } \
+    std::string name = name ## _ptr;
+
+template<class T>
+using entry_t = wf::config::compound_option_entry_t<T>;
+
+std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node,
+    const std::string& name)
+{
+    wf::config::compound_option_t::entries_t entries;
+    node = node->children;
+    while (node)
+    {
+        if ((node->type == XML_ELEMENT_NODE) &&
+            ((const char*)node->name == std::string{"entry"}))
+        {
+            // Found next item
+            GET_XML_PROP_OR_BAIL(node, prefix, "prefix");
+            GET_XML_PROP_OR_BAIL(node, type, "type");
+
+            if (type == "int")
+            {
+                entries.push_back(std::make_unique<entry_t<int>>(prefix));
+            } else if (type == "double")
+            {
+                entries.push_back(std::make_unique<entry_t<double>>(prefix));
+            } else if (type == "bool")
+            {
+                entries.push_back(std::make_unique<entry_t<bool>>(prefix));
+            } else if (type == "string")
+            {
+                entries.push_back(std::make_unique<entry_t<std::string>>(prefix));
+            } else if (type == "key")
+            {
+                entries.push_back(std::make_unique<entry_t<wf::keybinding_t>>(prefix));
+            } else if (type == "button")
+            {
+                entries.push_back(std::make_unique<entry_t<wf::buttonbinding_t>>(
+                    prefix));
+            } else if (type == "gesture")
+            {
+                entries.push_back(std::make_unique<entry_t<wf::touchgesture_t>>(
+                    prefix));
+            } else if (type == "color")
+            {
+                entries.push_back(std::make_unique<entry_t<wf::color_t>>(prefix));
+            } else if (type == "activator")
+            {
+                entries.push_back(std::make_unique<entry_t<wf::activatorbinding_t>>(
+                    prefix));
+            } else
+            {
+                LOGE("Could not parse ", node->doc->URL,
+                    ": option at line ", node->line,
+                    " has invalid type \"", type, "\"");
+                return nullptr;
+            }
+        }
+
+        node = node->next;
+    }
+
+    auto opt = new xml_compound_option_t{name, std::move(entries)};
+    return std::shared_ptr<wf::config::option_base_t>(opt);
+}
+
 std::shared_ptr<wf::config::option_base_t> wf::config::xml::
 create_option_from_xml_node(xmlNodePtr node)
 {
@@ -137,20 +218,18 @@ create_option_from_xml_node(xmlNodePtr node)
         return nullptr;
     }
 
-    auto name_ptr = xmlGetProp(node, (const xmlChar*)"name");
-    if (!name_ptr)
+    GET_XML_PROP_OR_BAIL(node, name, "name");
+    GET_XML_PROP_OR_BAIL(node, type, "type");
+    if (type == "dynamic-list")
     {
-        LOGE("Could not parse ", node->doc->URL,
-            ": option at line ", node->line, " is missing \"name\" attribute.");
-        return nullptr;
-    }
+        auto option = parse_compound_option(node, name);
+        if (option)
+        {
+            std::dynamic_pointer_cast<xml_derived_element_t>(option)
+            ->xml_node = node;
+        }
 
-    auto type_ptr = xmlGetProp(node, (const xmlChar*)"type");
-    if (!type_ptr)
-    {
-        LOGE("Could not parse ", node->doc->URL,
-            ": option at line ", node->line, " is missing \"type\" attribute.");
-        return nullptr;
+        return option;
     }
 
     auto default_value_ptr = extract_value(node, "default");
@@ -161,12 +240,10 @@ create_option_from_xml_node(xmlNodePtr node)
         return nullptr;
     }
 
+    std::string default_value = (const char*)default_value_ptr.value();
+
     auto min_value_ptr = extract_value(node, "min");
     auto max_value_ptr = extract_value(node, "max");
-
-    std::string name = (const char*)name_ptr;
-    std::string type = (const char*)type_ptr;
-    std::string default_value = (const char*)default_value_ptr.value();
 
     std::shared_ptr<wf::config::option_base_t> option;
     bounds_error_t bounds_error = BOUNDS_OK;
@@ -297,15 +374,8 @@ std::shared_ptr<wf::config::section_t> wf::config::xml::create_section_from_xml_
         return nullptr;
     }
 
-    auto name_ptr = xmlGetProp(node, (const xmlChar*)"name");
-    if (!name_ptr)
-    {
-        LOGE("Could not parse ", node->doc->URL,
-            ": section at line ", node->line, " is missing \"name\" attribute.");
-        return nullptr;
-    }
-
-    auto section = std::make_shared<xml_section_t>((const char*)name_ptr);
+    GET_XML_PROP_OR_BAIL(node, name, "name");
+    auto section = std::make_shared<xml_section_t>(name);
     section->xml_node = node;
     recursively_parse_section_node(node, section);
     return section;
