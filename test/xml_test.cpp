@@ -4,6 +4,7 @@
 
 #include <sstream>
 #include <wayfire/config/types.hpp>
+#include <wayfire/config/compound-option.hpp>
 #include <wayfire/config/xml.hpp>
 #include <wayfire/util/log.hpp>
 #include <linux/input-event-codes.h>
@@ -28,6 +29,36 @@ static const std::string xml_option_key =
     R"(
 <option name="KeyOption" type="key">
 <default>&lt;super&gt; KEY_E</default>
+</option>
+)";
+
+static const std::string xml_option_dyn_list =
+    R"(
+<option name="DynList" type="dynamic-list">
+<entry prefix="cmd_" type="string"/>
+<entry prefix="act_" type="activator"/>
+<unused/>
+</option>
+)";
+
+static const std::string xml_option_dyn_list_no_prefix =
+    R"(
+<option name="DynList" type="dynamic-list">
+<entry type="string"/>
+</option>
+)";
+
+static const std::string xml_option_dyn_list_no_type =
+    R"(
+<option name="DynList" type="dynamic-list">
+<entry prefix="pre_"/>
+</option>
+)";
+
+static const std::string xml_option_dyn_list_wrong_type =
+    R"(
+<option name="DynList" type="dynamic-list">
+<entry prefix="pre_" type="invalid"/>
 </option>
 )";
 
@@ -163,6 +194,28 @@ TEST_CASE("wf::config::xml::create_option")
         CHECK(wxml::get_option_xml_node(option) == option_node);
     }
 
+    SUBCASE("DynamicList")
+    {
+        auto option = initialize_option(xml_option_dyn_list);
+        REQUIRE(option != nullptr);
+
+        CHECK(option->get_name() == "DynList");
+
+        auto as_co =
+            std::dynamic_pointer_cast<wc::compound_option_t>(option);
+        REQUIRE(as_co != nullptr);
+
+        CHECK(as_co->get_value<std::string, wf::activatorbinding_t>() ==
+            wf::config::compound_list_t<std::string, wf::activatorbinding_t>{});
+
+        const auto& entries = as_co->get_entries();
+        REQUIRE(entries.size() == 2);
+        CHECK(
+            dynamic_cast<wc::compound_option_entry_t<std::string>*>(entries[0].get()));
+        CHECK(dynamic_cast<wc::compound_option_entry_t<wf::activatorbinding_t>*>(
+            entries[1].get()));
+    }
+
     /* Generate a subcase where the given xml source can't be parsed to an
      * option, and check that the output in the log is as expected. */
 #define SUBCASE_BAD_OPTION(subcase_name, xml_source, expected_log) \
@@ -196,6 +249,15 @@ TEST_CASE("wf::config::xml::create_option")
 
     SUBCASE_BAD_OPTION("Missing option default value",
         xml_option_missing_default_value, "no default value specified");
+
+    SUBCASE_BAD_OPTION("Dynamic list without prefix",
+        xml_option_dyn_list_no_prefix, "missing \"prefix\" attribute");
+
+    SUBCASE_BAD_OPTION("Dynamic list without type",
+        xml_option_dyn_list_no_type, "missing \"type\" attribute");
+
+    SUBCASE_BAD_OPTION("Dynamic list with invalid type",
+        xml_option_dyn_list_wrong_type, "invalid type");
 }
 
 /* ------------------------- create_section test ---------------------------- */
