@@ -10,6 +10,7 @@
 #include <wayfire/config/file.hpp>
 #include <wayfire/util/log.hpp>
 #include <wayfire/config/types.hpp>
+#include "wayfire/config/compound-option.hpp"
 
 const std::string contents =
     R"(
@@ -21,7 +22,8 @@ option2=3
 #Comment
 option3         = value value value      # Comment
 
-
+hey_a = 15
+bey_a = 1.2
 
 [section2]
 option1 = value 4 \
@@ -42,6 +44,14 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     wf::log::initialize_logging(log, wf::log::LOG_LEVEL_DEBUG,
         wf::log::LOG_COLOR_MODE_OFF);
 
+    using wf::config::compound_option_t;
+    using wf::config::compound_option_entry_t;
+
+    compound_option_t::entries_t entries;
+    entries.push_back(std::make_unique<compound_option_entry_t<int>>("hey_"));
+    entries.push_back(std::make_unique<compound_option_entry_t<double>>("bey_"));
+    auto opt = new compound_option_t{"option_list", std::move(entries)};
+
     using namespace wf;
     using namespace wf::config;
     config_manager_t config;
@@ -54,6 +64,7 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
         std::make_shared<option_t<int>>("option2", 5));
     section->register_new_option(
         std::make_shared<option_t<std::string>>("option4", std::string("option4")));
+    section->register_new_option(std::shared_ptr<option_base_t>(opt));
 
     config.merge_section(section);
     load_configuration_options_from_string(config, contents, "test");
@@ -75,10 +86,12 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     CHECK(s2->get_option("option3")->get_value_str() == "#No way");
     CHECK(!s2->get_option_or("Ignored"));
 
+    CHECK(opt->get_value<int, double>().size() == 1);
+
     EXPECT_LINE(log, "Error in file test:2");
     EXPECT_LINE(log, "Error in file test:5");
-    EXPECT_LINE(log, "Error in file test:19");
     EXPECT_LINE(log, "Error in file test:20");
+    EXPECT_LINE(log, "Error in file test:21");
 }
 
 wf::config::config_manager_t build_simple_config()
