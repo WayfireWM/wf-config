@@ -1,3 +1,4 @@
+#include <wayfire/config/compound-option.hpp>
 #include <wayfire/config/file.hpp>
 #include <wayfire/config/types.hpp>
 #include <wayfire/config/xml.hpp>
@@ -334,6 +335,18 @@ void wf::config::load_configuration_options_from_string(
 
           default:
             break;
+        }
+    }
+
+    for (auto section : config.get_all_sections())
+    {
+        for (auto opt : section->get_registered_options())
+        {
+            auto as_compound = std::dynamic_pointer_cast<compound_option_t>(opt);
+            if (as_compound)
+            {
+                as_compound->update_from_section(section);
+            }
         }
     }
 }

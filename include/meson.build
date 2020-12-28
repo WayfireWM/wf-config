@@ -6,7 +6,8 @@ headers_config = [
 'wayfire/config/types.hpp',
 'wayfire/config/file.hpp',
 'wayfire/config/option.hpp',
-'wayfire/config/option-wrapper.hpp'
+'wayfire/config/option-wrapper.hpp',
+'wayfire/config/compound-option.hpp',
 ]
 
 headers_util = [
