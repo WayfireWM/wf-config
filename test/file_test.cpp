@@ -107,6 +107,13 @@ wf::config::config_manager_t build_simple_config()
     section2->register_new_option(std::make_shared<option_t<double>>("option1",
         4.25));
 
+    compound_option_t::entries_t entries;
+    entries.push_back(std::make_unique<compound_option_entry_t<int>>("hey_"));
+    entries.push_back(std::make_unique<compound_option_entry_t<double>>("bey_"));
+    auto opt = new compound_option_t{"option_list", std::move(entries)};
+    opt->set_value(compound_list_t<int, double>{{"k1", 1, 1.2}});
+    section2->register_new_option(std::shared_ptr<compound_option_t>(opt));
+
     config_manager_t config;
     config.merge_section(section1);
     config.merge_section(section2);
@@ -120,6 +127,8 @@ option1 = 4
 option2 = 45 \# 46 \\
 
 [section2]
+bey_k1 = 1.200000
+hey_k1 = 1
 option1 = 4.250000
 
 )";
