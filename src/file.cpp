@@ -359,10 +359,42 @@ std::string wf::config::save_configuration_options_to_string(
     for (auto& section : config.get_all_sections())
     {
         lines.push_back("[" + section->get_name() + "]");
+
+        // Go through each option and add the necessary lines.
+        // Take care so that regular options overwrite compound options
+        // in case of conflict!
+        std::map<std::string, std::string> option_values;
         for (auto& option : section->get_registered_options())
         {
-            lines.push_back(
-                option->get_name() + " = " + option->get_value_str());
+            auto as_compound = std::dynamic_pointer_cast<compound_option_t>(option);
+            if (as_compound)
+            {
+                auto value = as_compound->get_value_untyped();
+                const auto& prefixes = as_compound->get_entries();
+
+                for (size_t i = 0; i < value.size(); i++)
+                {
+                    for (size_t j = 0; j < prefixes.size(); j++)
+                    {
+                        auto full_name = prefixes[j]->get_prefix() + value[i][0];
+                        option_values[full_name] = value[i][j + 1];
+                    }
+                }
+            }
+        }
+
+        for (auto& option : section->get_registered_options())
+        {
+            auto as_compound = std::dynamic_pointer_cast<compound_option_t>(option);
+            if (!as_compound)
+            {
+                option_values[option->get_name()] = option->get_value_str();
+            }
+        }
+
+        for (auto& [name, value] : option_values)
+        {
+            lines.push_back(name + " = " + value);
         }
 
         lines.push_back("");
