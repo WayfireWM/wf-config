@@ -69,15 +69,31 @@ class option_base_t
      */
     void rem_updated_handler(updated_callback_t *callback);
 
+    /**
+     * Set the lock status of an option, this is reference-counted.
+     *
+     * An option is unlocked by default. When an option is locked, the option
+     * should not be modified by any config backend (for ex. when reading from
+     * a file).
+     *
+     * Note that changing the value of the option manually still works.
+     */
+    void set_locked(bool locked = true);
+
+    /**
+     * Get the current locked status.
+     */
+    bool is_locked() const;
+
+    struct impl;
+    std::unique_ptr<impl> priv;
+
   protected:
     /** Construct a new option with the given name. */
     option_base_t(const std::string& name);
 
     /** Notify all watchers */
     void notify_updated() const;
-
-    struct impl;
-    std::unique_ptr<impl> priv;
 };
 
 /**
