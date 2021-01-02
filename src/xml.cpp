@@ -3,40 +3,8 @@
 #include <wayfire/util/log.hpp>
 #include <wayfire/config/compound-option.hpp>
 
-class xml_derived_element_t
-{
-  public:
-    xmlNodePtr xml_node;
-};
-
-/**
- * A XML option is the same as a normal option, however it also has access to
- * the XML node which was used to initially create the option.
- */
-template<class T>
-class xml_option_t :
-    public wf::config::option_t<T>, public xml_derived_element_t
-{
-  public:
-    using wf::config::option_t<T>::option_t;
-};
-
-class xml_compound_option_t :
-    public wf::config::compound_option_t, public xml_derived_element_t
-{
-  public:
-    using wf::config::compound_option_t::compound_option_t;
-};
-
-/**
- * A XML section is the same as a normal section, however it also has access to
- * the XML node which was used to initially create the section.
- */
-class xml_section_t : public wf::config::section_t, public xml_derived_element_t
-{
-  public:
-    using wf::config::section_t::section_t;
-};
+#include "section-impl.hpp"
+#include "option-impl.hpp"
 
 static stdx::optional<const xmlChar*> extract_value(xmlNodePtr node,
     std::string value_name)
@@ -71,7 +39,7 @@ static stdx::optional<const xmlChar*> extract_value(xmlNodePtr node,
  * @return The new option, or nullptr if the default value is invaild.
  */
 template<class T>
-std::shared_ptr<xml_option_t<T>> create_option(std::string name,
+std::shared_ptr<wf::config::option_t<T>> create_option(std::string name,
     std::string default_value)
 {
     auto value = wf::option_type::from_string<T>(default_value);
@@ -80,7 +48,7 @@ std::shared_ptr<xml_option_t<T>> create_option(std::string name,
         return {};
     }
 
-    return std::make_shared<xml_option_t<T>>(name, value.value());
+    return std::make_shared<wf::config::option_t<T>>(name, value.value());
 }
 
 enum bounds_error_t
@@ -203,7 +171,7 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
         node = node->next;
     }
 
-    auto opt = new xml_compound_option_t{name, std::move(entries)};
+    auto opt = new wf::config::compound_option_t{name, std::move(entries)};
     return std::shared_ptr<wf::config::option_base_t>(opt);
 }
 
@@ -225,8 +193,7 @@ create_option_from_xml_node(xmlNodePtr node)
         auto option = parse_compound_option(node, name);
         if (option)
         {
-            std::dynamic_pointer_cast<xml_derived_element_t>(option)
-            ->xml_node = node;
+            option->priv->xml = node;
         }
 
         return option;
@@ -325,7 +292,7 @@ create_option_from_xml_node(xmlNodePtr node)
         break;
     }
 
-    std::dynamic_pointer_cast<xml_derived_element_t>(option)->xml_node = node;
+    option->priv->xml = node;
     return option;
 }
 
@@ -375,8 +342,8 @@ std::shared_ptr<wf::config::section_t> wf::config::xml::create_section_from_xml_
     }
 
     GET_XML_PROP_OR_BAIL(node, name, "name");
-    auto section = std::make_shared<xml_section_t>(name);
-    section->xml_node = node;
+    auto section = std::make_shared<section_t>(name);
+    section->priv->xml = node;
     recursively_parse_section_node(node, section);
     return section;
 }
@@ -384,13 +351,11 @@ std::shared_ptr<wf::config::section_t> wf::config::xml::create_section_from_xml_
 xmlNodePtr wf::config::xml::get_option_xml_node(
     std::shared_ptr<wf::config::option_base_t> option)
 {
-    auto xml_opt = std::dynamic_pointer_cast<xml_derived_element_t>(option);
-    return xml_opt ? xml_opt->xml_node : nullptr;
+    return option->priv->xml;
 }
 
 xmlNodePtr wf::config::xml::get_section_xml_node(
     std::shared_ptr<wf::config::section_t> section)
 {
-    auto xml_section = std::dynamic_pointer_cast<xml_derived_element_t>(section);
-    return xml_section ? xml_section->xml_node : nullptr;
+    return section->priv->xml;
 }

@@ -94,6 +94,9 @@ class option_base_t
 
     /** Notify all watchers */
     void notify_updated() const;
+
+    /** Initialize a cloned version of this option. */
+    void init_clone(option_base_t& clone) const;
 };
 
 /**
@@ -191,6 +194,7 @@ class option_t : public option_base_t,
             result->maximum = this->maximum;
         }
 
+        init_clone(*result);
         return result;
     }
 

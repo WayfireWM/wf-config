@@ -3,6 +3,7 @@
 
 #include <wayfire/config/section.hpp>
 #include <wayfire/config/types.hpp>
+#include "../src/section-impl.hpp"
 
 TEST_CASE("wf::config::section_t")
 {
@@ -36,8 +37,10 @@ TEST_CASE("wf::config::section_t")
     CHECK(section.get_registered_options().empty());
 
     section.register_new_option(intopt);
+    section.priv->xml = (xmlNode*)0x123;
     auto clone = section.clone_with_name("Cloned_Section");
     CHECK(clone->get_name() == "Cloned_Section");
+    CHECK(clone->priv->xml == (xmlNode*)0x123);
     CHECK(clone->get_option_or("IntOption") != intopt);
     CHECK(clone->get_option_or("IntOption")->get_name() == intopt->get_name());
     CHECK(clone->get_option_or(
