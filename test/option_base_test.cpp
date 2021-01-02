@@ -76,4 +76,12 @@ TEST_CASE("wf::option_base_t")
     option.notify_updated();
     CHECK(callback_called == 3);
     CHECK(callback2_called == 2);
+
+    option.set_locked();
+    CHECK(option.is_locked());
+    option.set_locked();
+    option.set_locked(false);
+    CHECK(option.is_locked());
+    option.set_locked(false);
+    CHECK(option.is_locked() == false);
 }

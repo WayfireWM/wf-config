@@ -2,11 +2,8 @@
 #include <algorithm>
 #include <vector>
 
-struct wf::config::option_base_t::impl
-{
-    std::string name;
-    std::vector<updated_callback_t*> updated_handlers;
-};
+#include "option-impl.hpp"
+#include "wayfire/util/log.hpp"
 
 std::string wf::config::option_base_t::get_name() const
 {
@@ -42,4 +39,18 @@ void wf::config::option_base_t::notify_updated() const
     {
         (*call)();
     }
+}
+
+void wf::config::option_base_t::set_locked(bool locked)
+{
+    this->priv->lock_count += (locked ? 1 : -1);
+    if (priv->lock_count < 0)
+    {
+        LOGE("Lock counter for option ", this->get_name(), " dropped below zero!");
+    }
+}
+
+bool wf::config::option_base_t::is_locked() const
+{
+    return this->priv->lock_count > 0;
 }
