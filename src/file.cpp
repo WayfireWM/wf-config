@@ -6,6 +6,9 @@
 #include <sstream>
 #include <fstream>
 #include <cassert>
+#include <set>
+
+#include "option-impl.hpp"
 
 #include <sys/file.h>
 #include <fcntl.h>
@@ -212,12 +215,13 @@ enum option_parsing_result
 /**
  * Try to parse an option line.
  * If the option line is valid, the corresponding option is modified or added
- * to @current_section.
+ * to @current_section, and the option is added to @reloaded.
  *
  * @return The parse status of the line.
  */
 static option_parsing_result parse_option_line(
-    wf::config::section_t& current_section, const line_t& line)
+    wf::config::section_t& current_section, const line_t& line,
+    std::set<std::shared_ptr<wf::config::option_base_t>>& reloaded)
 {
     size_t equal_sign = line.find_first_of("=");
     if (equal_sign == std::string::npos)
@@ -237,12 +241,13 @@ static option_parsing_result parse_option_line(
         current_section.register_new_option(option);
     }
 
-    if (!option->set_value_str(value))
+    if (option->is_locked() || option->set_value_str(value))
     {
-        return OPTION_PARSED_INVALID_CONTENTS;
+        reloaded.insert(option);
+        return OPTION_PARSED_OK;
     }
 
-    return OPTION_PARSED_OK;
+    return OPTION_PARSED_INVALID_CONTENTS;
 }
 
 /**
@@ -295,6 +300,8 @@ void wf::config::load_configuration_options_from_string(
     config_manager_t& config, const std::string& source,
     const std::string& source_name)
 {
+    std::set<std::shared_ptr<option_base_t>> reloaded;
+
     auto lines =
         skip_empty(
             join_lines(
@@ -303,6 +310,7 @@ void wf::config::load_configuration_options_from_string(
                         split_to_lines(source)))));
 
     std::shared_ptr<wf::config::section_t> current_section;
+
     for (const auto& line : lines)
     {
         auto next_section = check_section(config, line);
@@ -319,7 +327,7 @@ void wf::config::load_configuration_options_from_string(
             continue;
         }
 
-        auto status = parse_option_line(*current_section, line);
+        auto status = parse_option_line(*current_section, line, reloaded);
         switch (status)
         {
           case OPTION_PARSED_WRONG_FORMAT:
@@ -338,6 +346,21 @@ void wf::config::load_configuration_options_from_string(
         }
     }
 
+    // Go through all options and reset options which are loaded from the config
+    // string but are not there anymore.
+    for (auto section : config.get_all_sections())
+    {
+        for (auto opt : section->get_registered_options())
+        {
+            if (!reloaded.count(opt) && !opt->is_locked())
+            {
+                opt->reset_to_default();
+            }
+        }
+    }
+
+    // After resetting all options which are no longer in the config file, make
+    // sure to rebuild compound options as well.
     for (auto section : config.get_all_sections())
     {
         for (auto opt : section->get_registered_options())
