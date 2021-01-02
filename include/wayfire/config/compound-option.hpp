@@ -107,6 +107,8 @@ class compound_option_t : public option_base_t
     /**
      * Update the value of this option by reading options from the section.
      * The format is as described in the constructor docstring.
+     *
+     * Note: options which have been created from XML are ignored.
      */
     void update_from_section(const std::shared_ptr<section_t>& section);
 

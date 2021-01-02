@@ -1,4 +1,5 @@
 #include <wayfire/config/compound-option.hpp>
+#include <wayfire/config/xml.hpp>
 
 using namespace wf::config;
 
@@ -33,6 +34,11 @@ void compound_option_t::update_from_section(
         const auto& prefix = entries[n]->get_prefix();
         for (auto& opt : options)
         {
+            if (xml::get_option_xml_node(opt))
+            {
+                continue;
+            }
+
             if (begins_with(opt->get_name(), prefix))
             {
                 // We have found a match.

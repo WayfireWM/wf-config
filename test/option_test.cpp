@@ -187,10 +187,16 @@ TEST_CASE("compound options")
         3.1415));
 
     // Not fully specified pairs
-    section->register_new_option(std::make_shared<option_t<double>>("hey_k3", 3));
-    section->register_new_option(std::make_shared<option_t<std::string>>("bey_k3",
+    section->register_new_option(std::make_shared<option_t<int>>("hey_k3", 3));
+    // One of the values is a regular option with an associated XML tag, and
+    // needs to be skipped
+    auto xml_opt = std::make_shared<option_t<double>>("bey_k3", 5.5);
+    xml_opt->priv->xml = (xmlNode*)0x123;
+    section->register_new_option(xml_opt);
+
+    section->register_new_option(std::make_shared<option_t<std::string>>("bey_k4",
         "invalid value"));
-    section->register_new_option(std::make_shared<option_t<double>>("bey_k4", 3.5));
+    section->register_new_option(std::make_shared<option_t<double>>("bey_k5", 3.5));
 
     // Options which don't match anything
     section->register_new_option(std::make_shared<option_t<double>>("hallo", 3.5));
