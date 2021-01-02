@@ -62,7 +62,6 @@ class section_t
      */
     void unregister_option(std::shared_ptr<option_base_t> option);
 
-  private:
     struct impl;
     std::unique_ptr<impl> priv;
 };

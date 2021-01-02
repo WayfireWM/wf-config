@@ -15,7 +15,7 @@ test('OptionBase test', option_base_test)
 option_test = executable(
     'option_test',
     'option_test.cpp',
-    dependencies: wfconfig,
+    dependencies: [wfconfig, libxml2],
     install: false)
 test('Option test', option_test)
 
@@ -29,7 +29,7 @@ test('Option wrapper test', option_wrapper_test)
 section_test = executable(
     'section_test',
     'section_test.cpp',
-    dependencies: wfconfig,
+    dependencies: [wfconfig, libxml2],
     install: false)
 test('Section test', section_test)
 

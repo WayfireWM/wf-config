@@ -6,6 +6,7 @@
 #include <wayfire/config/types.hpp>
 #include <linux/input-event-codes.h>
 #include <algorithm>
+#include "../src/option-impl.hpp"
 
 /**
  * A struct to check whether the maximum and minimum methods are enabled on the
@@ -89,8 +90,10 @@ TEST_CASE("wf::config::option_t<unboundable>")
         clone_callback_called++;
     };
     opt.add_updated_handler(&callback);
+    opt.priv->xml = (xmlNode*)0x123;
     auto clone = std::static_pointer_cast<option_t<wf::keybinding_t>>(
         opt.clone_option());
+    CHECK(clone->priv->xml == (xmlNode*)0x123);
     CHECK(clone->get_name() == opt.get_name());
     CHECK(clone->get_default_value() == opt.get_default_value());
     CHECK(clone->get_value() == opt.get_value());

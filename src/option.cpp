@@ -54,3 +54,9 @@ bool wf::config::option_base_t::is_locked() const
 {
     return this->priv->lock_count > 0;
 }
+
+void wf::config::option_base_t::init_clone(option_base_t& other) const
+{
+    other.priv->xml  = this->priv->xml;
+    other.priv->name = this->priv->name;
+}

@@ -1,13 +1,5 @@
-#include <wayfire/config/section.hpp>
 #include <stdexcept>
-#include <map>
-
-struct wf::config::section_t::impl
-{
-  public:
-    std::map<std::string, std::shared_ptr<option_base_t>> options;
-    std::string name;
-};
+#include "section-impl.hpp"
 
 wf::config::section_t::section_t(const std::string& name)
 {
@@ -31,6 +23,7 @@ std::shared_ptr<wf::config::section_t> wf::config::section_t::clone_with_name(
         result->register_new_option(option.second->clone_option());
     }
 
+    result->priv->xml = this->priv->xml;
     return result;
 }
 
