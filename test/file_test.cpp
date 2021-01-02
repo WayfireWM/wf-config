@@ -94,6 +94,34 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     EXPECT_LINE(log, "Error in file test:21");
 }
 
+const std::string minimal_config_with_opt =
+    R"(
+[section]
+option = value
+)";
+
+TEST_CASE("wf::config::load_configuration_options_from_string - lock & reload")
+{
+    using namespace wf;
+    using namespace wf::config;
+
+    config_manager_t cfg;
+    load_configuration_options_from_string(cfg, minimal_config_with_opt);
+
+    SUBCASE("locked")
+    {
+        cfg.get_option("section/option")->set_locked();
+        load_configuration_options_from_string(cfg, "");
+        CHECK(cfg.get_option("section/option")->get_value_str() == "value");
+    }
+
+    SUBCASE("unlocked")
+    {
+        load_configuration_options_from_string(cfg, "");
+        CHECK(cfg.get_option("section/option")->get_value_str() == "");
+    }
+}
+
 wf::config::config_manager_t build_simple_config()
 {
     using namespace wf;
