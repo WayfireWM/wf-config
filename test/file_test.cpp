@@ -39,6 +39,7 @@ option1
 
 #include "expect_line.hpp"
 
+
 TEST_CASE("wf::config::load_configuration_options_from_string")
 {
     std::stringstream log;
@@ -93,6 +94,34 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     EXPECT_LINE(log, "Error in file test:5");
     EXPECT_LINE(log, "Error in file test:20");
     EXPECT_LINE(log, "Error in file test:21");
+}
+
+TEST_CASE("wf::config::load_configuration_options_from_string - "
+          "ignore compound entries not in string")
+{
+    using namespace wf;
+    using namespace wf::config;
+
+    // Compound option with prefix `test_`
+    compound_option_t::entries_t entries;
+    entries.push_back(std::make_unique<compound_option_entry_t<std::string>>("test_"));
+    auto opt = new compound_option_t{"option_list", std::move(entries)};
+
+    config_manager_t config;
+
+    // Register compound option
+    auto section = std::make_shared<section_t>("section");
+    section->register_new_option(std::shared_ptr<option_base_t>(opt));
+
+    // Register an option which does not come from the config file
+    section->register_new_option(
+        std::make_shared<option_t<std::string>>("test_nofile", ""));
+    config.merge_section(section);
+
+    // Update with an emtpy string. The compoud option should remain empty, because
+    // there are no values from the config file.
+    load_configuration_options_from_string(config, "");
+    CHECK(opt->get_value_untyped().empty());
 }
 
 const std::string minimal_config_with_opt = R"(
