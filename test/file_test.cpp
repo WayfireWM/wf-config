@@ -11,6 +11,7 @@
 #include <wayfire/util/log.hpp>
 #include <wayfire/config/types.hpp>
 #include "wayfire/config/compound-option.hpp"
+#include "../src/option-impl.hpp"
 
 const std::string contents =
     R"(
@@ -94,8 +95,7 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     EXPECT_LINE(log, "Error in file test:21");
 }
 
-const std::string minimal_config_with_opt =
-    R"(
+const std::string minimal_config_with_opt = R"(
 [section]
 option = value
 )";
@@ -167,6 +167,50 @@ TEST_CASE("wf::config::save_configuration_options_to_string")
     auto config = build_simple_config();
     auto stringified = save_configuration_options_to_string(config);
     CHECK(stringified == simple_config_source);
+}
+
+TEST_CASE("wf::config::save_configuration_options_to_string - compound options erase")
+{
+    using namespace wf;
+    using namespace wf::config;
+
+    compound_option_t::entries_t entries;
+    entries.push_back(std::make_unique<compound_option_entry_t<int>>("hey_"));
+    entries.push_back(std::make_unique<compound_option_entry_t<double>>("bey_"));
+    auto opt = new compound_option_t{"option_list", std::move(entries)};
+    opt->set_value(compound_list_t<int, double>{{"k1", 1, 1.2}});
+
+    auto section = std::make_shared<section_t>("Section");
+    section->register_new_option(std::shared_ptr<compound_option_t>(opt));
+
+    // Add the same entries as in the compound option
+    section->register_new_option(std::make_shared<option_t<std::string>>("hey_k1",
+        "1"));
+    section->register_new_option(std::make_shared<option_t<std::string>>("bey_k1",
+        "1.2"));
+
+    // However, make sure that XML-created options are saved even if they match
+    // the prefix of a compound option.
+    auto special_opt = std::make_shared<option_t<int>>("hey_you", 1);
+    special_opt->priv->xml = (xmlNode*)0x123;
+    section->register_new_option(special_opt);
+
+    config_manager_t cfg;
+    cfg.merge_section(section);
+
+    // Now, clear the value from the compound option
+    opt->set_value(compound_list_t<int, double>{});
+
+    auto str = save_configuration_options_to_string(cfg);
+    // We expect that after deleting the values from the compound option,
+    // the values for k1 are not saved to the string.
+    const std::string expected =
+        R"([Section]
+hey_you = 1
+
+)";
+
+    CHECK(str == expected);
 }
 
 TEST_CASE("wf::config::load_configuration_options_from_file - no such file")
