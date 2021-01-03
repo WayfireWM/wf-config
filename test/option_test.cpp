@@ -206,6 +206,13 @@ TEST_CASE("compound options")
     CHECK(std::get<1>(values[1]) == -12);
     CHECK(std::get<2>(values[1]) == 3.1415);
 
+    std::vector<std::vector<std::string>> untyped_values = {
+        {"k1", "1", "1.200000"},
+        {"k2", "-12", "3.141500"},
+    };
+
+    CHECK(opt.get_value_untyped() == untyped_values);
+
     compound_list_t<int, double> v = {
         {"k3", 1, 1.23}
     };
