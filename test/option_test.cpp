@@ -201,10 +201,17 @@ TEST_CASE("compound options")
     // Options which don't match anything
     section->register_new_option(std::make_shared<option_t<double>>("hallo", 3.5));
 
-    opt.update_from_section(section);
+    // Mark all options as coming from the config file, otherwise, they wont' be
+    // parsed
+    for (auto& opt : section->get_registered_options())
+    {
+        opt->priv->option_in_config_file = true;
+    }
+
+    update_compound_from_section(opt, section);
     auto values = opt.get_value<int, double>();
 
-    CHECK(values.size() == 2);
+    REQUIRE(values.size() == 2);
     std::sort(values.begin(), values.end());
 
     CHECK(std::get<0>(values[0]) == "k1");

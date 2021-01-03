@@ -2,7 +2,6 @@
 
 #include <wayfire/config/types.hpp>
 #include <wayfire/config/option.hpp>
-#include <wayfire/config/section.hpp>
 #include <wayfire/util/log.hpp>
 #include <vector>
 #include <map>
@@ -103,14 +102,6 @@ class compound_option_t : public option_base_t
      *   (key2, v12, v22)
      */
     compound_option_t(const std::string& name, entries_t&& entries);
-
-    /**
-     * Update the value of this option by reading options from the section.
-     * The format is as described in the constructor docstring.
-     *
-     * Note: options which have been created from XML are ignored.
-     */
-    void update_from_section(const std::shared_ptr<section_t>& section);
 
     /**
      * Parse the compound option with the given types.

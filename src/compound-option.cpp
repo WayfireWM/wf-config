@@ -1,5 +1,6 @@
 #include <wayfire/config/compound-option.hpp>
 #include <wayfire/config/xml.hpp>
+#include "option-impl.hpp"
 
 using namespace wf::config;
 
@@ -14,7 +15,8 @@ compound_option_t::compound_option_t(const std::string& name,
     this->entries = std::move(entries);
 }
 
-void compound_option_t::update_from_section(
+void wf::config::update_compound_from_section(
+    compound_option_t& compound,
     const std::shared_ptr<section_t>& section)
 {
     auto options = section->get_registered_options();
@@ -28,13 +30,15 @@ void compound_option_t::update_from_section(
     };
 
     std::map<std::string, std::vector<std::string>> new_values;
+    const auto& entries = compound.get_entries();
 
     for (size_t n = 0; n < entries.size(); n++)
     {
         const auto& prefix = entries[n]->get_prefix();
         for (auto& opt : options)
         {
-            if (xml::get_option_xml_node(opt))
+            if (xml::get_option_xml_node(opt) ||
+                !opt->priv->option_in_config_file)
             {
                 continue;
             }
@@ -59,7 +63,7 @@ void compound_option_t::update_from_section(
                     LOGE("Failed parsing option ",
                         section->get_name() + "/" + opt->get_name(),
                         " as part of the list option ",
-                        section->get_name() + "/" + this->get_name());
+                        section->get_name() + "/" + compound.get_name());
                     new_values.erase(suffix);
                     continue;
                 }
@@ -77,7 +81,7 @@ void compound_option_t::update_from_section(
         }
     }
 
-    this->value.clear();
+    compound_option_t::stored_type_t value;
     for (auto& e : new_values)
     {
         // Ignore entires which do not have all entries set
@@ -86,10 +90,10 @@ void compound_option_t::update_from_section(
             continue;
         }
 
-        this->value.push_back(std::move(e.second));
+        value.push_back(std::move(e.second));
     }
 
-    notify_updated();
+    compound.set_value_untyped(value);
 }
 
 compound_option_t::stored_type_t compound_option_t::get_value_untyped()

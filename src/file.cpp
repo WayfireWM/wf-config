@@ -352,7 +352,8 @@ void wf::config::load_configuration_options_from_string(
     {
         for (auto opt : section->get_registered_options())
         {
-            if (!reloaded.count(opt) && !opt->is_locked())
+            opt->priv->option_in_config_file = (reloaded.count(opt) > 0);
+            if (!opt->priv->option_in_config_file && !opt->is_locked())
             {
                 opt->reset_to_default();
             }
@@ -368,7 +369,7 @@ void wf::config::load_configuration_options_from_string(
             auto as_compound = std::dynamic_pointer_cast<compound_option_t>(opt);
             if (as_compound)
             {
-                as_compound->update_from_section(section);
+                update_compound_from_section(*as_compound, section);
             }
         }
     }
