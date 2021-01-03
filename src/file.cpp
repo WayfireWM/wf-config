@@ -387,6 +387,7 @@ std::string wf::config::save_configuration_options_to_string(
         // Take care so that regular options overwrite compound options
         // in case of conflict!
         std::map<std::string, std::string> option_values;
+        std::set<std::string> all_compound_prefixes;
         for (auto& option : section->get_registered_options())
         {
             auto as_compound = std::dynamic_pointer_cast<compound_option_t>(option);
@@ -394,6 +395,10 @@ std::string wf::config::save_configuration_options_to_string(
             {
                 auto value = as_compound->get_value_untyped();
                 const auto& prefixes = as_compound->get_entries();
+                for (auto& p : prefixes)
+                {
+                    all_compound_prefixes.insert(p->get_prefix());
+                }
 
                 for (size_t i = 0; i < value.size(); i++)
                 {
@@ -406,12 +411,30 @@ std::string wf::config::save_configuration_options_to_string(
             }
         }
 
+        // An option is part of a compound option if it begins with any of the
+        // prefixes.
+        const auto& is_part_of_compound_option = [&] (const std::string& name)
+        {
+            return std::any_of(
+                all_compound_prefixes.begin(), all_compound_prefixes.end(),
+                [&] (const auto& prefix)
+            {
+                return name.substr(0, prefix.size()) == prefix;
+            });
+        };
+
         for (auto& option : section->get_registered_options())
         {
             auto as_compound = std::dynamic_pointer_cast<compound_option_t>(option);
             if (!as_compound)
             {
-                option_values[option->get_name()] = option->get_value_str();
+                // Check whether this option does not conflict with a compound
+                // option entry.
+                if (xml::get_option_xml_node(option) ||
+                    !is_part_of_compound_option(option->get_name()))
+                {
+                    option_values[option->get_name()] = option->get_value_str();
+                }
             }
         }
 

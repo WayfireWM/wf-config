@@ -51,7 +51,7 @@ test('ConfigManager test', config_manager_test)
 file_parse_test = executable(
     'file_test',
     'file_test.cpp',
-    dependencies: wfconfig,
+    dependencies: [wfconfig, libxml2],
     install: false,
     cpp_args: '-DTEST_SOURCE="' + meson.current_source_dir() + '"')
 test('File parsing test', file_parse_test)
