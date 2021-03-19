@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - run: sudo apt-get update
-        - run: sudo apt-get install -y git gcc meson libevdev-dev libxml2-dev libglm-dev
+        - run: sudo apt-get install -y cmake git gcc meson doctest-dev libevdev-dev libxml2-dev libglm-dev
         - uses: actions/checkout@v1
         - run: meson build
         - run: ninja -C build test
