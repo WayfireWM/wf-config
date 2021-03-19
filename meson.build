@@ -3,7 +3,7 @@ project(
 	'cpp',
 	version: '0.7.0',
 	license: 'MIT',
-	meson_version: '>=0.43.0',
+	meson_version: '>=0.47.0',
 	default_options: [
         'cpp_std=c++17',
 		'warning_level=2',
@@ -57,6 +57,8 @@ wfconfig = declare_dependency(link_with: lib_wfconfig,
 subdir('include')
 
 # Unit tests
-if get_option('tests')
+doctest = dependency('doctest', required: get_option('tests'))
+
+if doctest.found()
     subdir('test')
 endif

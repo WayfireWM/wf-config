@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #include <wayfire/config/option-wrapper.hpp>
 #include <wayfire/config/config-manager.hpp>
