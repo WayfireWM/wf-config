@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include <wayfire/config/option.hpp>
 
 class option_base_stub_t : public wf::config::option_base_t
