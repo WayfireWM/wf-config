@@ -57,4 +57,6 @@ wfconfig = declare_dependency(link_with: lib_wfconfig,
 subdir('include')
 
 # Unit tests
-subdir('test')
+if get_option('tests')
+    subdir('test')
+endif
