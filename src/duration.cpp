@@ -30,7 +30,7 @@ class wf::animation::duration_t::impl
     smoothing::smooth_function smooth_function;
     bool is_running = false;
 
-    long get_elapsed() const
+    int64_t get_elapsed() const
     {
         using namespace std::chrono;
         auto now = system_clock::now();
