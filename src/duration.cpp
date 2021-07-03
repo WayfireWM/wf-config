@@ -124,61 +124,8 @@ bool wf::animation::duration_t::running()
     return true;
 }
 
-wf::animation::timed_transition_t::timed_transition_t(
-    const duration_t& dur, double start, double end) : duration(dur.priv)
+double wf::animation::duration_t::get_priv_progress(
+    const std::shared_ptr<const impl>& priv)
 {
-    this->set(start, end);
-}
-
-void wf::animation::timed_transition_t::restart_with_end(double new_end)
-{
-    this->start = (double)*this;
-    this->end   = new_end;
-}
-
-void wf::animation::timed_transition_t::restart_same_end()
-{
-    this->start = (double)*this;
-}
-
-void wf::animation::timed_transition_t::set(double start, double end)
-{
-    this->start = start;
-    this->end   = end;
-}
-
-void wf::animation::timed_transition_t::flip()
-{
-    std::swap(this->start, this->end);
-}
-
-wf::animation::timed_transition_t::operator double() const
-{
-    double alpha = this->duration->progress();
-    return (1 - alpha) * start + alpha * end;
-}
-
-wf::animation::simple_animation_t::simple_animation_t(
-    std::shared_ptr<wf::config::option_t<int>> length,
-    smoothing::smooth_function smooth) :
-    duration_t(length, smooth),
-    timed_transition_t((duration_t&)*this)
-{}
-
-void wf::animation::simple_animation_t::animate(double start, double end)
-{
-    this->set(start, end);
-    this->duration_t::start();
-}
-
-void wf::animation::simple_animation_t::animate(double end)
-{
-    this->restart_with_end(end);
-    this->duration_t::start();
-}
-
-void wf::animation::simple_animation_t::animate()
-{
-    this->restart_same_end();
-    this->duration_t::start();
+    return priv->progress();
 }
