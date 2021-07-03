@@ -25,10 +25,13 @@ extern smooth_function sigmoid;
 /**
  * A transition from start to end.
  */
-struct transition_t
+template<class State>
+struct generic_transition_t
 {
-    double start, end;
+    State start, end;
 };
+
+using transition_t = generic_transition_t<double>;
 
 /**
  * duration_t is a class which can be used to track progress over a specific
@@ -85,6 +88,11 @@ class duration_t
     class impl;
     /** Implementation details. */
     std::shared_ptr<impl> priv;
+
+  private:
+    template<class State>
+    friend struct generic_timed_transition_t;
+    static double get_priv_progress(const std::shared_ptr<const impl>& priv);
 };
 
 /**
@@ -94,7 +102,8 @@ class duration_t
  * During the transition, the current state is smoothly interpolated between
  * start and end.
  */
-struct timed_transition_t : public transition_t
+template<class State>
+struct generic_timed_transition_t : public generic_transition_t<State>
 {
     /**
      * Construct a new timed transition using the given duration to measure
@@ -104,64 +113,104 @@ struct timed_transition_t : public transition_t
      * @start The start state.
      * @end The end state.
      */
-    timed_transition_t(const duration_t& duration,
-        double start = 0, double end = 0);
+    generic_timed_transition_t(const duration_t& dur,
+        State start = {}, State end = {}) : duration(dur.priv)
+    {
+        this->set(start, end);
+    }
 
     /**
      * Set the transition start to the current state and the end to the given
      * @new_end.
      */
-    void restart_with_end(double new_end);
+    void restart_with_end(State new_end)
+    {
+        this->start = (State) * this;
+        this->end   = new_end;
+    }
 
     /**
      * Set the transition start to the current state, and don't change the end.
      */
-    void restart_same_end();
+    void restart_same_end()
+    {
+        this->start = (State) * this;
+    }
 
     /**
      * Set the transition start and end state.
      * @param start The start of the transition.
      * @param end The end of the transition.
      */
-    void set(double start, double end);
+    void set(State start, State end)
+    {
+        this->start = start;
+        this->end   = end;
+    }
 
     /**
      * Swap start and end values.
      */
-    void flip();
+    void flip()
+    {
+        std::swap(this->start, this->end);
+    }
 
     /**
      * Implicitly convert the transition to its current state.
      */
-    operator double() const;
+    operator State() const
+    {
+        auto alpha = duration_t::get_priv_progress(this->duration);
+        return (1 - alpha) * this->start + alpha * this->end;
+    }
 
   private:
     std::shared_ptr<const duration_t::impl> duration;
 };
+using timed_transition_t = generic_timed_transition_t<double>;
 
-class simple_animation_t : public duration_t, public timed_transition_t
+template<class State>
+class generic_simple_animation_t : public duration_t,
+    public generic_timed_transition_t<State>
 {
   public:
-    simple_animation_t(
+    generic_simple_animation_t(
         std::shared_ptr<wf::config::option_t<int>> length = nullptr,
-        smoothing::smooth_function smooth = smoothing::circle);
+        smoothing::smooth_function smooth = smoothing::linear) :
+        duration_t(length, smooth),
+        generic_timed_transition_t<State>((duration_t&)*this)
+    {}
 
     /**
      * Set the start and the end of the animation and start the duration.
      */
-    void animate(double start, double end);
+    void animate(State start, State end)
+    {
+        this->set(start, end);
+        this->duration_t::start();
+    }
 
     /**
      * Animate from the current progress to the given end, and start the
      * duration.
      */
-    void animate(double end);
+    void animate(State end)
+    {
+        this->restart_with_end(end);
+        this->duration_t::start();
+    }
 
     /**
      * Animate from the current progress to the current end, and start the
      * duration.
      */
-    void animate();
+    void animate()
+    {
+        this->restart_same_end();
+        this->duration_t::start();
+    }
 };
+using simple_animation_t = generic_simple_animation_t<double>;
 }
 }
