@@ -26,7 +26,7 @@ void wf::config::option_base_t::rem_updated_handler(
 
 wf::config::option_base_t::option_base_t(const std::string& name)
 {
-    this->priv = std::make_unique<impl>();
+    this->priv = std::make_shared<impl>();
     this->priv->name = name;
 }
 
