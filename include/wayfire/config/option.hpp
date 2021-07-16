@@ -20,6 +20,9 @@ class option_base_t
     option_base_t(const option_base_t& other) = delete;
     option_base_t& operator =(const option_base_t& other) = delete;
 
+    option_base_t(option_base_t&& other) = default;
+    option_base_t& operator =(option_base_t&& other) = default;
+
     /** @return The name of the option */
     std::string get_name() const;
 
@@ -86,7 +89,7 @@ class option_base_t
     bool is_locked() const;
 
     struct impl;
-    std::unique_ptr<impl> priv;
+    std::shared_ptr<impl> priv;
 
   protected:
     /** Construct a new option with the given name. */
