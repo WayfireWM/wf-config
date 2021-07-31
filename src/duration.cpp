@@ -29,6 +29,7 @@ class wf::animation::duration_t::impl
     std::shared_ptr<wf::config::option_t<int>> length;
     smoothing::smooth_function smooth_function;
     bool is_running = false;
+    bool reverse    = false;
 
     int64_t get_elapsed() const
     {
@@ -60,14 +61,20 @@ class wf::animation::duration_t::impl
             return 1.0;
         }
 
-        return 1.0 * get_elapsed() / get_duration();
+        auto progress = 1.0 * get_elapsed() / get_duration();
+        if (reverse)
+        {
+            progress = 1.0 - progress;
+        }
+
+        return progress;
     }
 
     double progress() const
     {
         if (is_ready())
         {
-            return 1.0;
+            return reverse ? 0.0 : 1.0;
         }
 
         return smooth_function(get_progress_percentage());
@@ -82,6 +89,7 @@ wf::animation::duration_t::duration_t(
     this->priv = std::make_shared<impl>();
     this->priv->length     = length;
     this->priv->is_running = false;
+    this->priv->reverse    = false;
     this->priv->smooth_function = smooth;
 }
 
@@ -122,6 +130,19 @@ bool wf::animation::duration_t::running()
     }
 
     return true;
+}
+
+void wf::animation::duration_t::reverse()
+{
+    std::chrono::milliseconds remaining(this->priv->get_duration() -
+        this->priv->get_elapsed());
+    this->priv->start_point = std::chrono::system_clock::now() - remaining;
+    this->priv->reverse     = !this->priv->reverse;
+}
+
+int wf::animation::duration_t::get_direction()
+{
+    return !this->priv->reverse;
 }
 
 wf::animation::timed_transition_t::timed_transition_t(
