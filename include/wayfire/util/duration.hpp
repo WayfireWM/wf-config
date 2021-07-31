@@ -82,6 +82,19 @@ class duration_t
      */
     bool running();
 
+    /**
+     * Reverse the duration. The progress will remain the same but the
+     * direction will reverse toward the opposite start or end point.
+     */
+    void reverse();
+
+    /**
+     * Get duration direction.
+     *  0: reverse
+     *  1: forward
+     */
+    int get_direction();
+
     class impl;
     /** Implementation details. */
     std::shared_ptr<impl> priv;
