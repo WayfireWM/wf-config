@@ -39,6 +39,39 @@ TEST_CASE("wf::animation::duration_t")
     /* Check twice, so that we can test restarting */
     check_lifetime();
     check_lifetime();
+
+    auto check_reverse_duration = [&] ()
+    {
+        auto direction = duration.get_direction();
+        CHECK(duration.running() == false);
+        CHECK(duration.progress() == doctest::Approx{direction ? 1.0 : 0.0});
+
+        duration.start();
+        CHECK(duration.running());
+        CHECK(duration.progress() == doctest::Approx{direction ? 0.0 : 1.0});
+
+        usleep(75000);
+        CHECK(duration.progress() == doctest::Approx{direction ? 0.75 : 0.25}.epsilon(
+            0.1));
+        duration.reverse();
+        usleep(50000);
+        CHECK(duration.progress() == doctest::Approx{direction ? 0.25 : 0.75}.epsilon(
+            0.1));
+        CHECK(duration.running());
+        CHECK(duration.running());
+        usleep(35000);
+
+        /* At this point, duration must be finished */
+        CHECK(duration.progress() ==
+            doctest::Approx{direction ? 0.0 : 1.0}.epsilon(0.01));
+        CHECK(duration.running()); // one last time
+        CHECK(duration.running() == false);
+        CHECK(duration.running() == false);
+    };
+
+    /* Check twice, so that we can test direction */
+    check_reverse_duration();
+    check_reverse_duration();
 }
 
 TEST_CASE("wf::animation::timed_transition_t")
