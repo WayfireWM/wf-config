@@ -522,43 +522,6 @@ void wf::config::save_configuration_to_file(
     fout << std::endl;
 }
 
-/**
- * Parse the XML file and return the node which corresponds to the section.
- */
-static xmlNodePtr find_section_start_node(const std::string& file)
-{
-    auto doc = xmlParseFile(file.c_str());
-    if (!doc)
-    {
-        LOGE("Failed to parse XML file ", file);
-        return nullptr;
-    }
-
-    auto root = xmlDocGetRootElement(doc);
-    if (!root)
-    {
-        LOGE(file, ": missing root element.");
-        xmlFreeDoc(doc);
-        return nullptr;
-    }
-
-    /* Seek the plugin section */
-    auto section = root->children;
-    while (section != nullptr)
-    {
-        if ((section->type == XML_ELEMENT_NODE) &&
-            (((const char*)section->name == (std::string)"plugin") ||
-             ((const char*)section->name == (std::string)"object")))
-        {
-            break;
-        }
-
-        section = section->next;
-    }
-
-    return section;
-}
-
 static wf::config::config_manager_t load_xml_files(
     const std::vector<std::string>& xmldirs)
 {
@@ -588,11 +551,36 @@ static wf::config::config_manager_t load_xml_files(
                 (filename.rfind(".xml") == filename.length() - 4))
             {
                 LOGI("Reading XML configuration options from file ", filename);
-                auto node = find_section_start_node(filename);
-                if (node)
+
+                /* Parse the XML file. */
+                auto doc = xmlParseFile(filename.c_str());
+                if (!doc)
                 {
-                    manager.merge_section(
-                        wf::config::xml::create_section_from_xml_node(node));
+                    LOGE("Failed to parse XML file ", filename);
+                    continue;
+                }
+
+                auto root = xmlDocGetRootElement(doc);
+                if (!root)
+                {
+                    LOGE(filename, ": missing root element.");
+                    xmlFreeDoc(doc);
+                    continue;
+                }
+
+                /* Seek the plugin/object sections */
+                auto section = root->children;
+                while (section != nullptr)
+                {
+                    if ((section->type == XML_ELEMENT_NODE) &&
+                        (((const char*)section->name == (std::string)"plugin") ||
+                         ((const char*)section->name == (std::string)"object")))
+                    {
+                        manager.merge_section(
+                            wf::config::xml::create_section_from_xml_node(section));
+                    }
+
+                    section = section->next;
                 }
             }
         }
