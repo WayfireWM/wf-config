@@ -100,8 +100,14 @@ class compound_option_t : public option_base_t
      *
      *   (key1, v11, v21)
      *   (key2, v12, v22)
+     * @param type_hint What type of dynamic-list is this option. This stores
+     *    the type-hint attribute of the option specified in the xml. Currently,
+     *    the valid types are plain, dict and tuple (default). Type-hint is
+     *    mainly used as hint to save the config option in a "pretty" way.
+     *    Config formats are free to ignore this type hint.
      */
-    compound_option_t(const std::string& name, entries_t&& entries);
+    compound_option_t(const std::string& name, entries_t&& entries,
+        std::string type_hint = "tuple");
 
     /**
      * Parse the compound option with the given types.
@@ -150,6 +156,14 @@ class compound_option_t : public option_base_t
      */
     const entries_t& get_entries() const;
 
+    /**
+     * Check if this compound option has named tuples.
+     */
+    std::string get_type_hint() const
+    {
+        return list_type_hint;
+    }
+
   private:
     /**
      * Current value stored in the option.
@@ -160,6 +174,9 @@ class compound_option_t : public option_base_t
 
     /** Entry types with which the option was created. */
     entries_t entries;
+
+    /** What type of dynamic-list is this: plain, dics, tuple */
+    std::string list_type_hint;
 
     /**
      * Set the n-th element in the result tuples by reading from the stored

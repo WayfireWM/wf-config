@@ -1,3 +1,4 @@
+#include <cstring>
 #include <wayfire/config/xml.hpp>
 #include <wayfire/config/types.hpp>
 #include <wayfire/util/log.hpp>
@@ -119,6 +120,8 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
     const std::string& name)
 {
     wf::config::compound_option_t::entries_t entries;
+    GET_XML_PROP_OR_BAIL(node, type_hint, "type-hint");
+
     node = node->children;
     while (node)
     {
@@ -171,7 +174,7 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
         node = node->next;
     }
 
-    auto opt = new wf::config::compound_option_t{name, std::move(entries)};
+    auto opt = new wf::config::compound_option_t{name, std::move(entries), type_hint};
     return std::shared_ptr<wf::config::option_base_t>(opt);
 }
 
