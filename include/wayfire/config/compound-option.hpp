@@ -30,6 +30,12 @@ class compound_option_entry_base_t
         return prefix;
     }
 
+    /** @return The name of the tuple entry. */
+    virtual std::string get_name() const
+    {
+        return name;
+    }
+
     /**
      * Try to parse the given value.
      *
@@ -43,20 +49,23 @@ class compound_option_entry_base_t
   protected:
     compound_option_entry_base_t() = default;
     std::string prefix;
+    std::string name;
 };
 
 template<class Type>
 class compound_option_entry_t : public compound_option_entry_base_t
 {
   public:
-    compound_option_entry_t(const std::string& prefix)
+    compound_option_entry_t(const std::string& prefix, const std::string& name = "")
     {
         this->prefix = prefix;
+        this->name   = name;
     }
 
     compound_option_entry_base_t *clone() const override
     {
-        return new compound_option_entry_t<Type>(this->get_prefix());
+        return new compound_option_entry_t<Type>(this->get_prefix(),
+            this->get_name());
     }
 
     /**
