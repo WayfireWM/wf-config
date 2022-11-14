@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <wayfire/config/types.hpp>
 #include <wayfire/config/option.hpp>
 #include <wayfire/util/log.hpp>
@@ -14,6 +15,25 @@ namespace config
 template<class... Args>
 using compound_list_t =
     std::vector<std::tuple<std::string, Args...>>;
+
+template<class... Args>
+using simple_list_t =
+    std::vector<std::tuple<Args...>>;
+
+template<typename T1, typename... Ts>
+std::tuple<Ts...> pop_first(const std::tuple<T1, Ts...>& tuple)
+{
+    return std::apply([] (auto&&, const auto&... args)
+    {
+        return std::tie(args...);
+    }, tuple);
+}
+
+template<typename T1, typename... Ts>
+std::tuple<T1, Ts...> push_first(const T1& t, const std::tuple<Ts...>& tuple)
+{
+    return std::tuple_cat(std::tie(t), tuple);
+}
 
 /**
  * A base class containing information about an entry in a tuple.
@@ -132,6 +152,19 @@ class compound_option_t : public option_base_t
         return result;
     }
 
+    template<class... Args>
+    simple_list_t<Args...> get_value_simple() const
+    {
+        auto list = get_value<Args...>();
+        simple_list_t<Args...> result;
+        for (const auto& val : list)
+        {
+            result.push_back(pop_first(val));
+        }
+
+        return result;
+    }
+
     /**
      * Set the value of the option.
      *
@@ -144,6 +177,23 @@ class compound_option_t : public option_base_t
         this->value.assign(value.size(), {});
         push_recursive<0>(value);
         notify_updated();
+    }
+
+    /**
+     * Set the value of the option.
+     *
+     * Throws an exception in case of wrong template types.
+     */
+    template<class... Args>
+    void set_value_simple(const simple_list_t<Args...>& value)
+    {
+        compound_list_t<Args...> list;
+        for (int i = 0; i < (int)value.size(); i++)
+        {
+            list.push_back(push_first(std::to_string(i), value[i]));
+        }
+
+        this->set_value(list);
     }
 
     using stored_type_t = std::vector<std::vector<std::string>>;

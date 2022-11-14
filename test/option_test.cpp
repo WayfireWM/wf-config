@@ -254,3 +254,40 @@ TEST_CASE("compound options")
     };
     CHECK(!opt.set_value_untyped(v4));
 }
+
+TEST_CASE("Plain list compound options")
+{
+    using namespace wf::config;
+
+    compound_option_t::entries_t entries;
+    entries.push_back(std::make_unique<compound_option_entry_t<int>>("hey_"));
+    entries.push_back(std::make_unique<compound_option_entry_t<double>>("bey_"));
+    compound_option_t opt{"Test", std::move(entries)};
+
+    simple_list_t<int, double> simple_list = {
+        {0, 0.0},
+        {1, -1.5}
+    };
+
+    opt.set_value_simple(simple_list);
+    auto with_names = opt.get_value<int, double>();
+
+    compound_list_t<int, double> compound_list = {
+        {"0", 0, 0.0},
+        {"1", 1, -1.5}
+    };
+    CHECK(compound_list == opt.get_value<int, double>());
+
+    compound_list = {
+        {"test", 10, 0.0},
+        {"blah", 20, 15.6}
+    };
+    opt.set_value(compound_list);
+
+    simple_list = {
+        {10, 0.0},
+        {20, 15.6}
+    };
+
+    CHECK(simple_list == opt.get_value_simple<int, double>());
+}
