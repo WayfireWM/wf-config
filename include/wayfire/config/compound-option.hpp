@@ -25,13 +25,13 @@ class compound_option_entry_base_t
     virtual ~compound_option_entry_base_t() = default;
 
     /** @return The prefix of the tuple entry. */
-    virtual std::string get_prefix() const
+    std::string get_prefix() const
     {
         return prefix;
     }
 
     /** @return The name of the tuple entry. */
-    virtual std::string get_name() const
+    std::string get_name() const
     {
         return name;
     }
