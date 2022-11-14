@@ -10,7 +10,9 @@ static bool begins_with(const std::string& a, const std::string& b)
 }
 
 compound_option_t::compound_option_t(const std::string& name,
-    entries_t&& entries) : option_base_t(name)
+    entries_t&& entries, std::string type_hint) : option_base_t(name),
+    list_type_hint(
+        type_hint)
 {
     this->entries = std::move(entries);
 }
