@@ -128,7 +128,12 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
     const std::string& name)
 {
     wf::config::compound_option_t::entries_t entries;
-    GET_XML_PROP_OR_BAIL(node, type_hint, "type-hint");
+    GET_OPTIONAL_XML_PROP(node, type_hint, "type-hint");
+
+    if (not type_hint.size())
+    {
+        type_hint = "dict";
+    }
 
     node = node->children;
     while (node)
