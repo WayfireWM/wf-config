@@ -34,6 +34,7 @@ template<>
 stdx::optional<int> wf::option_type::from_string(const std::string& value)
 {
     std::istringstream in{value};
+    in.imbue(std::locale::classic());
     int result;
     in >> result;
 
@@ -49,11 +50,10 @@ stdx::optional<int> wf::option_type::from_string(const std::string& value)
 template<>
 stdx::optional<double> wf::option_type::from_string(const std::string& value)
 {
-    auto old = std::locale::global(std::locale::classic());
     std::istringstream in{value};
+    in.imbue(std::locale::classic());
     double result;
     in >> result;
-    std::locale::global(old);
 
     if (!in.eof() || in.fail() || value.empty())
     {
@@ -131,16 +131,14 @@ static stdx::optional<wf::color_t> try_parse_rgba(const std::string& value)
 {
     wf::color_t parsed = {0, 0, 0, 0};
     std::stringstream ss(value);
+    ss.imbue(std::locale::classic());
 
-    auto old = std::locale::global(std::locale::classic());
     bool valid_color =
         (bool)(ss >> parsed.r >> parsed.g >> parsed.b >> parsed.a);
 
     /* Check nothing else after that */
     std::string dummy;
     valid_color &= !(bool)(ss >> dummy);
-
-    std::locale::global(old);
 
     return valid_color ? parsed : stdx::optional<wf::color_t>{};
 }
