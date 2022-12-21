@@ -37,7 +37,7 @@ stdx::optional<int> wf::option_type::from_string(const std::string& value)
     int result;
     in >> result;
 
-    if (value != std::to_string(result))
+    if (value != wf::option_type::to_string(result))
     {
         return {};
     }
@@ -81,14 +81,20 @@ template<>
 std::string wf::option_type::to_string(
     const int& value)
 {
-    return std::to_string(value);
+    std::ostringstream s;
+    s.imbue(std::locale::classic());
+    s << value;
+    return s.str();
 }
 
 template<>
 std::string wf::option_type::to_string(
     const double& value)
 {
-    return std::to_string(value);
+    std::ostringstream s;
+    s.imbue(std::locale::classic());
+    s << std::fixed << value;
+    return s.str();
 }
 
 template<>
@@ -717,7 +723,7 @@ std::string wf::option_type::to_string(const touchgesture_t& value)
         break;
     }
 
-    result += std::to_string(value.get_finger_count());
+    result += wf::option_type::to_string(value.get_finger_count());
     return result;
 }
 
