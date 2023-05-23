@@ -61,6 +61,9 @@ void wf::log::initialize_logging(std::ostream& output_stream,
     if (state.color_mode == LOG_COLOR_MODE_ON)
     {
         state.clear_color = "\033[0m";
+    } else
+    {
+        state.clear_color = "";
     }
 }
 
