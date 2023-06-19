@@ -577,7 +577,7 @@ static wf::config::config_manager_t load_xml_files(
         struct dirent *entry;
         while ((entry = readdir(xmld)) != NULL)
         {
-            if ((entry->d_type != DT_LNK) && (entry->d_type != DT_REG))
+            if ((entry->d_type != DT_LNK) && (entry->d_type != DT_REG) && (entry->d_type != DT_UNKNOWN))
             {
                 continue;
             }
