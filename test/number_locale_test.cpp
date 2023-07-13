@@ -18,7 +18,6 @@ void setup_test_locale()
     // requires glibc-langpack-de
     // changes std::to_string output
     std::setlocale(LC_NUMERIC, "fr_FR.UTF-8");
-
 }
 
 TEST_CASE("wf::option_type::to_string<double>")
