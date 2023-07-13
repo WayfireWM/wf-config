@@ -34,10 +34,11 @@ template<>
 stdx::optional<int> wf::option_type::from_string(const std::string& value)
 {
     std::istringstream in{value};
+    in.imbue(std::locale::classic());
     int result;
     in >> result;
 
-    if (value != std::to_string(result))
+    if (value != wf::option_type::to_string(result))
     {
         return {};
     }
@@ -49,11 +50,10 @@ stdx::optional<int> wf::option_type::from_string(const std::string& value)
 template<>
 stdx::optional<double> wf::option_type::from_string(const std::string& value)
 {
-    auto old = std::locale::global(std::locale::classic());
     std::istringstream in{value};
+    in.imbue(std::locale::classic());
     double result;
     in >> result;
-    std::locale::global(old);
 
     if (!in.eof() || in.fail() || value.empty())
     {
@@ -81,14 +81,20 @@ template<>
 std::string wf::option_type::to_string(
     const int& value)
 {
-    return std::to_string(value);
+    std::ostringstream s;
+    s.imbue(std::locale::classic());
+    s << value;
+    return s.str();
 }
 
 template<>
 std::string wf::option_type::to_string(
     const double& value)
 {
-    return std::to_string(value);
+    std::ostringstream s;
+    s.imbue(std::locale::classic());
+    s << std::fixed << value;
+    return s.str();
 }
 
 template<>
@@ -125,16 +131,14 @@ static stdx::optional<wf::color_t> try_parse_rgba(const std::string& value)
 {
     wf::color_t parsed = {0, 0, 0, 0};
     std::stringstream ss(value);
+    ss.imbue(std::locale::classic());
 
-    auto old = std::locale::global(std::locale::classic());
     bool valid_color =
         (bool)(ss >> parsed.r >> parsed.g >> parsed.b >> parsed.a);
 
     /* Check nothing else after that */
     std::string dummy;
     valid_color &= !(bool)(ss >> dummy);
-
-    std::locale::global(old);
 
     return valid_color ? parsed : stdx::optional<wf::color_t>{};
 }
@@ -717,7 +721,7 @@ std::string wf::option_type::to_string(const touchgesture_t& value)
         break;
     }
 
-    result += std::to_string(value.get_finger_count());
+    result += wf::option_type::to_string(value.get_finger_count());
     return result;
 }
 

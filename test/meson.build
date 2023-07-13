@@ -70,3 +70,13 @@ duration_test = executable(
     dependencies: [wfconfig, doctest],
     install: false)
 test('Duration test', duration_test)
+
+number_locale_test = executable(
+    'number_locale_test',
+    'number_locale_test.cpp',
+    dependencies: [wfconfig, doctest],
+    install: false)
+# enable locale test only on request
+if get_option('locale_test')
+  test('Number locale test', number_locale_test)
+endif

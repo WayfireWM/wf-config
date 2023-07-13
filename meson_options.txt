@@ -1,1 +1,2 @@
 option('tests', type: 'feature', value: 'auto', description: 'Enable unit tests')
+option('locale_test', type : 'boolean', value : false, description: 'Test number to string conversions with de_DE locale (must be installed)')
