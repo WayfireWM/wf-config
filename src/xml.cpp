@@ -196,8 +196,7 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
     return std::shared_ptr<wf::config::option_base_t>(opt);
 }
 
-std::shared_ptr<wf::config::option_base_t> wf::config::xml::
-create_option_from_xml_node(xmlNodePtr node)
+std::shared_ptr<wf::config::option_base_t> wf::config::xml::create_option_from_xml_node(xmlNodePtr node)
 {
     if ((node->type != XML_ELEMENT_NODE) ||
         ((const char*)node->name != std::string{"option"}))

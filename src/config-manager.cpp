@@ -47,8 +47,7 @@ std::shared_ptr<wf::config::section_t> wf::config::config_manager_t::get_section
     return nullptr;
 }
 
-std::vector<std::shared_ptr<wf::config::section_t>> wf::config::config_manager_t::
-get_all_sections() const
+std::vector<std::shared_ptr<wf::config::section_t>> wf::config::config_manager_t::get_all_sections() const
 {
     std::vector<std::shared_ptr<wf::config::section_t>> list;
     for (auto& section : this->priv->sections)
