@@ -22,14 +22,6 @@ void wf::config::update_compound_from_section(
     const std::shared_ptr<section_t>& section)
 {
     auto options = section->get_registered_options();
-    std::vector<std::vector<std::string>> new_value;
-
-    struct tuple_in_construction_t
-    {
-        // How many of the tuple elements were initialized
-        size_t initialized = 0;
-        std::vector<std::string> values;
-    };
 
     std::map<std::string, std::vector<std::string>> new_values;
     const auto& entries = compound.get_entries();
@@ -59,31 +51,44 @@ void wf::config::update_compound_from_section(
 
                 auto& tuple = new_values[suffix];
 
+                if (n == 0)
+                {
+                    tuple.push_back(suffix);
+                }
+
                 // Parse the value from the option, with the n-th type.
                 if (!entries[n]->is_parsable(opt->get_value_str()))
                 {
                     LOGE("Failed parsing option ",
                         section->get_name() + "/" + opt->get_name(),
                         " as part of the list option ",
-                        section->get_name() + "/" + compound.get_name());
-                    new_values.erase(suffix);
-                    continue;
-                }
-
-                if (n == 0)
+                        section->get_name() + "/" + compound.get_name(),
+                        ". Trying to use the default value.");
+                } else
                 {
-                    // Push the suffix first
-                    tuple.push_back(suffix);
+                    // Update the Nth entry in the tuple (+1 because the first entry
+                    // is the amount of initialized entries).
+                    tuple.push_back(opt->get_value_str());
                 }
+            }
+        }
 
-                // Update the Nth entry in the tuple (+1 because the first entry
-                // is the amount of initialized entries).
-                tuple.push_back(opt->get_value_str());
+        for (auto& [suffix, tuple] : new_values)
+        {
+            if (tuple.size() == n + 1 && entries[n]->get_default_value())
+            {
+                tuple.push_back(entries[n]->get_default_value().value());
+            } else if (tuple.size() == n + 1)
+            {
+                LOGE("The option ",
+                    section->get_name() + "/" + suffix + entries[n]->get_name(),
+                    " is neither specified nor has a default value");
             }
         }
     }
 
     compound_option_t::stored_type_t value;
+    std::vector<std::vector<std::string>> new_value;
     for (auto& e : new_values)
     {
         // Ignore entires which do not have all entries set
