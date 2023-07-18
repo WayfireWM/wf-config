@@ -42,18 +42,25 @@ void wf::config::update_compound_from_section(
                 // We have found a match.
                 // Find the suffix we should store values in.
                 std::string suffix = opt->get_name().substr(prefix.size());
-                if (!new_values.count(suffix) && (n > 0))
-                {
-                    // Skip entries which did not have their first value set,
-                    // because these will not be fully constructed in the end.
-                    continue;
-                }
-
                 auto& tuple = new_values[suffix];
 
-                if (n == 0)
+                if (tuple.empty())
                 {
                     tuple.push_back(suffix);
+                    for (size_t i = 0; i < n; ++i)
+                    {
+                        if (entries[i]->get_default_value())
+                        {
+                            tuple.push_back(entries[i]->get_default_value().value());
+                        } else
+                        {
+                            LOGE("The option ",
+                                section->get_name() + "/" + entries[n]->get_prefix() + suffix,
+                                " is neither specified nor has a default value");
+                            new_values.erase(suffix);
+                            continue;
+                        }
+                    }
                 }
 
                 // Parse the value from the option, with the n-th type.
@@ -64,7 +71,7 @@ void wf::config::update_compound_from_section(
                         " as part of the list option ",
                         section->get_name() + "/" + compound.get_name(),
                         ". Trying to use the default value.");
-                } else
+                } else if (tuple.size() == n + 1)
                 {
                     // Update the Nth entry in the tuple (+1 because the first entry
                     // is the amount of initialized entries).
@@ -81,14 +88,13 @@ void wf::config::update_compound_from_section(
             } else if (tuple.size() == n + 1)
             {
                 LOGE("The option ",
-                    section->get_name() + "/" + suffix + entries[n]->get_name(),
+                    section->get_name() + "/" + entries[n]->get_prefix() + suffix,
                     " is neither specified nor has a default value");
             }
         }
     }
 
     compound_option_t::stored_type_t value;
-    std::vector<std::vector<std::string>> new_value;
     for (auto& e : new_values)
     {
         // Ignore entires which do not have all entries set
