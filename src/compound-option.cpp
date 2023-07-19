@@ -57,8 +57,6 @@ void wf::config::update_compound_from_section(
                             LOGE("The option ",
                                 section->get_name() + "/" + entries[n]->get_prefix() + suffix,
                                 " is neither specified nor has a default value");
-                            new_values.erase(suffix);
-                            continue;
                         }
                     }
                 }
