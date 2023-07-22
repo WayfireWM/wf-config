@@ -261,9 +261,12 @@ TEST_CASE("compound option with default values")
     using namespace wf::config;
 
     compound_option_t::entries_t entries;
-    entries.push_back(std::make_unique<compound_option_entry_t<int>>("int_", "int", "42"));
-    entries.push_back(std::make_unique<compound_option_entry_t<double>>("double_", "double"));
-    entries.push_back(std::make_unique<compound_option_entry_t<std::string>>("str_", "str", "default"));
+    entries.push_back(std::make_unique<compound_option_entry_t<int>>("int_", "int",
+        "42"));
+    entries.push_back(std::make_unique<compound_option_entry_t<double>>("double_",
+        "double"));
+    entries.push_back(std::make_unique<compound_option_entry_t<std::string>>("str_",
+        "str", "default"));
 
     compound_option_t opt("Test", std::move(entries));
 
@@ -274,15 +277,22 @@ TEST_CASE("compound option with default values")
     // k4 -- only double value is scecified
     section->register_new_option(std::make_shared<option_t<int>>("int_k1", 1));
     section->register_new_option(std::make_shared<option_t<int>>("int_k2", 2));
-    section->register_new_option(std::make_shared<option_t<std::string>>("int_k3", "invalid"));
+    section->register_new_option(std::make_shared<option_t<std::string>>("int_k3",
+        "invalid"));
 
-    section->register_new_option(std::make_shared<option_t<double>>("double_k1", 1.0));
-    section->register_new_option(std::make_shared<option_t<double>>("double_k3", 3.0));
-    section->register_new_option(std::make_shared<option_t<double>>("double_k4", 4.0));
+    section->register_new_option(std::make_shared<option_t<double>>("double_k1",
+        1.0));
+    section->register_new_option(std::make_shared<option_t<double>>("double_k3",
+        3.0));
+    section->register_new_option(std::make_shared<option_t<double>>("double_k4",
+        4.0));
 
-    section->register_new_option(std::make_shared<option_t<std::string>>("str_k1", "s1"));
-    section->register_new_option(std::make_shared<option_t<std::string>>("str_k2", "s2"));
-    section->register_new_option(std::make_shared<option_t<std::string>>("str_k3", "s3"));
+    section->register_new_option(std::make_shared<option_t<std::string>>("str_k1",
+        "s1"));
+    section->register_new_option(std::make_shared<option_t<std::string>>("str_k2",
+        "s2"));
+    section->register_new_option(std::make_shared<option_t<std::string>>("str_k3",
+        "s3"));
 
     // Mark all options as coming from the config file, otherwise, they wont' be
     // parsed

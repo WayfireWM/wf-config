@@ -80,7 +80,7 @@ void wf::config::update_compound_from_section(
 
         for (auto& [suffix, tuple] : new_values)
         {
-            if (tuple.size() == n + 1 && entries[n]->get_default_value())
+            if ((tuple.size() == n + 1) && entries[n]->get_default_value())
             {
                 tuple.push_back(entries[n]->get_default_value().value());
             } else if (tuple.size() == n + 1)

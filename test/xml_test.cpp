@@ -235,13 +235,14 @@ TEST_CASE("wf::config::xml::create_option")
         REQUIRE(as_co != nullptr);
 
         CHECK(as_co->get_value<int, std::string>() ==
-                wf::config::compound_list_t<int, std::string>{});
+            wf::config::compound_list_t<int, std::string>{});
 
         const auto& entries = as_co->get_entries();
         REQUIRE(entries.size() == 2);
         CHECK(dynamic_cast<wc::compound_option_entry_t<int>*>(entries[0].get()));
         REQUIRE(entries[0]->get_default_value() == "9");
-        CHECK(dynamic_cast<wc::compound_option_entry_t<std::string>*>(entries[1].get()));
+        CHECK(
+            dynamic_cast<wc::compound_option_entry_t<std::string>*>(entries[1].get()));
         REQUIRE(entries[1]->get_default_value() == std::nullopt);
     }
 

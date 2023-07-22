@@ -85,7 +85,7 @@ class compound_option_entry_t : public compound_option_entry_base_t
 {
   public:
     compound_option_entry_t(const std::string& prefix, const std::string& name = "",
-            const stdx::optional<std::string>& default_value = std::nullopt)
+        const stdx::optional<std::string>& default_value = std::nullopt)
     {
         this->prefix = prefix;
         this->name   = name;

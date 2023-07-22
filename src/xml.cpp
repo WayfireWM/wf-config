@@ -149,18 +149,21 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
             stdx::optional<std::string> default_value = std::nullopt;
             if (const auto& default_value_raw = extract_value(node, "default"))
             {
-                default_value = (const char *)default_value_raw.value();
+                default_value = (const char*)default_value_raw.value();
             }
 
             if (type == "int")
             {
-                entries.push_back(std::make_unique<entry_t<int>>(prefix, name, default_value));
+                entries.push_back(std::make_unique<entry_t<int>>(prefix, name,
+                    default_value));
             } else if (type == "double")
             {
-                entries.push_back(std::make_unique<entry_t<double>>(prefix, name, default_value));
+                entries.push_back(std::make_unique<entry_t<double>>(prefix, name,
+                    default_value));
             } else if (type == "bool")
             {
-                entries.push_back(std::make_unique<entry_t<bool>>(prefix, name, default_value));
+                entries.push_back(std::make_unique<entry_t<bool>>(prefix, name,
+                    default_value));
             } else if (type == "string")
             {
                 entries.push_back(std::make_unique<entry_t<std::string>>(prefix,

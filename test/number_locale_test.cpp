@@ -101,9 +101,11 @@ TEST_CASE("wf::double_wrapper_t locale")
     double min = std::numeric_limits<double>::min();
 
     setup_test_locale();
-    CHECK(from_string<double>(wf::option_type::to_string(max)).value() == doctest::Approx(max));
+    CHECK(from_string<double>(wf::option_type::to_string(
+        max)).value() == doctest::Approx(max));
     setup_test_locale();
-    CHECK(from_string<double>(wf::option_type::to_string(min)).value() == doctest::Approx(min));
+    CHECK(from_string<double>(wf::option_type::to_string(
+        min)).value() == doctest::Approx(min));
 
     setup_test_locale();
     CHECK(!from_string<double>("1u4"));
