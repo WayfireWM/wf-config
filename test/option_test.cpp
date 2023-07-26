@@ -274,7 +274,7 @@ TEST_CASE("compound option with default values")
     // k1 -- all entries are scecified
     // k2 -- double value is unspecified (error)
     // k3 -- invalid int value, should use the default one
-    // k4 -- only double value is scecified
+    // k4 -- only double value is specified
     section->register_new_option(std::make_shared<option_t<int>>("int_k1", 1));
     section->register_new_option(std::make_shared<option_t<int>>("int_k2", 2));
     section->register_new_option(std::make_shared<option_t<std::string>>("int_k3",

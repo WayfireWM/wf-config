@@ -146,7 +146,7 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
             GET_XML_PROP_OR_BAIL(node, type, "type");
             GET_OPTIONAL_XML_PROP(node, name, "name");
 
-            stdx::optional<std::string> default_value = std::nullopt;
+            std::optional<std::string> default_value = std::nullopt;
             if (const auto& default_value_raw = extract_value(node, "default"))
             {
                 default_value = (const char*)default_value_raw.value();

@@ -21,90 +21,83 @@ void wf::config::update_compound_from_section(
     compound_option_t& compound,
     const std::shared_ptr<section_t>& section)
 {
-    auto options = section->get_registered_options();
+    const auto& options = section->get_registered_options();
 
-    std::map<std::string, std::vector<std::string>> new_values;
+    const auto& should_ignore_option = [] (const std::shared_ptr<wf::config::option_base_t>& opt)
+    {
+        return xml::get_option_xml_node(opt) || !opt->priv->option_in_config_file;
+    };
+
     const auto& entries = compound.get_entries();
 
-    for (size_t n = 0; n < entries.size(); n++)
+    std::map<std::string, std::vector<std::string>> new_values;
+
+    // find possible suffixes
+    for (const auto& opt : options)
     {
-        const auto& prefix = entries[n]->get_prefix();
-        for (auto& opt : options)
-        {
-            if (xml::get_option_xml_node(opt) ||
-                !opt->priv->option_in_config_file)
-            {
-                continue;
-            }
-
-            if (begins_with(opt->get_name(), prefix))
-            {
-                // We have found a match.
-                // Find the suffix we should store values in.
-                std::string suffix = opt->get_name().substr(prefix.size());
-                auto& tuple = new_values[suffix];
-
-                if (tuple.empty())
-                {
-                    tuple.push_back(suffix);
-                    for (size_t i = 0; i < n; ++i)
-                    {
-                        if (entries[i]->get_default_value())
-                        {
-                            tuple.push_back(entries[i]->get_default_value().value());
-                        } else
-                        {
-                            LOGE("The option ",
-                                section->get_name() + "/" + entries[n]->get_prefix() + suffix,
-                                " is neither specified nor has a default value");
-                        }
-                    }
-                }
-
-                // Parse the value from the option, with the n-th type.
-                if (!entries[n]->is_parsable(opt->get_value_str()))
-                {
-                    LOGE("Failed parsing option ",
-                        section->get_name() + "/" + opt->get_name(),
-                        " as part of the list option ",
-                        section->get_name() + "/" + compound.get_name(),
-                        ". Trying to use the default value.");
-                } else if (tuple.size() == n + 1)
-                {
-                    // Update the Nth entry in the tuple (+1 because the first entry
-                    // is the amount of initialized entries).
-                    tuple.push_back(opt->get_value_str());
-                }
-            }
-        }
-
-        for (auto& [suffix, tuple] : new_values)
-        {
-            if ((tuple.size() == n + 1) && entries[n]->get_default_value())
-            {
-                tuple.push_back(entries[n]->get_default_value().value());
-            } else if (tuple.size() == n + 1)
-            {
-                LOGE("The option ",
-                    section->get_name() + "/" + entries[n]->get_prefix() + suffix,
-                    " is neither specified nor has a default value");
-            }
-        }
-    }
-
-    compound_option_t::stored_type_t value;
-    for (auto& e : new_values)
-    {
-        // Ignore entires which do not have all entries set
-        if (e.second.size() != entries.size() + 1)
+        if (should_ignore_option(opt))
         {
             continue;
         }
 
-        value.push_back(std::move(e.second));
+        // iterating from the end ta handle cases where there is a prefix which is a prefix of another prefix
+        // for instance, if there are entries with prefixes `prefix_` and `prefix_smth_` (in that order),
+        // then option with name `prefix_smth_suffix` will be recognised with prefix `prefix_smth_`.
+        for (auto it = entries.rbegin(); it != entries.rend(); ++it)
+        {
+            const auto& entry = *it;
+            if (begins_with(opt->get_name(), entry->get_prefix()))
+            {
+                new_values.emplace(opt->get_name().substr(entry->get_prefix().size()), entries.size() + 1);
+                break;
+            }
+        }
     }
 
-    compound.set_value_untyped(value);
+    compound_option_t::stored_type_t stored_value;
+    for (auto& [suffix, value] : new_values)
+    {
+        value[0] = suffix;
+        for (size_t i = 0; i < entries.size(); ++i)
+        {
+            if (const auto & entry_option =
+                    section->get_option_or(entries[i]->get_prefix() + suffix);
+                entry_option && !should_ignore_option(entry_option))
+            {
+                if (entries[i]->is_parsable(entry_option->get_value_str()))
+                {
+                    value[i + 1] = entry_option->get_value_str();
+                    continue;
+                } else
+                {
+                    LOGE("Failed parsing option ",
+                        section->get_name() + "/" + entry_option->get_name(),
+                        " as part of the list option ",
+                        section->get_name() + "/" + compound.get_name(),
+                        ". Trying to use the default value.");
+                }
+            }
+
+            if (const auto& default_value = entries[i]->get_default_value())
+            {
+                value[i + 1] = *default_value;
+            } else
+            {
+                LOGE("The option ",
+                    section->get_name() + "/" + entries[i]->get_prefix() + suffix,
+                    " is neither specified nor has a default value");
+                value.clear();
+                break;
+            }
+        }
+
+        if (!value.empty())
+        {
+            stored_value.push_back(std::move(value));
+        }
+    }
+
+    compound.set_value_untyped(stored_value);
 }
 
 compound_option_t::stored_type_t compound_option_t::get_value_untyped()

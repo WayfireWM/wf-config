@@ -7,6 +7,7 @@
 #include <wayfire/util/log.hpp>
 #include <vector>
 #include <map>
+#include <optional>
 #include <cassert>
 
 namespace wf
@@ -58,7 +59,7 @@ class compound_option_entry_base_t
     }
 
     /** @return The untyped default value of the tuple entry. */
-    stdx::optional<std::string> get_default_value() const
+    std::optional<std::string> get_default_value() const
     {
         return default_value;
     }
@@ -77,7 +78,7 @@ class compound_option_entry_base_t
     compound_option_entry_base_t() = default;
     std::string prefix;
     std::string name;
-    stdx::optional<std::string> default_value;
+    std::optional<std::string> default_value;
 };
 
 template<class Type>
@@ -85,7 +86,7 @@ class compound_option_entry_t : public compound_option_entry_base_t
 {
   public:
     compound_option_entry_t(const std::string& prefix, const std::string& name = "",
-        const stdx::optional<std::string>& default_value = std::nullopt)
+        const std::optional<std::string>& default_value = std::nullopt)
     {
         this->prefix = prefix;
         this->name   = name;
