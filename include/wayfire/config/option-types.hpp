@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wayfire/nonstd/optional.hpp>
+#include <optional>
 #include <string>
 
 namespace wf
@@ -15,7 +15,7 @@ namespace option_type
  * @return The parsed value, if the string was valid.
  */
 template<class Type>
-stdx::optional<Type> from_string(
+std::optional<Type> from_string(
     const std::string& string);
 
 /**

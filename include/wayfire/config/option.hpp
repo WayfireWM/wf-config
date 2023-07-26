@@ -121,20 +121,20 @@ class bounded_option_base_t<Type, true>
 {
   public:
     /** @return The minimal permissible value for this option, if it is set. */
-    stdx::optional<Type> get_minimum() const
+    std::optional<Type> get_minimum() const
     {
         return minimum;
     }
 
     /** @return The maximal permissible value for this option, if it is set. */
-    stdx::optional<Type> get_maximum() const
+    std::optional<Type> get_maximum() const
     {
         return maximum;
     }
 
   protected:
-    stdx::optional<Type> minimum;
-    stdx::optional<Type> maximum;
+    std::optional<Type> minimum;
+    std::optional<Type> maximum;
 
     /**
      * @return The closest possible value

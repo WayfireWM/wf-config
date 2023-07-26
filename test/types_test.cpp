@@ -81,7 +81,7 @@ static void check_color_equals(const wf::color_t& color,
 }
 
 static void check_color_equals(
-    const stdx::optional<wf::color_t>& color,
+    const std::optional<wf::color_t>& color,
     double r, double g, double b, double a)
 {
     check_color_equals(color.value(), r, g, b, a);

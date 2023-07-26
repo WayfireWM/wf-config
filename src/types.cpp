@@ -9,7 +9,7 @@
 
 /* --------------------------- Primitive types ------------------------------ */
 template<>
-stdx::optional<bool> wf::option_type::from_string(const std::string& value)
+std::optional<bool> wf::option_type::from_string(const std::string& value)
 {
     std::string lowercase = value;
     for (auto& c : lowercase)
@@ -31,7 +31,7 @@ stdx::optional<bool> wf::option_type::from_string(const std::string& value)
 }
 
 template<>
-stdx::optional<int> wf::option_type::from_string(const std::string& value)
+std::optional<int> wf::option_type::from_string(const std::string& value)
 {
     std::istringstream in{value};
     in.imbue(std::locale::classic());
@@ -48,7 +48,7 @@ stdx::optional<int> wf::option_type::from_string(const std::string& value)
 
 /** Attempt to parse a string as an double value */
 template<>
-stdx::optional<double> wf::option_type::from_string(const std::string& value)
+std::optional<double> wf::option_type::from_string(const std::string& value)
 {
     std::istringstream in{value};
     in.imbue(std::locale::classic());
@@ -65,7 +65,7 @@ stdx::optional<double> wf::option_type::from_string(const std::string& value)
 }
 
 template<>
-stdx::optional<std::string> wf::option_type::from_string(const std::string& value)
+std::optional<std::string> wf::option_type::from_string(const std::string& value)
 {
     return value;
 }
@@ -127,7 +127,7 @@ static double hex_to_double(std::string value)
     return std::strtol(value.c_str(), &dummy, 16);
 }
 
-static stdx::optional<wf::color_t> try_parse_rgba(const std::string& value)
+static std::optional<wf::color_t> try_parse_rgba(const std::string& value)
 {
     wf::color_t parsed = {0, 0, 0, 0};
     std::stringstream ss(value);
@@ -140,13 +140,13 @@ static stdx::optional<wf::color_t> try_parse_rgba(const std::string& value)
     std::string dummy;
     valid_color &= !(bool)(ss >> dummy);
 
-    return valid_color ? parsed : stdx::optional<wf::color_t>{};
+    return valid_color ? parsed : std::optional<wf::color_t>{};
 }
 
 #include <iostream>
 static const std::string hex_digits = "0123456789ABCDEF";
 template<>
-stdx::optional<wf::color_t> wf::option_type::from_string(
+std::optional<wf::color_t> wf::option_type::from_string(
     const std::string& param_value)
 {
     auto value = param_value;
@@ -328,7 +328,7 @@ static std::string filter_out(std::string value, std::string filter)
 
 static const std::string whitespace_chars = " \t\n\r\v\b";
 
-static stdx::optional<general_binding_t> parse_binding(
+static std::optional<general_binding_t> parse_binding(
     std::string binding_description)
 {
     /* Handle disabled bindings */
@@ -413,7 +413,7 @@ wf::keybinding_t::keybinding_t(uint32_t modifier, uint32_t keyval)
 }
 
 template<>
-stdx::optional<wf::keybinding_t> wf::option_type::from_string(
+std::optional<wf::keybinding_t> wf::option_type::from_string(
     const std::string& description)
 {
     auto parsed_opt = parse_binding(description);
@@ -475,7 +475,7 @@ wf::buttonbinding_t::buttonbinding_t(uint32_t modifier, uint32_t buttonval)
 }
 
 template<>
-stdx::optional<wf::buttonbinding_t> wf::option_type::from_string(
+std::optional<wf::buttonbinding_t> wf::option_type::from_string(
     const std::string& description)
 {
     auto parsed_opt = parse_binding(description);
@@ -649,7 +649,7 @@ wf::touchgesture_t parse_gesture(const std::string& value)
 }
 
 template<>
-stdx::optional<wf::touchgesture_t> wf::option_type::from_string(
+std::optional<wf::touchgesture_t> wf::option_type::from_string(
     const std::string& description)
 {
     auto as_binding = parse_binding(description);
@@ -793,7 +793,7 @@ bool try_add_binding(
 }
 
 template<>
-stdx::optional<wf::activatorbinding_t> wf::option_type::from_string(
+std::optional<wf::activatorbinding_t> wf::option_type::from_string(
     const std::string& string)
 {
     activatorbinding_t binding;
@@ -933,7 +933,7 @@ static std::map<std::string, wf::output_edge_t> hotspot_edges =
 };
 
 template<>
-stdx::optional<wf::hotspot_binding_t> wf::option_type::from_string(
+std::optional<wf::hotspot_binding_t> wf::option_type::from_string(
     const std::string& description)
 {
     std::istringstream stream{description};
@@ -1099,7 +1099,7 @@ bool wf::output_config::mode_t::operator ==(const mode_t& other) const
 }
 
 template<>
-stdx::optional<wf::output_config::mode_t> wf::option_type::from_string(
+std::optional<wf::output_config::mode_t> wf::option_type::from_string(
     const std::string& string)
 {
     if (string == "off")
@@ -1228,7 +1228,7 @@ bool wf::output_config::position_t::operator ==(const position_t& other) const
 }
 
 template<>
-stdx::optional<wf::output_config::position_t> wf::option_type::from_string(
+std::optional<wf::output_config::position_t> wf::option_type::from_string(
     const std::string& string)
 {
     if ((string == "auto") || (string == "default"))
