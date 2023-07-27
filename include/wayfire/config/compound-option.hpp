@@ -3,9 +3,11 @@
 #include <string>
 #include <wayfire/config/types.hpp>
 #include <wayfire/config/option.hpp>
+#include <wayfire/config/option-types.hpp>
 #include <wayfire/util/log.hpp>
 #include <vector>
 #include <map>
+#include <optional>
 #include <cassert>
 
 namespace wf
@@ -56,6 +58,12 @@ class compound_option_entry_base_t
         return name;
     }
 
+    /** @return The untyped default value of the tuple entry. */
+    std::optional<std::string> get_default_value() const
+    {
+        return default_value;
+    }
+
     /**
      * Try to parse the given value.
      *
@@ -70,22 +78,25 @@ class compound_option_entry_base_t
     compound_option_entry_base_t() = default;
     std::string prefix;
     std::string name;
+    std::optional<std::string> default_value;
 };
 
 template<class Type>
 class compound_option_entry_t : public compound_option_entry_base_t
 {
   public:
-    compound_option_entry_t(const std::string& prefix, const std::string& name = "")
+    compound_option_entry_t(const std::string& prefix, const std::string& name = "",
+        const std::optional<std::string>& default_value = std::nullopt)
     {
         this->prefix = prefix;
         this->name   = name;
+        this->default_value = default_value;
+        assert(!this->default_value || is_parsable(this->default_value.value()));
     }
 
     compound_option_entry_base_t *clone() const override
     {
-        return new compound_option_entry_t<Type>(this->get_prefix(),
-            this->get_name());
+        return new compound_option_entry_t<Type>(*this);
     }
 
     /**

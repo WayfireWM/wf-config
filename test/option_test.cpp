@@ -255,6 +255,63 @@ TEST_CASE("compound options")
     CHECK(!opt.set_value_untyped(v4));
 }
 
+TEST_CASE("compound option with default values")
+{
+    using namespace wf;
+    using namespace wf::config;
+
+    compound_option_t::entries_t entries;
+    entries.push_back(std::make_unique<compound_option_entry_t<int>>("int_", "int",
+        "42"));
+    entries.push_back(std::make_unique<compound_option_entry_t<double>>("double_",
+        "double"));
+    entries.push_back(std::make_unique<compound_option_entry_t<std::string>>("str_",
+        "str", "default"));
+
+    compound_option_t opt("Test", std::move(entries));
+
+    auto section = std::make_shared<section_t>("TestSection");
+    // k1 -- all entries are scecified
+    // k2 -- double value is unspecified (error)
+    // k3 -- invalid int value, should use the default one
+    // k4 -- only double value is specified
+    section->register_new_option(std::make_shared<option_t<int>>("int_k1", 1));
+    section->register_new_option(std::make_shared<option_t<int>>("int_k2", 2));
+    section->register_new_option(std::make_shared<option_t<std::string>>("int_k3",
+        "invalid"));
+
+    section->register_new_option(std::make_shared<option_t<double>>("double_k1",
+        1.0));
+    section->register_new_option(std::make_shared<option_t<double>>("double_k3",
+        3.0));
+    section->register_new_option(std::make_shared<option_t<double>>("double_k4",
+        4.0));
+
+    section->register_new_option(std::make_shared<option_t<std::string>>("str_k1",
+        "s1"));
+    section->register_new_option(std::make_shared<option_t<std::string>>("str_k2",
+        "s2"));
+    section->register_new_option(std::make_shared<option_t<std::string>>("str_k3",
+        "s3"));
+
+    // Mark all options as coming from the config file, otherwise, they wont' be
+    // parsed
+    for (auto& opt : section->get_registered_options())
+    {
+        opt->priv->option_in_config_file = true;
+    }
+
+    update_compound_from_section(opt, section);
+    auto values = opt.get_value<int, double, std::string>();
+
+    REQUIRE(values.size() == 3);
+    std::sort(values.begin(), values.end());
+
+    CHECK(values[0] == std::tuple{"k1", 1, 1.0, "s1"});
+    CHECK(values[1] == std::tuple{"k3", 42, 3.0, "s3"});
+    CHECK(values[2] == std::tuple{"k4", 42, 4.0, "default"});
+}
+
 TEST_CASE("Plain list compound options")
 {
     using namespace wf::config;

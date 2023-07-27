@@ -130,7 +130,7 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
     wf::config::compound_option_t::entries_t entries;
     GET_OPTIONAL_XML_PROP(node, type_hint, "type-hint");
 
-    if (not type_hint.size())
+    if (type_hint.empty())
     {
         type_hint = "dict";
     }
@@ -146,39 +146,48 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
             GET_XML_PROP_OR_BAIL(node, type, "type");
             GET_OPTIONAL_XML_PROP(node, name, "name");
 
+            std::optional<std::string> default_value = std::nullopt;
+            if (const auto& default_value_raw = extract_value(node, "default"))
+            {
+                default_value = (const char*)default_value_raw.value();
+            }
+
             if (type == "int")
             {
-                entries.push_back(std::make_unique<entry_t<int>>(prefix, name));
+                entries.push_back(std::make_unique<entry_t<int>>(prefix, name,
+                    default_value));
             } else if (type == "double")
             {
-                entries.push_back(std::make_unique<entry_t<double>>(prefix, name));
+                entries.push_back(std::make_unique<entry_t<double>>(prefix, name,
+                    default_value));
             } else if (type == "bool")
             {
-                entries.push_back(std::make_unique<entry_t<bool>>(prefix, name));
+                entries.push_back(std::make_unique<entry_t<bool>>(prefix, name,
+                    default_value));
             } else if (type == "string")
             {
                 entries.push_back(std::make_unique<entry_t<std::string>>(prefix,
-                    name));
+                    name, default_value));
             } else if (type == "key")
             {
                 entries.push_back(std::make_unique<entry_t<wf::keybinding_t>>(prefix,
-                    name));
+                    name, default_value));
             } else if (type == "button")
             {
                 entries.push_back(std::make_unique<entry_t<wf::buttonbinding_t>>(
-                    prefix, name));
+                    prefix, name, default_value));
             } else if (type == "gesture")
             {
                 entries.push_back(std::make_unique<entry_t<wf::touchgesture_t>>(
-                    prefix, name));
+                    prefix, name, default_value));
             } else if (type == "color")
             {
                 entries.push_back(std::make_unique<entry_t<wf::color_t>>(prefix,
-                    name));
+                    name, default_value));
             } else if (type == "activator")
             {
                 entries.push_back(std::make_unique<entry_t<wf::activatorbinding_t>>(
-                    prefix, name));
+                    prefix, name, default_value));
             } else
             {
                 LOGE("Could not parse ", node->doc->URL,

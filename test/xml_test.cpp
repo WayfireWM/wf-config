@@ -120,6 +120,16 @@ static const std::string xml_option_missing_default_value =
 </option>
 )";
 
+static const std::string xml_option_dyn_list_default =
+    R"(
+<option name="DynListDefault" type="dynamic-list">
+    <entry prefix="with_default_" type="int">
+        <default>9</default>
+    </entry>
+    <entry prefix="no_default_" type="string"/>
+</option>
+)";
+
 #include "expect_line.hpp"
 
 TEST_CASE("wf::config::xml::create_option")
@@ -214,6 +224,26 @@ TEST_CASE("wf::config::xml::create_option")
             dynamic_cast<wc::compound_option_entry_t<std::string>*>(entries[0].get()));
         CHECK(dynamic_cast<wc::compound_option_entry_t<wf::activatorbinding_t>*>(
             entries[1].get()));
+    }
+
+    SUBCASE("DynamicListDefaultOption")
+    {
+        auto option = initialize_option(xml_option_dyn_list_default);
+        REQUIRE(option != nullptr);
+
+        auto as_co = std::dynamic_pointer_cast<wc::compound_option_t>(option);
+        REQUIRE(as_co != nullptr);
+
+        CHECK(as_co->get_value<int, std::string>() ==
+            wf::config::compound_list_t<int, std::string>{});
+
+        const auto& entries = as_co->get_entries();
+        REQUIRE(entries.size() == 2);
+        CHECK(dynamic_cast<wc::compound_option_entry_t<int>*>(entries[0].get()));
+        REQUIRE(entries[0]->get_default_value() == "9");
+        CHECK(
+            dynamic_cast<wc::compound_option_entry_t<std::string>*>(entries[1].get()));
+        REQUIRE(entries[1]->get_default_value() == std::nullopt);
     }
 
     /* Generate a subcase where the given xml source can't be parsed to an
