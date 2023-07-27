@@ -17,7 +17,7 @@ namespace option_type
  * @return The parsed value, if the string was valid.
  */
 template<class Type>
-stdx::optional<Type> from_string(
+std::optional<Type> from_string(
     const std::string& string);
 
 /**
@@ -33,7 +33,7 @@ std::string to_string(const Type& value);
  * Parse the given string as a signed 32-bit integer in decimal system.
  */
 template<>
-stdx::optional<int> from_string<int>(const std::string&);
+std::optional<int> from_string<int>(const std::string&);
 
 /**
  * Parse the given string as a boolean value.
@@ -41,20 +41,20 @@ stdx::optional<int> from_string<int>(const std::string&);
  * False values are "False" (any capitalization) and 0.
  */
 template<>
-stdx::optional<bool> from_string<bool>(const std::string&);
+std::optional<bool> from_string<bool>(const std::string&);
 
 /**
  * Parse the given string as a signed 64-bit floating point number.
  */
 template<>
-stdx::optional<double> from_string<double>(const std::string&);
+std::optional<double> from_string<double>(const std::string&);
 
 /**
  * Parse the string as a string.
  * The string should not contain newline characters.
  */
 template<>
-stdx::optional<std::string> from_string<std::string>(const std::string&);
+std::optional<std::string> from_string<std::string>(const std::string&);
 
 /**
  * Convert the given bool to a string.
@@ -125,7 +125,7 @@ namespace option_type
  * #RRGGBBAA or #RGBA.
  */
 template<>
-stdx::optional<color_t> from_string(const std::string& value);
+std::optional<color_t> from_string(const std::string& value);
 
 /** Convert the color to its hex string representation. */
 template<>
@@ -193,7 +193,7 @@ namespace option_type
  * key 0.
  */
 template<>
-stdx::optional<keybinding_t> from_string(
+std::optional<keybinding_t> from_string(
     const std::string& description);
 
 /** Represent the keybinding as a string. */
@@ -239,7 +239,7 @@ namespace option_type
  * mod = button = 0
  */
 template<>
-stdx::optional<buttonbinding_t> from_string(
+std::optional<buttonbinding_t> from_string(
     const std::string& description);
 
 /** Represent the buttonbinding as a string. */
@@ -334,7 +334,7 @@ namespace option_type
  * 4. disable | none
  */
 template<>
-stdx::optional<touchgesture_t> from_string(
+std::optional<touchgesture_t> from_string(
     const std::string& description);
 
 /** Represent the touch gesture as a string. */
@@ -403,7 +403,7 @@ namespace option_type
  * hotspot top|...|top-left|... <along>x<away> <timeout>
  */
 template<>
-stdx::optional<hotspot_binding_t> from_string(
+std::optional<hotspot_binding_t> from_string(
     const std::string& description);
 
 /** Represent the hotspot binding as a string. */
@@ -465,7 +465,7 @@ namespace option_type
  * and touch gestures, separated by a single '|' sign.
  */
 template<>
-stdx::optional<activatorbinding_t> from_string(
+std::optional<activatorbinding_t> from_string(
     const std::string& string);
 
 /** Represent the activator binding as a string. */
@@ -587,7 +587,7 @@ namespace option_type
  * For MODE_MIRROR: mirror <output>
  */
 template<>
-stdx::optional<output_config::mode_t> from_string(
+std::optional<output_config::mode_t> from_string(
     const std::string& string);
 
 /** Represent the activator binding as a string. */
@@ -602,7 +602,7 @@ std::string to_string(const output_config::mode_t& value);
  * x , y
  */
 template<>
-stdx::optional<output_config::position_t> from_string(
+std::optional<output_config::position_t> from_string(
     const std::string& string);
 
 /** Represent the activator binding as a string. */

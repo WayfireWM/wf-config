@@ -16,10 +16,5 @@ headers_util = [
 'wayfire/util/duration.hpp'
 ]
 
-headers_nonstd = [
-'wayfire/nonstd/optional.hpp'
-]
-
 install_headers(headers_config, subdir: 'wayfire/config')
 install_headers(headers_util, subdir: 'wayfire/util')
-install_headers(headers_nonstd, subdir: 'wayfire/nonstd')

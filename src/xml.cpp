@@ -7,10 +7,10 @@
 #include "section-impl.hpp"
 #include "option-impl.hpp"
 
-static stdx::optional<const xmlChar*> extract_value(xmlNodePtr node,
+static std::optional<const xmlChar*> extract_value(xmlNodePtr node,
     std::string value_name)
 {
-    stdx::optional<const xmlChar*> value_ptr;
+    std::optional<const xmlChar*> value_ptr;
 
     auto child_ptr = node->children;
     while (child_ptr != nullptr)
@@ -62,8 +62,8 @@ enum bounds_error_t
 template<class T>
 bounds_error_t set_bounds(
     std::shared_ptr<wf::config::option_base_t>& option,
-    stdx::optional<const xmlChar*> min_ptr,
-    stdx::optional<const xmlChar*> max_ptr)
+    std::optional<const xmlChar*> min_ptr,
+    std::optional<const xmlChar*> max_ptr)
 {
     if (!option)
     {
@@ -89,7 +89,7 @@ bounds_error_t set_bounds(
 
     if (max_ptr)
     {
-        stdx::optional<T> value = wf::option_type::from_string<T>(
+        std::optional<T> value = wf::option_type::from_string<T>(
             (const char*)max_ptr.value());
         if (value)
         {
