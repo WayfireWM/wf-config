@@ -523,7 +523,7 @@ void wf::config::save_configuration_to_file(
 }
 
 static void process_xml_file(wf::config::config_manager_t& manager,
-    const std::string &filename)
+    const std::string & filename)
 {
     LOGI("Reading XML configuration options from file ", filename);
 
@@ -549,7 +549,7 @@ static void process_xml_file(wf::config::config_manager_t& manager,
     {
         if ((section->type == XML_ELEMENT_NODE) &&
             (((const char*)section->name == (std::string)"plugin") ||
-                ((const char*)section->name == (std::string)"object")))
+             ((const char*)section->name == (std::string)"object")))
         {
             manager.merge_section(
                 wf::config::xml::create_section_from_xml_node(section));
