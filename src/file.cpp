@@ -522,27 +522,28 @@ void wf::config::save_configuration_to_file(
     fout << std::endl;
 }
 
-/**
- * Parse the XML file and return the node which corresponds to the section.
- */
-static xmlNodePtr find_section_start_node(const std::string& file)
+static void process_xml_file(wf::config::config_manager_t& manager,
+    const std::string & filename)
 {
-    auto doc = xmlParseFile(file.c_str());
+    LOGI("Reading XML configuration options from file ", filename);
+
+    /* Parse the XML file. */
+    auto doc = xmlParseFile(filename.c_str());
     if (!doc)
     {
-        LOGE("Failed to parse XML file ", file);
-        return nullptr;
+        LOGE("Failed to parse XML file ", filename);
+        return;
     }
 
     auto root = xmlDocGetRootElement(doc);
     if (!root)
     {
-        LOGE(file, ": missing root element.");
+        LOGE(filename, ": missing root element.");
         xmlFreeDoc(doc);
-        return nullptr;
+        return;
     }
 
-    /* Seek the plugin section */
+    /* Seek the plugin/object sections */
     auto section = root->children;
     while (section != nullptr)
     {
@@ -550,13 +551,14 @@ static xmlNodePtr find_section_start_node(const std::string& file)
             (((const char*)section->name == (std::string)"plugin") ||
              ((const char*)section->name == (std::string)"object")))
         {
-            break;
+            manager.merge_section(
+                wf::config::xml::create_section_from_xml_node(section));
         }
 
         section = section->next;
     }
 
-    return section;
+    // xmlFreeDoc(doc); - May clear the XML nodes before they are used
 }
 
 static wf::config::config_manager_t load_xml_files(
@@ -587,13 +589,7 @@ static wf::config::config_manager_t load_xml_files(
             if ((filename.length() > 4) &&
                 (filename.rfind(".xml") == filename.length() - 4))
             {
-                LOGI("Reading XML configuration options from file ", filename);
-                auto node = find_section_start_node(filename);
-                if (node)
-                {
-                    manager.merge_section(
-                        wf::config::xml::create_section_from_xml_node(node));
-                }
+                process_xml_file(manager, filename);
             }
         }
 
