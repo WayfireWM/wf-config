@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cassert>
 #include <set>
+#include <algorithm>
 
 #include "option-impl.hpp"
 
