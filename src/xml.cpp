@@ -1,4 +1,3 @@
-#include <cstring>
 #include <wayfire/config/xml.hpp>
 #include <wayfire/config/types.hpp>
 #include <wayfire/util/log.hpp>
@@ -6,6 +5,7 @@
 
 #include "section-impl.hpp"
 #include "option-impl.hpp"
+#include "wayfire/util/duration.hpp"
 
 static std::optional<const xmlChar*> extract_value(xmlNodePtr node,
     std::string value_name)
@@ -188,6 +188,10 @@ std::shared_ptr<wf::config::option_base_t> parse_compound_option(xmlNodePtr node
             {
                 entries.push_back(std::make_unique<entry_t<wf::activatorbinding_t>>(
                     prefix, name, default_value));
+            } else if (type == "animation")
+            {
+                entries.push_back(std::make_unique<entry_t<wf::animation_description_t>>(
+                    prefix, name, default_value));
             } else
             {
                 LOGE("Could not parse ", node->doc->URL,
@@ -281,6 +285,9 @@ std::shared_ptr<wf::config::option_base_t> wf::config::xml::create_option_from_x
     } else if (type == "output::position")
     {
         option = create_option<wf::output_config::position_t>(name, default_value);
+    } else if (type == "animation")
+    {
+        option = create_option<wf::animation_description_t>(name, default_value);
     } else
     {
         LOGE("Could not parse ", node->doc->URL,

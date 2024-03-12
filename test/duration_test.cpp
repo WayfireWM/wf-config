@@ -11,8 +11,7 @@ using namespace wf::animation;
 
 TEST_CASE("wf::animation::duration_t")
 {
-    auto length = std::make_shared<option_t<int>>("length", 100);
-    duration_t duration{length, smoothing::linear};
+    duration_t duration;
 
     auto check_lifetime = [&] ()
     {
@@ -35,6 +34,23 @@ TEST_CASE("wf::animation::duration_t")
         CHECK(duration.running() == false);
         CHECK(duration.running() == false);
     };
+
+    SUBCASE("Int option")
+    {
+        auto length = std::make_shared<option_t<int>>("length", 100);
+        duration = duration_t{length, smoothing::linear};
+    }
+
+    SUBCASE("Animation option")
+    {
+        auto length = std::make_shared<option_t<wf::animation_description_t>>("length",
+            wf::animation_description_t{
+            .length_ms = 100,
+            .easing    = smoothing::linear,
+            .easing_name = "linear",
+        });
+        duration = duration_t{length};
+    }
 
     /* Check twice, so that we can test restarting */
     check_lifetime();

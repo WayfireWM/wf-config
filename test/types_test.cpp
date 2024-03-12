@@ -1,3 +1,4 @@
+#include "wayfire/util/duration.hpp"
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
@@ -498,4 +499,41 @@ TEST_CASE("wf::output_config::position_t")
     CHECK(!from_string<pt>("test"));
     CHECK(!from_string<pt>("129 129"));
     CHECK(!from_string<pt>("129,"));
+}
+
+TEST_CASE("wf::animation::animation_description_t")
+{
+    using adt = wf::animation_description_t;
+    CHECK(!from_string<adt>("test"));
+    CHECK(!from_string<adt>("100ss"));
+    CHECK(!from_string<adt>("100 ms invalideasing"));
+    CHECK(!from_string<adt>("100 ms linear trailing"));
+
+    adt circle100 = {
+        .length_ms = 100,
+        .easing    = wf::animation::smoothing::circle,
+        .easing_name = "circle",
+    };
+    std::string circle100_str   = "100";
+    std::string circle100_str_2 = "100 ms";
+
+    adt linear8s = {
+        .length_ms = 8500,
+        .easing    = wf::animation::smoothing::linear,
+        .easing_name = "linear",
+    };
+    std::string linear8s_str = "8.5s linear";
+
+    adt sigmoid250ms = {
+        .length_ms = 250,
+        .easing    = wf::animation::smoothing::sigmoid,
+        .easing_name = "sigmoid",
+    };
+    std::string sigmoid250ms_str = "250ms sigmoid";
+
+    CHECK(from_string<adt>(circle100_str) == circle100);
+    CHECK(from_string<adt>(circle100_str_2) == circle100);
+    CHECK(from_string<adt>(linear8s_str) == linear8s);
+    CHECK(from_string<adt>(sigmoid250ms_str) == sigmoid250ms);
+    CHECK(to_string<adt>(sigmoid250ms) == sigmoid250ms_str);
 }
