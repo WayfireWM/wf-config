@@ -230,6 +230,42 @@ void wf::animation::simple_animation_t::animate()
 
 namespace wf
 {
+namespace animation
+{
+namespace smoothing
+{
+// Thanks https://github.com/MrRobinOfficial/EasingFunctions
+smooth_function ease_out_elastic = [] (double x) -> double
+{
+    float d = 1.0f;
+    float p = d * 0.6f;
+    float s;
+    float a = 0;
+
+    if (x == 0)
+    {
+        return 0;
+    }
+
+    if ((x /= d) == 1)
+    {
+        return 1;
+    }
+
+    if ((a == 0.0f) || (a < std::abs(1.0)))
+    {
+        a = 1.0;
+        s = p * 0.25f;
+    } else
+    {
+        s = p / (2 * std::acos(-1)) * std::asin(1.0 / a);
+    }
+
+    return (a * std::pow(2, -10 * x) * std::sin((x * d - s) * (2 * std::acos(-1)) / p) + 1.0);
+};
+}
+}
+
 namespace option_type
 {
 template<>
@@ -269,6 +305,7 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
         {"linear", animation::smoothing::linear},
         {"circle", animation::smoothing::circle},
         {"sigmoid", animation::smoothing::sigmoid},
+        {"easeOutElastic", animation::smoothing::ease_out_elastic},
     };
 
     if (!easing_map.count(result.easing_name))
