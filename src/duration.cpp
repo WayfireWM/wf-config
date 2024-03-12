@@ -1,7 +1,9 @@
 #include <wayfire/util/duration.hpp>
 #include <wayfire/util/log.hpp>
+#include <wayfire/config/types.hpp>
 #include <chrono>
 #include <cmath>
+#include <map>
 
 namespace wf
 {
@@ -18,7 +20,7 @@ const double sigmoid_max = 1 + std::exp(-6);
 smooth_function sigmoid  =
     [] (double x) -> double { return sigmoid_max / (1 + exp(-12 * x + 6)); };
 }
-}
+} // namespace animation
 }
 
 class wf::animation::duration_t::impl
@@ -27,6 +29,8 @@ class wf::animation::duration_t::impl
     decltype(std::chrono::system_clock::now()) start_point;
 
     std::shared_ptr<wf::config::option_t<int>> length;
+    std::shared_ptr<wf::config::option_t<animation_description_t>> descr;
+
     smoothing::smooth_function smooth_function;
     bool is_running = false;
     bool reverse    = false;
@@ -40,6 +44,11 @@ class wf::animation::duration_t::impl
 
     int get_duration() const
     {
+        if (descr)
+        {
+            return std::max(1, descr->get_value().length_ms);
+        }
+
         if (length)
         {
             return std::max(1, length->get_value());
@@ -56,7 +65,7 @@ class wf::animation::duration_t::impl
 
     double get_progress_percentage() const
     {
-        if (!length || is_ready())
+        if ((!length && !descr) || is_ready())
         {
             return 1.0;
         }
@@ -77,20 +86,30 @@ class wf::animation::duration_t::impl
             return reverse ? 0.0 : 1.0;
         }
 
-        return smooth_function(get_progress_percentage());
+        if (descr)
+        {
+            return descr->get_value().easing(get_progress_percentage());
+        } else
+        {
+            return smooth_function(get_progress_percentage());
+        }
     }
 };
-
 
 wf::animation::duration_t::duration_t(
     std::shared_ptr<wf::config::option_t<int>> length,
     smoothing::smooth_function smooth)
 {
     this->priv = std::make_shared<impl>();
-    this->priv->length     = length;
-    this->priv->is_running = false;
-    this->priv->reverse    = false;
+    this->priv->length = length;
     this->priv->smooth_function = smooth;
+}
+
+wf::animation::duration_t::duration_t(
+    std::shared_ptr<wf::config::option_t<animation_description_t>> length)
+{
+    this->priv = std::make_shared<impl>();
+    this->priv->descr = length;
 }
 
 wf::animation::duration_t::duration_t(const duration_t& other)
@@ -186,6 +205,11 @@ wf::animation::simple_animation_t::simple_animation_t(
     timed_transition_t((duration_t&)*this)
 {}
 
+wf::animation::simple_animation_t::simple_animation_t(
+    std::shared_ptr<wf::config::option_t<animation_description_t>> length) :
+    duration_t(length), timed_transition_t((duration_t&)*this)
+{}
+
 void wf::animation::simple_animation_t::animate(double start, double end)
 {
     this->set(start, end);
@@ -202,4 +226,79 @@ void wf::animation::simple_animation_t::animate()
 {
     this->restart_same_end();
     this->duration_t::start();
+}
+
+namespace wf
+{
+namespace option_type
+{
+template<>
+std::optional<animation_description_t> from_string<animation_description_t>(const std::string& value)
+{
+    // Format 1: N (backwards compatible fallback)
+    if (auto val = from_string<int>(value))
+    {
+        return animation_description_t{
+            .length_ms = *val,
+            .easing    = animation::smoothing::circle,
+            .easing_name = "circle",
+        };
+    }
+
+    // Format 2: N <s|ms> <easing>
+    std::istringstream stream(value);
+    double N;
+    std::string suffix, easing;
+    if (!(stream >> N >> suffix))
+    {
+        return {};
+    }
+
+    animation_description_t result;
+    if ((suffix != "ms") && (suffix != "s"))
+    {
+        return {};
+    }
+
+    if (!(stream >> result.easing_name))
+    {
+        result.easing_name = "circle";
+    }
+
+    static const std::map<std::string, animation::smoothing::smooth_function> easing_map = {
+        {"linear", animation::smoothing::linear},
+        {"circle", animation::smoothing::circle},
+        {"sigmoid", animation::smoothing::sigmoid},
+    };
+
+    if (!easing_map.count(result.easing_name))
+    {
+        return {};
+    }
+
+    std::string tmp;
+    if (stream >> tmp)
+    {
+        // Trailing data
+        return {};
+    }
+
+    result.easing = easing_map.at(result.easing_name);
+    if (suffix == "s")
+    {
+        result.length_ms = N * 1000;
+    } else
+    {
+        result.length_ms = N;
+    }
+
+    return result;
+}
+
+template<>
+std::string to_string<animation_description_t>(const animation_description_t& value)
+{
+    return to_string(value.length_ms) + "ms " + to_string(value.easing_name);
+}
+}
 }

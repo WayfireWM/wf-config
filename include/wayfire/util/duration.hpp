@@ -1,5 +1,8 @@
 #pragma once
 #include <wayfire/config/option.hpp>
+#include <wayfire/config/option-types.hpp>
+#include <functional>
+
 
 namespace wf
 {
@@ -21,7 +24,37 @@ extern smooth_function circle;
 /** "sigmoid" smoothing function, i.e x -> 1.0 / (1 + exp(-12 * x + 6)) */
 extern smooth_function sigmoid;
 }
+}
 
+struct animation_description_t
+{
+    int length_ms;
+    animation::smoothing::smooth_function easing;
+    std::string easing_name;
+
+    bool operator ==(const animation_description_t& other) const
+    {
+        return (length_ms == other.length_ms) && (easing_name == other.easing_name);
+    }
+};
+
+namespace option_type
+{
+/**
+ * Parse the string as an animation description.
+ */
+template<>
+std::optional<animation_description_t> from_string<animation_description_t>(const std::string& value);
+
+/**
+ * Convert the given animation description to a string.
+ */
+template<>
+std::string to_string<animation_description_t>(const animation_description_t& value);
+}
+
+namespace animation
+{
 /**
  * A transition from start to end.
  */
@@ -46,6 +79,8 @@ class duration_t
      */
     duration_t(std::shared_ptr<wf::config::option_t<int>> length = nullptr,
         smoothing::smooth_function smooth = smoothing::circle);
+
+    duration_t(std::shared_ptr<wf::config::option_t<animation_description_t>> length);
 
     /* Copy-constructor */
     duration_t(const duration_t& other);
@@ -158,6 +193,8 @@ class simple_animation_t : public duration_t, public timed_transition_t
     simple_animation_t(
         std::shared_ptr<wf::config::option_t<int>> length = nullptr,
         smoothing::smooth_function smooth = smoothing::circle);
+
+    simple_animation_t(std::shared_ptr<wf::config::option_t<animation_description_t>> length);
 
     /**
      * Set the start and the end of the animation and start the duration.
