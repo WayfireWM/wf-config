@@ -445,6 +445,11 @@ struct activatorbinding_t
     const std::vector<wf::hotspot_binding_t>& get_hotspots() const;
 
     /**
+     * @return A list of all unknown bindings which activate this binding.
+     */
+    const std::vector<std::string>& get_extensions() const;
+
+    /**
      * Check equality of two activator bindings.
      *
      * @return true if the two activator bindings are activated by the exact
