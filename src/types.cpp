@@ -753,6 +753,7 @@ struct wf::activatorbinding_t::impl
     std::vector<buttonbinding_t> buttons;
     std::vector<touchgesture_t> gestures;
     std::vector<hotspot_binding_t> hotspots;
+    std::vector<std::string> extensions;
 };
 
 wf::activatorbinding_t::activatorbinding_t()
@@ -792,6 +793,21 @@ bool try_add_binding(
     return false;
 }
 
+static std::string filter_trailing_leading(std::string token)
+{
+    while (!token.empty() && token.back() == ' ')
+    {
+        token.pop_back();
+    }
+
+    while (!token.empty() && token.front() == ' ')
+    {
+        token.erase(token.begin());
+    }
+
+    return token;
+}
+
 template<>
 std::optional<wf::activatorbinding_t> wf::option_type::from_string(
     const std::string& string)
@@ -806,6 +822,13 @@ std::optional<wf::activatorbinding_t> wf::option_type::from_string(
     auto tokens = split_at(string, "|", true);
     for (auto& token : tokens)
     {
+        const bool only_whitespace = std::all_of(token.begin(), token.end(),
+            [] (char c) { return std::isspace(c); });
+        if (only_whitespace)
+        {
+            return {};
+        }
+
         bool is_valid_binding =
             try_add_binding(binding.priv->keys, token) ||
             try_add_binding(binding.priv->buttons, token) ||
@@ -814,7 +837,7 @@ std::optional<wf::activatorbinding_t> wf::option_type::from_string(
 
         if (!is_valid_binding)
         {
-            return {};
+            binding.priv->extensions.push_back(filter_trailing_leading(token));
         }
     }
 
@@ -877,10 +900,28 @@ bool wf::activatorbinding_t::has_match(const touchgesture_t& gesture) const
 
 bool wf::activatorbinding_t::operator ==(const activatorbinding_t& other) const
 {
+    if (other.get_extensions().size() != this->get_extensions().size())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < other.get_extensions().size(); i++)
+    {
+        if (other.get_extensions()[i] != this->get_extensions()[i])
+        {
+            return false;
+        }
+    }
+
     return priv->keys == other.priv->keys &&
            priv->buttons == other.priv->buttons &&
            priv->gestures == other.priv->gestures &&
            priv->hotspots == other.priv->hotspots;
+}
+
+const std::vector<std::string>& wf::activatorbinding_t::get_extensions() const
+{
+    return priv->extensions;
 }
 
 const std::vector<wf::hotspot_binding_t>& wf::activatorbinding_t::get_hotspots()

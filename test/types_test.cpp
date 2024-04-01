@@ -401,8 +401,13 @@ TEST_CASE("wf::activatorbinding_t")
         0, 1);
 
     CHECK(!from_string<activatorbinding_t>("<alt> KEY_K || <alt> KEY_U"));
-    CHECK(!from_string<activatorbinding_t>("<alt> KEY_K | thrash"));
     CHECK(!from_string<activatorbinding_t>("<alt> KEY_K |"));
+
+    auto with_ext = from_string<activatorbinding_t>("<alt> KEY_T | thrash");
+    CHECK(with_ext.has_value() == true);
+    CHECK(with_ext->get_extensions().size() == 1);
+    CHECK(with_ext->get_extensions().front() == "thrash");
+    CHECK(with_ext->has_match(kb1));
 }
 
 TEST_CASE("wf::output_config::mode_t")
