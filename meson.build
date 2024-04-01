@@ -13,7 +13,11 @@ project(
 
 add_project_arguments(['-Wno-deprecated-declarations'], language: ['cpp'])
 
-glm = dependency('glm')
+glm = dependency('glm', required: false)
+if not glm.found() and not meson.get_compiler('cpp').check_header('glm/glm.hpp')
+  error('GLM not found, and directly using the header \'glm/glm.hpp\' is not possible.')
+endif
+
 evdev = dependency('libevdev')
 libxml2 = dependency('libxml-2.0')
 
