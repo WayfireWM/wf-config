@@ -153,8 +153,9 @@ bool wf::animation::duration_t::running()
 
 void wf::animation::duration_t::reverse()
 {
-    std::chrono::milliseconds remaining(this->priv->get_duration() -
-        this->priv->get_elapsed());
+    auto total_duration = this->priv->get_duration();
+    auto elapsed   = std::max(this->priv->get_elapsed(), (int64_t)total_duration);
+    auto remaining = std::chrono::milliseconds(total_duration - elapsed);
     this->priv->start_point = std::chrono::system_clock::now() - remaining;
     this->priv->reverse     = !this->priv->reverse;
 }
