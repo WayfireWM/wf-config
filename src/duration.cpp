@@ -76,7 +76,7 @@ class wf::animation::duration_t::impl
             progress = 1.0 - progress;
         }
 
-        return progress;
+        return std::clamp(progress, 0.0, 1.0);
     }
 
     double progress() const
