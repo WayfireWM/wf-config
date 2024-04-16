@@ -104,7 +104,10 @@ static std::string get_formatted_date_time()
     auto ms  = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
 
     std::ostringstream out;
-    out << std::put_time(std::localtime(&tt), "%d-%m-%y %H:%M:%S.");
+
+    struct tm buffer;
+    localtime_r(&tt, &buffer);
+    out << std::put_time(&buffer, "%d-%m-%y %H:%M:%S.");
     out << std::setfill('0') << std::setw(3) << ms.count();
     return out.str();
 }
