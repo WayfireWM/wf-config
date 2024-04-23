@@ -1,6 +1,7 @@
 #include <wayfire/util/duration.hpp>
 #include <wayfire/util/log.hpp>
 #include <wayfire/config/types.hpp>
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <map>
