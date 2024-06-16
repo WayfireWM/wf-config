@@ -265,7 +265,25 @@ smooth_function ease_out_elastic = [] (double x) -> double
 
     return (a * std::pow(2, -10 * x) * std::sin((x * d - s) * (2 * std::acos(-1)) / p) + 1.0);
 };
+
+static const std::map<std::string, animation::smoothing::smooth_function> easing_map = {
+    {"linear", animation::smoothing::linear},
+    {"circle", animation::smoothing::circle},
+    {"sigmoid", animation::smoothing::sigmoid},
+    {"easeOutElastic", animation::smoothing::ease_out_elastic},
+};
+
+std::vector<std::string> get_available_smooth_functions()
+{
+    std::vector<std::string> result;
+    for (auto& func : easing_map)
+    {
+        result.push_back(func.first);
+    }
+
+    return result;
 }
+} // namespace smoothing
 }
 
 namespace option_type
@@ -303,14 +321,7 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
         result.easing_name = "circle";
     }
 
-    static const std::map<std::string, animation::smoothing::smooth_function> easing_map = {
-        {"linear", animation::smoothing::linear},
-        {"circle", animation::smoothing::circle},
-        {"sigmoid", animation::smoothing::sigmoid},
-        {"easeOutElastic", animation::smoothing::ease_out_elastic},
-    };
-
-    if (!easing_map.count(result.easing_name))
+    if (!animation::smoothing::easing_map.count(result.easing_name))
     {
         return {};
     }
@@ -322,7 +333,7 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
         return {};
     }
 
-    result.easing = easing_map.at(result.easing_name);
+    result.easing = animation::smoothing::easing_map.at(result.easing_name);
     if (suffix == "s")
     {
         result.length_ms = N * 1000;
