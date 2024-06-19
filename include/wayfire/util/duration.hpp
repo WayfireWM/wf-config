@@ -2,7 +2,7 @@
 #include <wayfire/config/option.hpp>
 #include <wayfire/config/option-types.hpp>
 #include <functional>
-
+#include <vector>
 
 namespace wf
 {
@@ -23,6 +23,8 @@ extern smooth_function linear;
 extern smooth_function circle;
 /** "sigmoid" smoothing function, i.e x -> 1.0 / (1 + exp(-12 * x + 6)) */
 extern smooth_function sigmoid;
+
+std::vector<std::string> get_available_smooth_functions();
 }
 }
 
