@@ -241,6 +241,18 @@ TEST_CASE("wf::touchgesture_t")
     CHECK(binding5.get_direction() == wf::GESTURE_DIRECTION_OUT);
     CHECK(binding5.get_finger_count() == 2);
 
+    auto binding6 =
+        from_string<touchgesture_t>("edge-s1-swipe down 2").value();
+    CHECK(binding6.get_type() == wf::GESTURE_TYPE_EDGE_S1_SWIPE);
+    CHECK(binding6.get_direction() == wf::GESTURE_DIRECTION_DOWN);
+    CHECK(binding6.get_finger_count() == 2);
+
+    auto binding7 =
+        from_string<touchgesture_t>("edge-s2-swipe down 2").value();
+    CHECK(binding7.get_type() == wf::GESTURE_TYPE_EDGE_S2_SWIPE);
+    CHECK(binding7.get_direction() == wf::GESTURE_DIRECTION_DOWN);
+    CHECK(binding7.get_finger_count() == 2);
+
     auto empty = wf::touchgesture_t{wf::GESTURE_TYPE_NONE, 0, 0};
     CHECK(from_string<touchgesture_t>("none").value() == empty);
     CHECK(from_string<touchgesture_t>("disabled").value() == empty);
@@ -263,6 +275,10 @@ TEST_CASE("wf::touchgesture_t")
     CHECK(binding5 == wf::touchgesture_t{wf::GESTURE_TYPE_PINCH, 0, 2});
     CHECK(!(binding5 == wf::touchgesture_t{
         wf::GESTURE_TYPE_PINCH, wf::GESTURE_DIRECTION_IN, 2}));
+    CHECK(binding6 == wf::touchgesture_t{
+        wf::GESTURE_TYPE_EDGE_S1_SWIPE, wf::GESTURE_DIRECTION_DOWN, 2});
+    CHECK(binding7 == wf::touchgesture_t{
+        wf::GESTURE_TYPE_EDGE_S2_SWIPE, wf::GESTURE_DIRECTION_DOWN, 2});
 
     using wt_t = wf::touchgesture_t;
     CHECK(from_string<wt_t>(to_string<wt_t>(binding1)).value() == binding1);
@@ -270,6 +286,8 @@ TEST_CASE("wf::touchgesture_t")
     CHECK(from_string<wt_t>(to_string<wt_t>(binding3)).value() == binding3);
     CHECK(from_string<wt_t>(to_string<wt_t>(binding4)).value() == binding4);
     CHECK(from_string<wt_t>(to_string<wt_t>(binding5)).value() == binding5);
+    CHECK(from_string<wt_t>(to_string<wt_t>(binding6)).value() == binding6);
+    CHECK(from_string<wt_t>(to_string<wt_t>(binding7)).value() == binding7);
 }
 
 TEST_CASE("wf::hotspot_binding_t")
