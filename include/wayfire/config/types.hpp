@@ -256,11 +256,21 @@ enum touch_gesture_type_t
     GESTURE_TYPE_NONE       = 0,
     /* Swipe gesture, i.e moving in one direction */
     GESTURE_TYPE_SWIPE      = 1,
-    /* Edge swipe, which is a swipe originating from the edge of the screen */
+    /* Edge swipe, which is a swipe originating from the edge of the screen 
+     * and is the main section in the center of the edge
+     */
     GESTURE_TYPE_EDGE_SWIPE = 2,
+    /* Edge swipe S1, which is a swipe originating from the edge of the screen 
+     * and is the first section of the edge before the main section
+     */
+    GESTURE_TYPE_EDGE_S1_SWIPE = 3,
+    /* Edge swipe S2, which is a swipe originating from the edge of the screen 
+     * and is the last section of the edge after the main section
+     */
+    GESTURE_TYPE_EDGE_S2_SWIPE = 4,
     /* Pinch gesture, multiple touch points coming closer or farther apart
      * from the center */
-    GESTURE_TYPE_PINCH      = 3,
+    GESTURE_TYPE_PINCH      = 5,
 };
 
 enum touch_gesture_direction_t
