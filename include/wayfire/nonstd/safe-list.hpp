@@ -9,9 +9,6 @@
 #include <type_traits>
 #include <vector>
 #include <assert.h>
-#include <wayfire/util.hpp>
-
-#include "reverse.hpp"
 
 namespace wf
 {
