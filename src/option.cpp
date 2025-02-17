@@ -32,7 +32,8 @@ wf::config::option_base_t::~option_base_t() = default;
 
 void wf::config::option_base_t::notify_updated() const
 {
-    priv->updated_handlers.for_each([](updated_callback_t* call){
+    priv->updated_handlers.for_each([] (updated_callback_t *call)
+    {
         (*call)();
     });
 }
