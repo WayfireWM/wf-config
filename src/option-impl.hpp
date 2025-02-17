@@ -2,13 +2,14 @@
 
 #include <wayfire/config/compound-option.hpp>
 #include <wayfire/config/section.hpp>
+#include <wayfire/nonstd/safe-list.hpp>
 #include <libxml/tree.h>
 #include <stdint.h>
 
 struct wf::config::option_base_t::impl
 {
     std::string name;
-    std::vector<updated_callback_t*> updated_handlers;
+    wf::safe_list_t<updated_callback_t*> updated_handlers;
 
     // Number of times the option has been locked
     int32_t lock_count = 0;

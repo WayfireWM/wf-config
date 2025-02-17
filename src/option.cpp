@@ -19,9 +19,7 @@ void wf::config::option_base_t::add_updated_handler(
 void wf::config::option_base_t::rem_updated_handler(
     updated_callback_t *callback)
 {
-    auto it = std::remove(priv->updated_handlers.begin(),
-        priv->updated_handlers.end(), callback);
-    priv->updated_handlers.erase(it, priv->updated_handlers.end());
+    priv->updated_handlers.remove_all(callback);
 }
 
 wf::config::option_base_t::option_base_t(const std::string& name)
@@ -34,11 +32,10 @@ wf::config::option_base_t::~option_base_t() = default;
 
 void wf::config::option_base_t::notify_updated() const
 {
-    auto to_call = priv->updated_handlers;
-    for (auto& call : to_call)
+    priv->updated_handlers.for_each([] (updated_callback_t *call)
     {
         (*call)();
-    }
+    });
 }
 
 void wf::config::option_base_t::set_locked(bool locked)
