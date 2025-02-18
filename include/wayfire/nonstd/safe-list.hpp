@@ -1,8 +1,6 @@
 #ifndef WF_SAFE_LIST_HPP
 #define WF_SAFE_LIST_HPP
 
-#include <list>
-#include <memory>
 #include <algorithm>
 #include <functional>
 #include <optional>
