@@ -107,7 +107,7 @@ static std::string get_formatted_date_time()
 
     struct tm buffer;
     localtime_r(&tt, &buffer);
-    out << std::put_time(&buffer, "%d-%m-%y %H:%M:%S.");
+    out << std::put_time(&buffer, "%Y-%m-%d %H:%M:%S.");
     out << std::setfill('0') << std::setw(3) << ms.count();
     return out.str();
 }
