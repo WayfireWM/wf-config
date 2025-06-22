@@ -50,7 +50,7 @@ TEST_CASE("wf::log::log_plain()")
 
         /* Remove date and current time, because it isn't reproducible. */
         int time_start_index = 2;
-        int time_length = 1 + 8 + 1 + 12; /* space + date + space + time */
+        int time_length = 1 + 10 + 1 + 12; /* space + date + space + time */
 
         REQUIRE(line.length() >= time_start_index + time_length);
         line.erase(time_start_index, time_length);
