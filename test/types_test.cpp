@@ -443,6 +443,7 @@ TEST_CASE("wf::output_config::mode_t")
         "1920x1080@59",
         "1920x 1080 @ 59000",
         "mirror    eDP-1",
+        "mirror DP-1 1920x1080@60000",
     };
 
     std::vector<std::string> invalid = {

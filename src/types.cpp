@@ -1089,6 +1089,18 @@ wf::output_config::mode_t::mode_t(const std::string& mirror_from)
     this->mirror_from = mirror_from;
 }
 
+/**
+ * Initialize a mirror mode with a display mode.
+ */
+wf::output_config::mode_t::mode_t(const std::string& mirror_from, int32_t width, int32_t height, int32_t refresh)
+{
+    this->type = MODE_MIRROR;
+    this->mirror_from = mirror_from;
+    this->width   = width;
+    this->height  = height;
+    this->refresh = refresh;
+}
+
 /** @return The type of this mode. */
 wf::output_config::mode_type_t wf::output_config::mode_t::get_type() const
 {
@@ -1153,29 +1165,26 @@ std::optional<wf::output_config::mode_t> wf::option_type::from_string(
         return wf::output_config::mode_t{true};
     }
 
+    std::string resolution,from;
+
     if (string.substr(0, 6) == "mirror")
     {
         std::stringstream ss(string);
-        std::string from, dummy;
         ss >> from; // the mirror word
-        if (!(ss >> from))
+        if (ss >> from)
         {
-            return {};
+            return wf::output_config::mode_t{from};
         }
 
-        // trailing garbage
-        if (ss >> dummy)
-        {
-            return {};
-        }
-
-        return wf::output_config::mode_t{from};
+        ss >> resolution;
     }
+
+    resolution = string;
 
     int w, h, rr = 0;
     char next;
 
-    int read = std::sscanf(string.c_str(), "%d x %d @ %d%c", &w, &h, &rr, &next);
+    int read = std::sscanf(resolution.c_str(), "%d x %d @ %d%c", &w, &h, &rr, &next);
     if ((read < 2) || (read > 3))
     {
         return {};
@@ -1192,7 +1201,11 @@ std::optional<wf::output_config::mode_t> wf::option_type::from_string(
         rr *= 1000;
     }
 
-    return wf::output_config::mode_t{w, h, rr};
+    if (from.empty()) {
+        return wf::output_config::mode_t{w, h, rr};
+    }
+
+    return wf::output_config::mode_t{from, w, h, rr};    
 }
 
 /** Represent the activator binding as a string. */
