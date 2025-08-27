@@ -526,8 +526,6 @@ void wf::config::save_configuration_to_file(
 static void process_xml_file(wf::config::config_manager_t& manager,
     const std::string & filename)
 {
-    LOGI("Reading XML configuration options from file ", filename);
-
     /* Parse the XML file. */
     auto doc = xmlParseFile(filename.c_str());
     if (!doc)
@@ -562,23 +560,23 @@ static void process_xml_file(wf::config::config_manager_t& manager,
     // xmlFreeDoc(doc); - May clear the XML nodes before they are used
 }
 
-static wf::config::config_manager_t load_xml_files(
-    const std::vector<std::string>& xmldirs)
+static wf::config::config_manager_t load_xml_files(const std::vector<std::string>& xmldirs)
 {
     wf::config::config_manager_t manager;
 
     for (auto& xmldir : xmldirs)
     {
         auto xmld = opendir(xmldir.c_str());
-        if (NULL == xmld)
+        if (!xmld)
         {
             LOGW("Failed to open XML directory ", xmldir);
             continue;
         }
 
-        LOGI("Reading XML configuration options from directory ", xmldir);
+        std::vector<std::string> loaded_files;
+
         struct dirent *entry;
-        while ((entry = readdir(xmld)) != NULL)
+        while ((entry = readdir(xmld)) != nullptr)
         {
             if ((entry->d_type != DT_LNK) && (entry->d_type != DT_REG) &&
                 (entry->d_type != DT_UNKNOWN))
@@ -591,10 +589,27 @@ static wf::config::config_manager_t load_xml_files(
                 (filename.rfind(".xml") == filename.length() - 4))
             {
                 process_xml_file(manager, filename);
+                loaded_files.push_back(entry->d_name);
             }
         }
 
         closedir(xmld);
+
+        if (!loaded_files.empty())
+        {
+            LOGI("Loaded XML configuration options from ", loaded_files.size(),
+                 " files in ", xmldir, ":");
+            
+            std::string list;
+            for (size_t i = 0; i < loaded_files.size(); ++i)
+            {
+                list += loaded_files[i];
+                if (i + 1 != loaded_files.size())
+                    list += ", ";
+            }
+
+            LOGI(list);
+        }
     }
 
     return manager;
