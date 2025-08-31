@@ -40,6 +40,7 @@ class line_t : public std::string
 
     size_t source_line_number;
 };
+
 using lines_t = std::vector<line_t>;
 
 static lines_t split_to_lines(const std::string& source)
@@ -214,9 +215,8 @@ enum option_parsing_result
 };
 
 /**
- * Try to parse an option line.
- * If the option line is valid, the corresponding option is modified or added
- * to @current_section, and the option is added to @reloaded.
+ * Try to parse an option line. If the option line is valid, the corresponding option is modified or added to
+ * @current_section, and the option is added to @reloaded.
  *
  * @return The parse status of the line.
  */
@@ -252,9 +252,8 @@ static option_parsing_result parse_option_line(
 }
 
 /**
- * Check whether the @line is a valid section start.
- * If yes, it will either return the section in @config with the same name, or
- * create a new section and register it in config.
+ * Check whether the @line is a valid section start. If yes, it will either return the section in @config with
+ * the same name, or create a new section and register it in config.
  *
  * @return nullptr if line is not a valid section, the section otherwise.
  */
@@ -518,8 +517,7 @@ void wf::config::save_configuration_to_file(
     flock(fd, LOCK_UN);
     close(fd);
 
-    /* Modify the file one last time. Now programs waiting for updates can
-     * acquire a shared lock. */
+    /* Modify the file one last time. Now programs waiting for updates can acquire a shared lock. */
     fout << std::endl;
 }
 
@@ -598,14 +596,16 @@ static wf::config::config_manager_t load_xml_files(const std::vector<std::string
         if (!loaded_files.empty())
         {
             LOGI("Loaded XML configuration options from ", loaded_files.size(),
-                 " files in ", xmldir, ":");
-            
+                " files in ", xmldir, ":");
+
             std::string list;
             for (size_t i = 0; i < loaded_files.size(); ++i)
             {
                 list += loaded_files[i];
                 if (i + 1 != loaded_files.size())
+                {
                     list += ", ";
+                }
             }
 
             LOGI(list);
