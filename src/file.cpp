@@ -353,6 +353,10 @@ void wf::config::load_configuration_options_from_string(
         for (auto opt : section->get_registered_options())
         {
             opt->priv->option_in_config_file = (reloaded.count(opt) > 0);
+
+            opt->priv->is_part_compound  = false; // will be re-set when updating compound options
+            opt->priv->could_be_compound = false; // will be re-set when updating compound options
+
             if (!opt->priv->option_in_config_file && !opt->is_locked())
             {
                 opt->reset_to_default();
@@ -370,6 +374,27 @@ void wf::config::load_configuration_options_from_string(
             if (as_compound)
             {
                 update_compound_from_section(*as_compound, section);
+            }
+        }
+    }
+
+    for (auto section : config.get_all_sections())
+    {
+        for (auto opt : section->get_registered_options())
+        {
+            if (!opt->priv->xml && !opt->priv->is_part_compound)
+            {
+                if (opt->priv->could_be_compound)
+                {
+                    LOGW("Option ", section->get_name(), "/", opt->get_name(),
+                        " could not be parsed as part of a compound option: missing entries or wrong type!");
+                } else
+                {
+                    LOGW("Loaded option ", section->get_name(), "/", opt->get_name(),
+                        ", which does not belong to any registered plugin, nor could be parsed as a part of ",
+                        "a compound list option. Make sure all the relevant XML files are installed and "
+                        "that the option name is spelled correctly!");
+                }
             }
         }
     }

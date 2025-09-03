@@ -94,6 +94,10 @@ TEST_CASE("wf::config::load_configuration_options_from_string")
     EXPECT_LINE(log, "Error in file test:5");
     EXPECT_LINE(log, "Error in file test:20");
     EXPECT_LINE(log, "Error in file test:21");
+
+    // reset logging state for subsequent tests
+    wf::log::initialize_logging(std::cout, wf::log::LOG_LEVEL_DEBUG,
+        wf::log::LOG_COLOR_MODE_OFF);
 }
 
 TEST_CASE("wf::config::load_configuration_options_from_string - "

@@ -60,10 +60,10 @@ void wf::config::update_compound_from_section(
         value[0] = suffix;
         for (size_t i = 0; i < entries.size(); ++i)
         {
-            if (const auto & entry_option =
-                    section->get_option_or(entries[i]->get_prefix() + suffix);
+            if (const auto & entry_option = section->get_option_or(entries[i]->get_prefix() + suffix);
                 entry_option && !should_ignore_option(entry_option))
             {
+                entry_option->priv->could_be_compound = true;
                 if (entries[i]->is_parsable(entry_option->get_value_str()))
                 {
                     value[i + 1] = entry_option->get_value_str();
@@ -83,9 +83,6 @@ void wf::config::update_compound_from_section(
                 value[i + 1] = *default_value;
             } else
             {
-                LOGE("The option ",
-                    section->get_name() + "/" + entries[i]->get_prefix() + suffix,
-                    " is neither specified nor has a default value");
                 value.clear();
                 break;
             }
@@ -94,6 +91,14 @@ void wf::config::update_compound_from_section(
         if (!value.empty())
         {
             stored_value.push_back(std::move(value));
+            for (size_t i = 0; i < entries.size(); ++i)
+            {
+                if (auto entry_option = section->get_option_or(entries[i]->get_prefix() + suffix))
+                {
+                    // The option was used as part of the compound option, do not issue warning for it!
+                    entry_option->priv->is_part_compound = true;
+                }
+            }
         }
     }
 
