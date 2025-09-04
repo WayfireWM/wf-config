@@ -40,6 +40,7 @@ class line_t : public std::string
 
     size_t source_line_number;
 };
+
 using lines_t = std::vector<line_t>;
 
 static lines_t split_to_lines(const std::string& source)
@@ -214,9 +215,8 @@ enum option_parsing_result
 };
 
 /**
- * Try to parse an option line.
- * If the option line is valid, the corresponding option is modified or added
- * to @current_section, and the option is added to @reloaded.
+ * Try to parse an option line. If the option line is valid, the corresponding option is modified or added to
+ * @current_section, and the option is added to @reloaded.
  *
  * @return The parse status of the line.
  */
@@ -252,9 +252,8 @@ static option_parsing_result parse_option_line(
 }
 
 /**
- * Check whether the @line is a valid section start.
- * If yes, it will either return the section in @config with the same name, or
- * create a new section and register it in config.
+ * Check whether the @line is a valid section start. If yes, it will either return the section in @config with
+ * the same name, or create a new section and register it in config.
  *
  * @return nullptr if line is not a valid section, the section otherwise.
  */
@@ -518,16 +517,13 @@ void wf::config::save_configuration_to_file(
     flock(fd, LOCK_UN);
     close(fd);
 
-    /* Modify the file one last time. Now programs waiting for updates can
-     * acquire a shared lock. */
+    /* Modify the file one last time. Now programs waiting for updates can acquire a shared lock. */
     fout << std::endl;
 }
 
 static void process_xml_file(wf::config::config_manager_t& manager,
     const std::string & filename)
 {
-    LOGI("Reading XML configuration options from file ", filename);
-
     /* Parse the XML file. */
     auto doc = xmlParseFile(filename.c_str());
     if (!doc)
@@ -562,23 +558,23 @@ static void process_xml_file(wf::config::config_manager_t& manager,
     // xmlFreeDoc(doc); - May clear the XML nodes before they are used
 }
 
-static wf::config::config_manager_t load_xml_files(
-    const std::vector<std::string>& xmldirs)
+static wf::config::config_manager_t load_xml_files(const std::vector<std::string>& xmldirs)
 {
     wf::config::config_manager_t manager;
 
     for (auto& xmldir : xmldirs)
     {
         auto xmld = opendir(xmldir.c_str());
-        if (NULL == xmld)
+        if (!xmld)
         {
             LOGW("Failed to open XML directory ", xmldir);
             continue;
         }
 
-        LOGI("Reading XML configuration options from directory ", xmldir);
+        std::vector<std::string> loaded_files;
+
         struct dirent *entry;
-        while ((entry = readdir(xmld)) != NULL)
+        while ((entry = readdir(xmld)) != nullptr)
         {
             if ((entry->d_type != DT_LNK) && (entry->d_type != DT_REG) &&
                 (entry->d_type != DT_UNKNOWN))
@@ -591,10 +587,29 @@ static wf::config::config_manager_t load_xml_files(
                 (filename.rfind(".xml") == filename.length() - 4))
             {
                 process_xml_file(manager, filename);
+                loaded_files.push_back(entry->d_name);
             }
         }
 
         closedir(xmld);
+
+        if (!loaded_files.empty())
+        {
+            LOGI("Loaded XML configuration options from ", loaded_files.size(),
+                " files in ", xmldir, ":");
+
+            std::string list;
+            for (size_t i = 0; i < loaded_files.size(); ++i)
+            {
+                list += loaded_files[i];
+                if (i + 1 != loaded_files.size())
+                {
+                    list += ", ";
+                }
+            }
+
+            LOGI(list);
+        }
     }
 
     return manager;
