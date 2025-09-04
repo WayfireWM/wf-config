@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <wayfire/config/option.hpp>
+#include <wayfire/config/section.hpp>
 #include <wayfire/config/compound-option.hpp>
 
 namespace wf
@@ -77,25 +78,12 @@ class base_option_wrapper_t
      */
     void load_option(const std::string& name)
     {
-        if (raw_option)
-        {
-            throw std::logic_error(
-                "Loading an option into option wrapper twice!");
-        }
+        _load_option(load_raw_option(name), name);
+    }
 
-        auto untyped_option = load_raw_option(name);
-        if (untyped_option == nullptr)
-        {
-            throw std::runtime_error("No such option: " + std::string(name));
-        }
-
-        raw_option = std::dynamic_pointer_cast<OptionType>(untyped_option);
-        if (raw_option == nullptr)
-        {
-            throw std::runtime_error("Bad option type: " + std::string(name));
-        }
-
-        raw_option->add_updated_handler(&option_update_listener);
+    void load_option(std::shared_ptr<wf::config::section_t> section, const std::string& name)
+    {
+        _load_option(section->get_option_or(name), section->get_name() + "/" + name);
     }
 
     virtual ~base_option_wrapper_t()
@@ -162,5 +150,27 @@ class base_option_wrapper_t
      */
     virtual std::shared_ptr<wf::config::option_base_t> load_raw_option(
         const std::string& name) = 0;
+
+    void _load_option(std::shared_ptr<wf::config::option_base_t> _option, const std::string& name)
+    {
+        if (raw_option)
+        {
+            throw std::logic_error(
+                "Loading an option into option wrapper twice!");
+        }
+
+        if (_option == nullptr)
+        {
+            throw std::runtime_error("No such option: " + std::string(name));
+        }
+
+        raw_option = std::dynamic_pointer_cast<OptionType>(_option);
+        if (raw_option == nullptr)
+        {
+            throw std::runtime_error("Bad option type: " + name);
+        }
+
+        raw_option->add_updated_handler(&option_update_listener);
+    }
 };
 }
