@@ -6,6 +6,11 @@
 #include <cmath>
 #include <map>
 
+double bezier_helper(double t, double p0, double p1, double p2, double p3) {
+    const double u = 1 - t;
+    return u*u*u*p0 + 3*u*u*t*p1 + 3*u*t*t*p2 + t*t*t*p3;
+}
+
 namespace wf
 {
 namespace animation
@@ -20,6 +25,22 @@ smooth_function circle =
 const double sigmoid_max = 1 + std::exp(-6);
 smooth_function sigmoid  =
     [] (double x) -> double { return sigmoid_max / (1 + exp(-12 * x + 6)); };
+
+smooth_function get_cubic_bezier(double x1, double y1, double x2, double y2) {
+    // https://en.wikipedia.org/wiki/Newton%27s_method
+    return [=](double x) {
+        double t = x;
+        for(int i=0; i<10; ++i) {
+            const double f  = bezier_helper(t, 0, x1, x2, 1) - x;
+            const double df = 3*(1-t)*(1-t)*x1 + 6*(1-t)*t*(x2-x1) + 3*t*t*(1-x2);
+            if (std::abs(f) < 1e-6) {
+                break;
+            }
+            t -= f / df;
+        }
+        return bezier_helper(t, 0, y1, y2, 1);
+    };
+}
 }
 } // namespace animation
 }
@@ -321,7 +342,17 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
         result.easing_name = "circle";
     }
 
-    if (!animation::smoothing::easing_map.count(result.easing_name))
+    if (animation::smoothing::easing_map.count(result.easing_name))
+    {
+        result.easing = animation::smoothing::easing_map.at(result.easing_name);
+    }
+    else if (result.easing_name == "cubic-bezier")
+    {
+        double x1 = 0, y1 = 0, x2 = 1, y2 = 1;
+        stream >> x1 >> y1 >> x2 >> y2;
+        result.easing = animation::smoothing::get_cubic_bezier(x1, y1, x2, y2);
+    }
+    else
     {
         return {};
     }
@@ -333,7 +364,7 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
         return {};
     }
 
-    result.easing = animation::smoothing::easing_map.at(result.easing_name);
+
     if (suffix == "s")
     {
         result.length_ms = N * 1000;
