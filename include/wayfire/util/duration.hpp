@@ -23,6 +23,8 @@ extern smooth_function linear;
 extern smooth_function circle;
 /** "sigmoid" smoothing function, i.e x -> 1.0 / (1 + exp(-12 * x + 6)) */
 extern smooth_function sigmoid;
+/** custom cubic-bezier as in CSS */
+extern smooth_function get_cubic_bezier(double x1, double y1, double x2, double y2);
 
 std::vector<std::string> get_available_smooth_functions();
 }

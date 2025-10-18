@@ -388,9 +388,12 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
 template<>
 std::string to_string<animation_description_t>(const animation_description_t& value)
 {
-    if (!value.easing_name.empty()) {
+    if (!value.easing_name.empty())
+    {
         return to_string(value.length_ms) + "ms " + to_string(value.easing_name);
-    } else {
+    }
+    else
+    {
         return to_string(value.length_ms)
                + "ms cubic-bezier " + to_string(value.x1)
                + " " + to_string(value.y1)
