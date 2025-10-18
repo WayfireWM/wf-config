@@ -326,6 +326,7 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
             .length_ms = *val,
             .easing    = animation::smoothing::circle,
             .easing_name = "circle",
+            .x1 = 0, .y1 = 0, .x2 = 0, .y2 = 0
         };
     }
 
@@ -357,6 +358,10 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
         double x1 = 0, y1 = 0, x2 = 1, y2 = 1;
         stream >> x1 >> y1 >> x2 >> y2;
         result.easing = animation::smoothing::get_cubic_bezier(x1, y1, x2, y2);
+        result.x1 = x1;
+        result.y1 = y1;
+        result.x2 = x2;
+        result.y2 = y2;
     } else
     {
         return {};
@@ -383,7 +388,15 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
 template<>
 std::string to_string<animation_description_t>(const animation_description_t& value)
 {
-    return to_string(value.length_ms) + "ms " + to_string(value.easing_name);
+    if (!value.easing_name.empty()) {
+        return to_string(value.length_ms) + "ms " + to_string(value.easing_name);
+    } else {
+        return to_string(value.length_ms)
+               + "ms cubic-bezier " + to_string(value.x1)
+               + " " + to_string(value.y1)
+               + " " + to_string(value.x2)
+               + " " + to_string(value.y2);
+    }
 }
 }
 }

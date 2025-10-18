@@ -33,10 +33,21 @@ struct animation_description_t
     int length_ms;
     animation::smoothing::smooth_function easing;
     std::string easing_name;
+    double x1, y1, x2, y2;
 
     bool operator ==(const animation_description_t& other) const
     {
-        return (length_ms == other.length_ms) && (easing_name == other.easing_name);
+        return
+            (length_ms == other.length_ms)
+            && (
+                (easing_name == other.easing_name)
+                || (
+                    (x1 == other.x1)
+                    && (y1 == other.y1)
+                    && (x2 == other.x2)
+                    && (y2 == other.y2)
+                )
+            );
     }
 };
 
