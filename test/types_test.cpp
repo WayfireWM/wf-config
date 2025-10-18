@@ -539,8 +539,7 @@ TEST_CASE("wf::animation::animation_description_t")
     adt custom4s = {
         .length_ms = 4000,
         .easing    = wf::animation::smoothing::get_cubic_bezier(0.25, 0.6, 0.75, 0.4),
-        .easing_name = "",
-        .x1 = 0.25, .y1 = 0.6, .x2 = 0.75, .y2 = 0.4
+        .easing_name = "cubic-bezier 0.25 0.6 0.75 0.4",
     };
     std::string custom4s_str = "4s cubic-bezier 0.25 0.6 0.75 0.4";
 
