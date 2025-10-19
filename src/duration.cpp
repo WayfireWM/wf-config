@@ -4,12 +4,19 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <limits>
 #include <map>
+#include <sstream>
 
 double bezier_helper(double t, double p0, double p1, double p2, double p3)
 {
     const double u = 1 - t;
     return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3;
+}
+
+inline bool epsilon_comparison(double a, double b)
+{
+    return std::fabs(a - b) <= std::numeric_limits<double>::epsilon() * std::fabs(a + b);
 }
 
 namespace wf
@@ -50,6 +57,31 @@ smooth_function get_cubic_bezier(double x1, double y1, double x2, double y2)
 }
 }
 } // namespace animation
+}
+
+bool wf::animation_description_t::operator==(const animation_description_t &other) const
+{
+    if (easing_name == other.easing_name)
+    {
+        return (length_ms == other.length_ms);
+    }
+    // Cubic-bezier easings need parsing to handle epsilon
+    std::stringstream easing_a(easing_name);
+    std::stringstream easing_b(easing_name);
+    std::string easing_type_a, easing_type_b;
+    easing_a >> easing_type_a;
+    easing_b >> easing_type_b;
+    if (easing_type_a != "cubic-bezier" || easing_type_b != "cubic-bezier")
+    {
+        return false;
+    }
+    double x1_a, y1_a, x2_a, y2_a, x1_b, y1_b, x2_b, y2_b;
+    easing_a >> x1_a >> y1_a >> x2_a >> y2_a;
+    easing_b >> x1_b >> y1_b >> x2_b >> y2_b;
+    return epsilon_comparison(x1_a, x1_b)
+           && epsilon_comparison(y1_a, y1_b)
+           && epsilon_comparison(x2_a, x2_b)
+           && epsilon_comparison(y2_b, y2_b);
 }
 
 class wf::animation::duration_t::impl

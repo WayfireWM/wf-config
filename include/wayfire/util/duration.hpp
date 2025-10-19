@@ -36,10 +36,7 @@ struct animation_description_t
     animation::smoothing::smooth_function easing;
     std::string easing_name;
 
-    bool operator ==(const animation_description_t& other) const
-    {
-        return (length_ms == other.length_ms) && (easing_name == other.easing_name);
-    }
+    bool operator ==(const animation_description_t& other) const;
 };
 
 namespace option_type
