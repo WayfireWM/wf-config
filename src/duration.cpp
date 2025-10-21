@@ -59,29 +59,31 @@ smooth_function get_cubic_bezier(double x1, double y1, double x2, double y2)
 } // namespace animation
 }
 
-bool wf::animation_description_t::operator==(const animation_description_t &other) const
+bool wf::animation_description_t::operator ==(const animation_description_t & other) const
 {
     if (easing_name == other.easing_name)
     {
         return (length_ms == other.length_ms);
     }
+
     // Cubic-bezier easings need parsing to handle epsilon
     std::stringstream easing_a(easing_name);
     std::stringstream easing_b(easing_name);
     std::string easing_type_a, easing_type_b;
     easing_a >> easing_type_a;
     easing_b >> easing_type_b;
-    if (easing_type_a != "cubic-bezier" || easing_type_b != "cubic-bezier")
+    if ((easing_type_a != "cubic-bezier") || (easing_type_b != "cubic-bezier"))
     {
         return false;
     }
+
     double x1_a, y1_a, x2_a, y2_a, x1_b, y1_b, x2_b, y2_b;
     easing_a >> x1_a >> y1_a >> x2_a >> y2_a;
     easing_b >> x1_b >> y1_b >> x2_b >> y2_b;
-    return epsilon_comparison(x1_a, x1_b)
-           && epsilon_comparison(y1_a, y1_b)
-           && epsilon_comparison(x2_a, x2_b)
-           && epsilon_comparison(y2_b, y2_b);
+    return epsilon_comparison(x1_a, x1_b) &&
+           epsilon_comparison(y1_a, y1_b) &&
+           epsilon_comparison(x2_a, x2_b) &&
+           epsilon_comparison(y2_b, y2_b);
 }
 
 class wf::animation::duration_t::impl
@@ -389,11 +391,11 @@ std::optional<animation_description_t> from_string<animation_description_t>(cons
         double x1 = 0, y1 = 0, x2 = 1, y2 = 1;
         stream >> x1 >> y1 >> x2 >> y2;
         result.easing = animation::smoothing::get_cubic_bezier(x1, y1, x2, y2);
-        result.easing_name = "cubic-bezier "
-                             + to_string(x1)
-                             + " " + to_string(y1)
-                             + " " + to_string(x2)
-                             + " " + to_string(y2);
+        result.easing_name = "cubic-bezier " +
+            to_string(x1) +
+            " " + to_string(y1) +
+            " " + to_string(x2) +
+            " " + to_string(y2);
     } else
     {
         return {};
