@@ -487,6 +487,10 @@ enum mode_type_t
 {
     /** Output was configured in automatic mode. */
     MODE_AUTO,
+    /** Output was configured with the biggest refresh rate. */
+    MODE_HIGHRR,
+    /** Output was configured with the biggest resolution. */
+    MODE_HIGHRES,
     /** Output was configured to be turned off. */
     MODE_OFF,
     /** Output was configured with a given resolution. */
@@ -502,11 +506,13 @@ enum mode_type_t
 struct mode_t
 {
     /**
-     * Initialize an OFF or AUTO mode.
+     * Initialize a mode.
      *
-     * @param auto_on If true, the created mode will be an AUTO mode.
+     * @param mode One of: MODE_AUTO, MODE_HIGHRR, MODE_HIGHRES, MODE_OFF. MODE_HIGHRR prioritizes refresh
+     * rate, MODE_HIGHRES prioritises resolution and MODE_AUTO chooses whatever the display tells it to use.
+     * @throws std::invalid_argument if the mode isn't MODE_AUTO, MODEHIGHRR, MODEHIGHRES or MODE_OFF.
      */
-    mode_t(bool auto_on = false);
+    mode_t(output_config::mode_type_t mode);
 
     /**
      * Initialize the mode with source self.
