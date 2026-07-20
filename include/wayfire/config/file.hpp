@@ -86,5 +86,13 @@ void save_configuration_to_file(const config_manager_t& manager,
  */
 config_manager_t build_configuration(const std::vector<std::string>& xmldirs,
     const std::string& sysconf, const std::string& userconf);
+
+/**
+ * Load XML option metadata from @xmldirs and merge any newly discovered
+ * sections/options into @manager. Existing options are left untouched so that
+ * active option wrappers keep their values and callbacks.
+ */
+void load_configuration_options_from_xml_dirs(config_manager_t& manager,
+    const std::vector<std::string>& xmldirs);
 }
 }

@@ -683,3 +683,32 @@ wf::config::config_manager_t wf::config::build_configuration(
     load_configuration_options_from_file(manager, userconf);
     return manager;
 }
+
+void wf::config::load_configuration_options_from_xml_dirs(
+    wf::config::config_manager_t& manager,
+    const std::vector<std::string>& xmldirs)
+{
+    auto loaded = load_xml_files(xmldirs);
+    for (auto& section : loaded.get_all_sections())
+    {
+        auto existing = manager.get_section(section->get_name());
+        if (!existing)
+        {
+            manager.merge_section(section);
+            continue;
+        }
+
+        for (auto& option : section->get_registered_options())
+        {
+            auto existing_option = existing->get_option_or(option->get_name());
+            if (!existing_option)
+            {
+                existing->register_new_option(option);
+            } else if (!xml::get_option_xml_node(existing_option))
+            {
+                option->set_value_str(existing_option->get_value_str());
+                existing->register_new_option(option);
+            }
+        }
+    }
+}
