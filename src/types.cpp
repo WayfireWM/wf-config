@@ -631,6 +631,14 @@ wf::touchgesture_t parse_gesture(const std::string& value)
         {
             type = wf::GESTURE_TYPE_EDGE_SWIPE;
             direction = parse_direction(tokens[1]);
+        } else if (tokens[0] == "edge-s1-swipe")
+        {
+            type = wf::GESTURE_TYPE_EDGE_S1_SWIPE;
+            direction = parse_direction(tokens[1]);
+        } else if (tokens[0] == "edge-s2-swipe")
+        {
+            type = wf::GESTURE_TYPE_EDGE_S2_SWIPE;
+            direction = parse_direction(tokens[1]);
         } else
         {
             throw std::domain_error("Invalid gesture type:" + tokens[0]);
@@ -697,9 +705,20 @@ std::string wf::option_type::to_string(const touchgesture_t& value)
         return "";
 
       case GESTURE_TYPE_EDGE_SWIPE:
-        result += "edge-";
+        result += "edge-swipe ";
+        result += direction_to_string(value.get_direction()) + " ";
+        break;
 
-      // fallthrough
+      case GESTURE_TYPE_EDGE_S1_SWIPE:
+        result += "edge-s1-swipe ";
+        result += direction_to_string(value.get_direction()) + " ";
+        break;
+
+      case GESTURE_TYPE_EDGE_S2_SWIPE:
+        result += "edge-s2-swipe ";
+        result += direction_to_string(value.get_direction()) + " ";
+        break;
+
       case GESTURE_TYPE_SWIPE:
         result += "swipe ";
         result += direction_to_string(value.get_direction()) + " ";
