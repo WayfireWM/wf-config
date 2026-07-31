@@ -425,6 +425,8 @@ TEST_CASE("wf::output_config::mode_t")
         mt{1920, 1080, 59000},
         mt{1920, 1080, 59000},
         mt{std::string{"eDP-1"}},
+        mt{std::string{"DP-1"}, 1920, 1080, 60000},
+        mt{std::string{"DP-2"}, 1920, 1080, 0},
     };
 
     std::vector<mode_type_t> types = {
@@ -436,6 +438,8 @@ TEST_CASE("wf::output_config::mode_t")
         MODE_RESOLUTION,
         MODE_RESOLUTION,
         MODE_RESOLUTION,
+        MODE_MIRROR,
+        MODE_MIRROR,
         MODE_MIRROR,
     };
 
@@ -449,6 +453,8 @@ TEST_CASE("wf::output_config::mode_t")
         "1920x1080@59",
         "1920x 1080 @ 59000",
         "mirror    eDP-1",
+        "mirror DP-1 1920x1080@60000",
+        "mirror DP-2 1920 x 1080",
     };
 
     std::vector<std::string> invalid = {
@@ -456,12 +462,21 @@ TEST_CASE("wf::output_config::mode_t")
         "autooo",
         "192e x 1080",
         "1920 1080",
+        "mirror DP-1 1920x1080@60000 extra",
     };
 
     CHECK(modes[5].get_refresh() == 0);
     CHECK(modes[6].get_refresh() == 59000);
     CHECK(modes[7].get_refresh() == 59000);
     CHECK(modes[8].get_mirror_from() == "eDP-1");
+    CHECK(modes[9].get_mirror_from() == "DP-1");
+    CHECK(modes[9].get_width() == 1920);
+    CHECK(modes[9].get_height() == 1080);
+    CHECK(modes[9].get_refresh() == 60000);
+    CHECK(modes[10].get_mirror_from() == "DP-2");
+    CHECK(modes[10].get_width() == 1920);
+    CHECK(modes[10].get_height() == 1080);
+    CHECK(modes[10].get_refresh() == 0);
 
     for (size_t i = 0; i < modes.size(); i++)
     {

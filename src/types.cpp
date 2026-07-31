@@ -1074,7 +1074,10 @@ wf::output_config::mode_t::mode_t(output_config::mode_type_t mode)
         throw std::invalid_argument("Invalid mode definition");
     }
 
-    this->type = mode;
+    this->type    = mode;
+    this->width   = 0;
+    this->height  = 0;
+    this->refresh = 0;
 }
 
 wf::output_config::mode_t::mode_t(int32_t width, int32_t height, int32_t refresh)
@@ -1092,6 +1095,22 @@ wf::output_config::mode_t::mode_t(const std::string& mirror_from)
 {
     this->type = MODE_MIRROR;
     this->mirror_from = mirror_from;
+    this->width   = 0;
+    this->height  = 0;
+    this->refresh = 0;
+}
+
+/**
+ * Initialize a mirror mode with an explicit display mode.
+ */
+wf::output_config::mode_t::mode_t(
+    const std::string& mirror_from, int32_t width, int32_t height, int32_t refresh)
+{
+    this->type = MODE_MIRROR;
+    this->mirror_from = mirror_from;
+    this->width   = width;
+    this->height  = height;
+    this->refresh = refresh;
 }
 
 /** @return The type of this mode. */
@@ -1134,7 +1153,8 @@ bool wf::output_config::mode_t::operator ==(const mode_t& other) const
                refresh == other.refresh;
 
       case MODE_MIRROR:
-        return mirror_from == other.mirror_from;
+        return mirror_from == other.mirror_from && width == other.width &&
+               height == other.height && refresh == other.refresh;
 
       case MODE_AUTO:
       case MODE_HIGHRR:
@@ -1170,29 +1190,55 @@ std::optional<wf::output_config::mode_t> wf::option_type::from_string(
         return wf::output_config::mode_t{wf::output_config::mode_type_t::MODE_HIGHRR};
     }
 
-    if (string.substr(0, 6) == "mirror")
-    {
-        std::stringstream ss(string);
-        std::string from, dummy;
-        ss >> from; // the mirror word
-        if (!(ss >> from))
-        {
-            return {};
-        }
-
-        // trailing garbage
-        if (ss >> dummy)
-        {
-            return {};
-        }
-
-        return wf::output_config::mode_t{from};
-    }
-
-    int w, h, rr = 0;
+    char from[1024];
+    int w, h, rr = 0, pos = 0;
     char next;
 
-    int read = std::sscanf(string.c_str(), "%d x %d @ %d%c", &w, &h, &rr, &next);
+    int read = 0;
+    if ((string.size() > 6) && std::isspace(static_cast<unsigned char>(string[6])))
+    {
+        read = std::sscanf(string.c_str(), "mirror %1023s %d x %d @ %d %n",
+            from, &w, &h, &rr, &pos);
+        if ((read == 4) && (pos == (int)string.size()))
+        {
+            if ((w < 0) || (h < 0) || (rr < 0))
+            {
+                return {};
+            }
+
+            // Ensure refresh rate in mHz
+            if (rr < 1000)
+            {
+                rr *= 1000;
+            }
+
+            return wf::output_config::mode_t{from, w, h, rr};
+        }
+
+        rr   = 0;
+        pos  = 0;
+        read = std::sscanf(string.c_str(), "mirror %1023s %d x %d %n",
+            from, &w, &h, &pos);
+        if ((read == 3) && (pos == (int)string.size()))
+        {
+            if ((w < 0) || (h < 0))
+            {
+                return {};
+            }
+
+            return wf::output_config::mode_t{from, w, h, rr};
+        }
+
+        pos  = 0;
+        read = std::sscanf(string.c_str(), "mirror %1023s %n", from, &pos);
+        if ((read == 1) && (pos == (int)string.size()))
+        {
+            return wf::output_config::mode_t{from};
+        }
+    }
+
+    rr   = 0;
+    read = std::sscanf(string.c_str(), "%d x %d @ %d%c", &w, &h, &rr, &next);
     if ((read < 2) || (read > 3))
     {
         return {};
@@ -1243,7 +1289,21 @@ std::string wf::option_type::to_string(const output_config::mode_t& value)
         }
 
       case output_config::MODE_MIRROR:
-        return "mirror " + value.get_mirror_from();
+        if ((value.get_width() <= 0) || (value.get_height() <= 0))
+        {
+            return "mirror " + value.get_mirror_from();
+        } else if (value.get_refresh() <= 0)
+        {
+            return "mirror " + value.get_mirror_from() + " " +
+                   to_string(value.get_width()) + "x" +
+                   to_string(value.get_height());
+        } else
+        {
+            return "mirror " + value.get_mirror_from() + " " +
+                   to_string(value.get_width()) + "x" +
+                   to_string(value.get_height()) + "@" + to_string(
+                value.get_refresh());
+        }
     }
 
     return {};

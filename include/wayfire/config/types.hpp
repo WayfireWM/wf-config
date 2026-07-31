@@ -528,6 +528,11 @@ struct mode_t
      */
     mode_t(const std::string& mirror_from);
 
+    /**
+     * Initialize a mirror mode with an explicit display mode.
+     */
+    mode_t(const std::string& mirror_from, int32_t width, int32_t height, int32_t refresh);
+
     /** @return The type of this mode. */
     mode_type_t get_type() const;
 
