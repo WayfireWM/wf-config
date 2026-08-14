@@ -56,6 +56,14 @@ file_parse_test = executable(
     cpp_args: '-DTEST_SOURCE="' + meson.current_source_dir() + '"')
 test('File parsing test', file_parse_test)
 
+edit_test = executable(
+    'edit_test',
+    'edit_test.cpp',
+    dependencies: [wfconfig, doctest],
+    install: false,
+    cpp_args: '-DTEST_SOURCE="' + meson.current_source_dir() + '"')
+test('Edit test', edit_test)
+
 # Utils
 log_test = executable(
     'log_test',
