@@ -31,6 +31,7 @@ sources = [
 'src/file.cpp',
 'src/duration.cpp',
 'src/compound-option.cpp',
+'src/edit.cpp',
 ]
 
 wfconfig_inc = include_directories('include')
