@@ -1,6 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
+#include <iterator>
 #include <algorithm>
 #include <wayfire/config/config-manager.hpp>
 #include <wayfire/config/types.hpp>
